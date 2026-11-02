@@ -95,7 +95,7 @@ class AdzunaAdapter(Adapter):
     def search(self, status: SourceStatus) -> list[RawPosting]:
         out, seen = [], set()
         for q in self.ctx["queries"][:8]:
-            params = {"app_id": os.environ["ADZUNA_APP_ID"], "app_key": os.environ["ADZUNA_APP_KEY"], "what": q + " remote",
+            params = {"app_id": os.environ["ADZUNA_APP_ID"], "app_key": os.environ["ADZUNA_APP_KEY"], "what": q + (" remote" if __import__("jobsearch.criteria", fromlist=["CRITERIA"]).CRITERIA.get("remote_only", True) else ""),
                       "results_per_page": 50, "content-type": "application/json", "max_days_old": 30}
             r = self.client.get("https://api.adzuna.com/v1/api/jobs/us/search/1?" + urllib.parse.urlencode(params))
             if r.status >= 400:
@@ -125,7 +125,11 @@ class UsaJobsAdapter(Adapter):
         h = {"Host": "data.usajobs.gov", "Authorization-Key": os.environ["USAJOBS_API_KEY"]}
         out, seen = [], set()
         for q in self.ctx["queries"][:5]:
-            url = "https://data.usajobs.gov/api/search?" + urllib.parse.urlencode({"Keyword": q, "RemoteIndicator": "True", "ResultsPerPage": 100})
+            from ..criteria import CRITERIA
+            params = {"Keyword": q, "ResultsPerPage": 100}
+            if CRITERIA.get("remote_only", True):
+                params["RemoteIndicator"] = "True"
+            url = "https://data.usajobs.gov/api/search?" + urllib.parse.urlencode(params)
             r = self.client.get(url, headers={**h, "User-Agent": os.environ["USAJOBS_EMAIL"]})
             if r.status >= 400:
                 status.errors.append(f"query {q!r}: HTTP {r.status}")

@@ -76,7 +76,7 @@ description_must_mention_one_of = []
 
 
 # ---------------------------------------------------------------------
-#  2. WHERE YOU LIVE  (optional)
+#  2. REMOTE OR IN-PERSON, AND WHERE YOU LIVE  (optional)
 # ---------------------------------------------------------------------
 #  Leave state empty ("") to skip the state check. When set, jobs that
 #  exclude your state, or list allowed states without it, are rejected.
@@ -93,6 +93,11 @@ description_must_mention_one_of = []
 #  One city:   cities = ["Albuquerque"]
 #  No cities:  cities = []
 [where_you_live]
+# Remote jobs only?
+#   "yes" = keep only fully remote jobs; hybrid and on-site jobs are left out. (Starts as "yes".)
+#   "no"  = also keep hybrid and on-site jobs: in your state if you fill in state below,
+#           or anywhere if you leave state empty.
+remote_only = "yes"
 state = ""
 state_abbreviation = ""
 cities = []

@@ -120,6 +120,24 @@ def timezone_requirements(text: str) -> list[str]:
     return out[:3]
 
 
+def _in_person(loc: str, kind: str, ev, data, res) -> RuleResult:
+    """remote_only = "no": hybrid / on-site jobs are kept if they are in the home state (when set)."""
+    from ..criteria import CRITERIA
+    data["arrangement"] = kind
+    home = (CRITERIA.get("home_state") or "").strip()
+    if not home:
+        return res(PASS, f"{kind.capitalize()} job (location: {loc or 'not stated'}); remote-only is off and no home state is set")
+    states = _states_in(loc) if loc else set()
+    cities = [c for c in CRITERIA.get("home_cities") or [] if c.strip()]
+    if home.lower() in states or any(re.search(r"\b" + re.escape(c) + r"\b", loc, re.I) for c in cities):
+        data["nm_eligible"] = True
+        return res(PASS, f"{kind.capitalize()} job in your state ({loc})")
+    if states or (NON_US.search(loc) and not US_RE.search(loc)):
+        data["nm_eligible"] = False
+        return res(FAIL, f"{kind.capitalize()} job outside your state ({loc})")
+    return res(UNCLEAR, f"{kind.capitalize()} job; its location is not clear ({loc or 'not stated'})")
+
+
 def evaluate(location_text: str, workplace_type: str | None, text: str, url: str | None,
              authoritative: bool, structured_locations: list[str] | None = None) -> RuleResult:
     loc = location_text or ""
@@ -132,21 +150,31 @@ def evaluate(location_text: str, workplace_type: str | None, text: str, url: str
         return RuleResult("location", outcome, reason, ev[:5], data)
 
     # ---- 1. fully remote? -------------------------------------------------
+    from ..criteria import CRITERIA
+    remote_only = CRITERIA.get("remote_only", True)
     wt = (workplace_type or "").lower()
     if wt in ("hybrid", "onsite", "on-site", "in_office", "in-office"):
         ev.append(Evidence(f"workplace type: {workplace_type}; location: {loc}", url, src))
+        if not remote_only:
+            return _in_person(loc, "hybrid" if wt == "hybrid" else "on-site", ev, data, res)
         return res(FAIL, f"Workplace type is {workplace_type}")
     if LOC_HYBRID.search(loc):
         ev.append(Evidence(f"location: {loc}", url, src))
+        if not remote_only:
+            return _in_person(loc, "hybrid" if re.search(r"hybrid", loc, re.I) else "on-site", ev, data, res)
         return res(FAIL, "Location label indicates hybrid/on-site")
     for pat in HYBRID_STRONG:
         m = pat.search(text)
         if m and not HYBRID_NEGATION.search(text[max(0, m.start() - 40): m.end() + 40]):
             ev.append(Evidence(excerpt(text[max(0, m.start() - 100): m.end() + 100]), url, src))
+            if not remote_only:
+                return _in_person(loc, "hybrid", ev, data, res)
             return res(FAIL, "Posting requires hybrid/routine office attendance")
     remote = wt == "remote" or bool(REMOTE_RE.search(loc)) or bool(REMOTE_RE.search(text))
     if not remote:
         ev.append(Evidence(f"location: {loc or '(none)'}", url, src))
+        if not remote_only:
+            return _in_person(loc, "on-site", ev, data, res)
         return res(FAIL, "Not advertised as remote")
     m = REMOTE_RE.search(loc) or REMOTE_RE.search(text)
     if m:

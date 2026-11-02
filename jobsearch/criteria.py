@@ -7,10 +7,12 @@ DEFAULTS = {
     "single_min": 0, "range_lower_min": 0, "range_upper_gt": 0,
     "allowed_prehire_certs": [], "cert_filter_on": False,
     "custom_rules": [],   # user-defined requirement rules (see rules/custom.py)
+    "remote_only": True,  # keep only fully remote jobs (setting: remote_only = "yes")
 }
 
 # Starting point when a settings.toml exists: nothing filters until the user sets it.
 NEUTRAL = {
+    "remote_only": True,
     "home_state": "", "home_state_abbr": "", "home_cities": [],
     "single_min": 0, "range_lower_min": 0, "range_upper_gt": 0,
     "allowed_prehire_certs": [], "cert_filter_on": False,
@@ -40,6 +42,7 @@ def from_settings(settings: dict) -> dict:
     """Map the plain-language EDIT_ME_1 settings structure onto criteria keys."""
     out: dict = {}
     w = settings.get("where_you_live", {})
+    out["remote_only"] = _yes(w.get("remote_only", "yes"))
     if w.get("state"):
         out["home_state"] = w["state"]
         out["home_state_abbr"] = w.get("state_abbreviation", "")

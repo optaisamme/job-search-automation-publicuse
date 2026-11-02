@@ -500,3 +500,32 @@ def test_requirement_rule_allows_after_hire():
     rule = {"name": "Food safety", "terms": ["ServSafe"], "reject_when": "required"}
     assert custom.evaluate_rule(rule, segment("Requirements:\n- ServSafe certification required"), URL, True).outcome == FAIL
     assert custom.evaluate_rule(rule, segment("Requirements:\n- Must obtain ServSafe within 30 days of hire"), URL, True).outcome == PASS
+
+
+# ---------------------------------------------------------------- remote_only setting
+def test_remote_only_on_by_default_rejects_onsite():
+    assert L("Chicago, IL", "Join our team in our downtown office.").outcome == FAIL
+    assert L("Denver, CO (Hybrid)", "Great team.").outcome == FAIL
+
+
+def test_remote_only_off_keeps_in_state_jobs():
+    from jobsearch import criteria
+    criteria.configure({"remote_only": False, "home_state": "New Mexico", "home_state_abbr": "NM", "home_cities": ["Albuquerque"]})
+    assert L("Albuquerque, NM", "Join our team in our downtown office.").outcome == PASS
+    assert L("Santa Fe, New Mexico (Hybrid)", "Great team.").outcome == PASS
+    assert L("Chicago, IL", "Join our team in our downtown office.").outcome == FAIL
+    assert L("", "Join our team in our office.").outcome == UNCLEAR
+    assert L("Remote - US", "This is a remote position.").outcome == PASS  # remote jobs still checked as before
+    assert L("Remote - US", "Fully remote. We are unable to hire in the following states: New Mexico.").outcome == FAIL
+
+
+def test_remote_only_off_without_state_keeps_any_location():
+    from jobsearch import criteria
+    criteria.configure({"remote_only": False})
+    assert L("Chicago, IL", "Join our team in our downtown office.").outcome == PASS
+
+
+def test_remote_only_setting_parsed():
+    from jobsearch import criteria
+    assert criteria.from_settings({"where_you_live": {"remote_only": "no"}})["remote_only"] is False
+    assert criteria.from_settings({"where_you_live": {}})["remote_only"] is True

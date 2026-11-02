@@ -44,7 +44,8 @@ description_must_mention_one_of = []
 
    Use groups 2 and 3 for other kinds of jobs, or leave them empty.
 4. Optional, each off until you fill it in:
-   a. Section 2: your state (rejects jobs that exclude it).
+   a. Section 2: remote jobs only (`remote_only = "yes"` to start; change to `"no"` to also
+      get hybrid and on-site jobs in your state), and your state (rejects jobs that exclude it).
    b. Section 3: salary minimums (`0` = no minimum).
    c. Section 4: words the description must mention, title words to skip, and the
       certification check.

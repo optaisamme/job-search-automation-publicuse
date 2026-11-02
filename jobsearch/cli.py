@@ -119,6 +119,8 @@ def main(argv=None) -> int:
         from .criteria import CRITERIA
         C = CRITERIA
         print("SWITCHED ON / OFF IN YOUR SETTINGS")
+        print("Remote jobs only: " + ("ON (hybrid and on-site jobs are left out)" if C.get("remote_only", True)
+                                      else "OFF (hybrid and on-site jobs are kept" + (f" in {C['home_state']})" if C.get("home_state") else ")")))
         print(f"Home state check: {C['home_state'] + ' (' + (C.get('home_state_abbr') or '-') + ')' if C.get('home_state') else 'OFF (no state set)'}")
         if C["single_min"] or C["range_lower_min"] or C["range_upper_gt"]:
             print(f"Salary: single >= ${C['single_min']:,}; range start >= ${C['range_lower_min']:,} and end > ${C['range_upper_gt']:,}")

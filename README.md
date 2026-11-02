@@ -50,7 +50,7 @@ Only files whose names start with **EDIT_ME**. Do not change any other file.
 
 | File | Do I have to? | What it changes |
 |---|---|---|
-| [`config/EDIT_ME_1_job_search_settings.toml`](config/EDIT_ME_1_job_search_settings.toml) | **Yes:** type at least one job title | Which jobs are found and which are left out: job titles, your state, salary, certifications, your own rules |
+| [`config/EDIT_ME_1_job_search_settings.toml`](config/EDIT_ME_1_job_search_settings.toml) | **Yes:** type at least one job title | Which jobs are found and which are left out: job titles, remote only or not, your state, salary, certifications, your own rules |
 | [`config/EDIT_ME_2_my_experience.toml`](config/EDIT_ME_2_my_experience.toml) | No | Your skills, used to show how well each job fits you. It never removes a job |
 | [`.github/workflows/EDIT_ME_3_weekly_schedule.yml`](.github/workflows/EDIT_ME_3_weekly_schedule.yml) | No | The day and time of the automatic weekly search (default: Fridays) |
 
@@ -96,7 +96,8 @@ Both settings files start **empty**: nothing is searched or filtered until you f
    Lever, Ashby, SmartRecruiters), Remotive, Remote OK and Himalayas. Optional: USAJOBS and
    Adzuna, if you add their free keys (see SETUP.md).
 3. **Keeps jobs with your job titles.**
-4. **Applies your rules**: remote, your state, salary, certifications, your own rules. When a
+4. **Applies your rules**: remote only (on unless you turn it off), your state, salary,
+   certifications, your own rules. When a
    posting is unclear, the job is marked **Needs Verification** instead of guessed.
 5. **Checks the application link** to make sure the job is still open.
 6. **Compares each job with your experience.**
