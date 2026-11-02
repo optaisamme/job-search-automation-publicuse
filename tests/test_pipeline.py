@@ -1,0 +1,352 @@
+"""Pipeline, verification, dedupe, newness and notification tests (TEST FIXTURES only)."""
+import json
+
+from jobsearch import pipeline, verify
+from jobsearch.models import RawPosting
+from jobsearch.store import Store
+
+from conftest import FakeClient, gh_job, setup_board, job_page, GOOD_DESC
+
+
+def run(root, client, sources=("ats_watchlist",)):
+    return pipeline.run(root, root / "data/jobs.sqlite", sources=list(sources), use_renderer=False, client=client, fixtures=True)
+
+
+def notifs(root):
+    st = Store(root / "data/jobs.sqlite")
+    return [dict(r) for r in st.db.execute("SELECT * FROM notifications ORDER BY id")]
+
+
+def jobs(root):
+    st = Store(root / "data/jobs.sqlite")
+    return [dict(r) for r in st.db.execute("SELECT * FROM jobs ORDER BY id")]
+
+
+# ---------------------------------------------------------------- verification
+def test_verified_job_qualifies(root):
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    info = run(root, c)
+    j = jobs(root)[0]
+    assert j["status"] == "Qualified", j["reasons"]
+    assert json.loads(j["verification"])["apply_route"] == "employer_ats"
+    assert info["is_baseline"]
+
+
+def test_closed_job_detected_via_ats_api(root):
+    c = FakeClient()
+    job = gh_job(1, "Salesforce Administrator")
+    setup_board(c, [job])
+    del c.routes["https://boards-api.greenhouse.io/v1/boards/acme/jobs/1?pay_transparency=true"]
+    p = RawPosting("greenhouse", job["absolute_url"], "Acme Nonprofit", job["title"], "", ats="greenhouse",
+                   ats_board="acme", ats_job_id="1", canonical_url=job["absolute_url"], apply_url=job["absolute_url"], authoritative=True)
+    assert verify.verify(c, p, use_renderer=False).status == "closed"
+
+
+def test_misleading_http_200_closed_page(root):
+    c = FakeClient()
+    c.set("https://careers.example.org/jobs/77", job_page("Salesforce Administrator", "Example Org", apply=False, closed=True))
+    p = RawPosting("employer_page", "x", "Example Org", "Salesforce Administrator", "", canonical_url="https://careers.example.org/jobs/77",
+                   apply_url="https://careers.example.org/jobs/77", authoritative=True)
+    v = verify.verify(c, p, use_renderer=False)
+    assert v.http_status == 200 and v.status == "closed"
+
+
+def test_generic_careers_redirect(root):
+    c = FakeClient()
+    c.set("https://example.org/jobs/77", "<html><title>Careers</title><body>Join our team! See open roles.</body></html>",
+          final_url="https://example.org/careers")
+    p = RawPosting("employer_page", "x", "Example Org", "Salesforce Administrator", "", canonical_url="https://example.org/jobs/77",
+                   apply_url="https://example.org/jobs/77", authoritative=True)
+    v = verify.verify(c, p, use_renderer=False)
+    assert v.status == "generic" and v.final_url == "https://example.org/careers"
+
+
+def test_redirect_to_different_job(root):
+    c = FakeClient()
+    c.set("https://job-boards.greenhouse.io/acme/jobs/5", job_page("Data Engineer", "Acme"),
+          final_url="https://job-boards.greenhouse.io/acme/jobs/9")
+    p = RawPosting("employer_page", "x", "Acme", "Salesforce Administrator", "", canonical_url="https://job-boards.greenhouse.io/acme/jobs/5",
+                   apply_url="https://job-boards.greenhouse.io/acme/jobs/5", authoritative=True)
+    assert verify.verify(c, p, use_renderer=False).status == "mismatch"
+
+
+def test_page_without_apply_route_not_verified(root):
+    c = FakeClient()
+    c.set("https://example.org/jobs/1", job_page("Salesforce Administrator", "Example Org", apply=False))
+    p = RawPosting("employer_page", "x", "Example Org", "Salesforce Administrator", "", canonical_url="https://example.org/jobs/1",
+                   apply_url="https://example.org/jobs/1", authoritative=True)
+    assert verify.verify(c, p, use_renderer=False).status == "unverified"
+
+
+def test_third_party_listing_with_working_link_qualifies_labeled(root):
+    c = FakeClient()
+    url = "https://remotive.com/remote-jobs/x/salesforce-administrator-9"
+    c.set("https://remotive.com/api/remote-jobs?search=Salesforce+Administrator&limit=100", {"jobs": [{
+        "id": 9, "url": url, "title": "Salesforce Administrator",
+        "company_name": "Unknown Co", "candidate_required_location": "USA", "description": GOOD_DESC}]})
+    c.set(url, job_page("Salesforce Administrator", "Unknown Co"))
+    run(root, c, sources=("remotive",))
+    j = jobs(root)[0]
+    assert j["status"] == "Qualified"
+    assert json.loads(j["verification"])["apply_route"] == "third_party"
+
+
+def test_third_party_listing_with_dead_link_needs_verification(root):
+    c = FakeClient()
+    c.set("https://remotive.com/api/remote-jobs?search=Salesforce+Administrator&limit=100", {"jobs": [{
+        "id": 9, "url": "https://www.linkedin.com/jobs/view/1", "title": "Salesforce Administrator",
+        "company_name": "Unknown Co", "candidate_required_location": "USA", "description": GOOD_DESC}]})
+    run(root, c, sources=("remotive",))
+    assert jobs(root)[0]["status"] == "Needs Verification"
+    assert not any("linkedin.com" in u for u in c.calls)
+
+
+# ---------------------------------------------------------------- dedupe
+def test_duplicate_across_boards(root):
+    c = FakeClient()
+    job = gh_job(1, "Salesforce Administrator")
+    setup_board(c, [job])
+    c.set("https://remotive.com/api/remote-jobs?search=Salesforce+Administrator&limit=100", {"jobs": [{
+        "id": 9, "url": "https://remotive.com/remote-jobs/x/salesforce-administrator-9", "title": "Salesforce Administrator",
+        "company_name": "Acme Nonprofit", "candidate_required_location": "USA", "description": GOOD_DESC}]})
+    c.set("https://remoteok.com/api", [{"legal": "notice"}, {
+        "id": 3, "url": "https://remoteok.com/remote-jobs/3", "company": "Acme Nonprofit", "position": "Sr. Salesforce Administrator",
+        "description": GOOD_DESC, "location": "USA", "apply_url": job["absolute_url"]}])
+    run(root, c, sources=("ats_watchlist", "remotive", "remoteok"))
+    js = jobs(root)
+    gh = [j for j in js if j["ats_job_id"] == "1"]
+    assert len(gh) == 1
+    srcs = json.loads(gh[0]["source_urls"])
+    assert any("remoteok.com" in s for s in srcs)  # third-party copy merged into the employer record
+
+
+# ---------------------------------------------------------------- baseline / newness
+def test_baseline_suppresses_alerts_and_repeat_suppression(root):
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    run(root, c)
+    n = notifs(root)
+    assert len(n) == 1 and n[0]["status"] == "suppressed_baseline"
+    run(root, c)
+    assert len(notifs(root)) == 1  # no repeat
+
+
+def test_new_job_after_baseline_queued_once(root):
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    run(root, c)
+    setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Salesforce Business Systems Analyst")])
+    info = run(root, c)
+    assert info["counts"]["notifications_queued"] == 1
+    pend = [x for x in notifs(root) if x["status"] == "pending"]
+    assert len(pend) == 1 and pend[0]["kind"] == "new"
+    run(root, c)
+    assert len([x for x in notifs(root) if x["status"] == "pending"]) == 1
+
+
+def test_minor_edit_not_new(root):
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    run(root, c)
+    setup_board(c, [gh_job(1, "Salesforce Administrator", desc=GOOD_DESC + "<p>Updated 2026-10-15.</p>")])
+    run(root, c)
+    assert len(jobs(root)) == 1 and len(notifs(root)) == 1
+
+
+def test_newly_verified_label(root):
+    c = FakeClient()
+    nosal = GOOD_DESC.replace("<p>The base salary range for this role is $95,000 - $115,000.</p>", "")
+    setup_board(c, [gh_job(1, "Salesforce Administrator", desc=nosal)])
+    run(root, c)
+    assert jobs(root)[0]["status"] == "Needs Verification"
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    run(root, c)
+    n = [x for x in notifs(root) if x["status"] == "pending"]
+    assert jobs(root)[0]["status"] == "Qualified"
+    assert len(n) == 1 and n[0]["kind"] == "newly_verified"
+
+
+def test_repost_with_new_id_after_notified_is_suppressed(root):
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    run(root, c)  # baseline (counts as notified)
+    setup_board(c, [gh_job(5, "Salesforce Administrator", req="R-200")])
+    del c.routes["https://boards-api.greenhouse.io/v1/boards/acme/jobs/1?pay_transparency=true"]
+    run(root, c)
+    js = jobs(root)
+    new = [j for j in js if j["ats_job_id"] == "5"][0]
+    assert new["repost_of"] is not None and "Possible repost" in new["repost_note"]
+    assert not [x for x in notifs(root) if x["status"] == "pending"]
+    old = [j for j in js if j["ats_job_id"] == "1"][0]
+    assert old["closed_at"] is not None
+
+
+def test_repost_of_unnotified_job_is_flagged_not_hidden(root):
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    run(root, c)
+    setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Salesforce Business Systems Analyst")])
+    run(root, c)  # job 2 queued as new
+    setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(8, "Salesforce Business Systems Analyst")])
+    del c.routes["https://boards-api.greenhouse.io/v1/boards/acme/jobs/2?pay_transparency=true"]
+    run(root, c)
+    j8 = [j for j in jobs(root) if j["ats_job_id"] == "8"][0]
+    assert j8["repost_of"] is not None
+    n = notifs(root)
+    # job 2's undelivered alert is cancelled (closed); job 8 alert carries the repost note
+    assert [x for x in n if x["job_id"] == j8["id"]][0]["status"] == "pending"
+    assert "Possible repost" in json.loads([x for x in n if x["job_id"] == j8["id"]][0]["payload"])["repost_note"]
+
+
+# ---------------------------------------------------------------- delivery retries
+def _publish_first_run(root, c):
+    out = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
+    st = Store(root / "data/jobs.sqlite")
+    for nid in out["notification_ids"]:
+        st.mark_notification(nid, "delivered", channel="github_issue", ref="1")
+    return out
+
+
+def test_first_run_matches_posted_once_as_initial_results(root):
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    run(root, c)
+    out = _publish_first_run(root, c)
+    assert out["draft"]["subject"].startswith("Job search results (first run): 1 matching job")
+    assert "INITIAL RESULTS" in out["draft"]["body"]
+    run(root, c)
+    assert pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)["draft"] is None
+
+
+def test_notification_retry_without_duplicates(root):
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    run(root, c)
+    _publish_first_run(root, c)
+    setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Salesforce Business Systems Analyst")])
+    run(root, c)
+    out = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
+    assert len(out["notification_ids"]) == 1 and out["draft"]["subject"].startswith("Job search results: 1 matching job")
+    nid = out["notification_ids"][0]
+    st = Store(root / "data/jobs.sqlite")
+    st.mark_notification(nid, "failed", error="gmail 500")
+    out2 = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
+    assert out2["notification_ids"] == [nid]  # retried
+    st.mark_notification(nid, "delivered", channel="gmail_draft", ref="draft-1")
+    st.mark_notification(nid, "delivered", channel="gmail_draft", ref="draft-1")  # idempotent
+    out3 = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
+    assert out3["notification_ids"] == [] and out3["draft"] is None
+    import pytest
+    with pytest.raises(ValueError):
+        st.mark_notification(nid, "failed")
+    run(root, c)
+    assert len(notifs(root)) == 2  # still one baseline + one delivered
+
+
+def test_presend_reverification_holds_closed_job(root):
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    run(root, c)
+    _publish_first_run(root, c)
+    setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Salesforce Business Systems Analyst")])
+    run(root, c)
+    c.set("https://job-boards.greenhouse.io/acme/jobs/2", job_page("Salesforce Business Systems Analyst", "Acme Nonprofit", apply=False, closed=True))
+    out = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
+    assert out["notification_ids"] == [] and out["held"]
+
+
+def test_dry_run_does_not_persist(root):
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    pipeline.run(root, root / "data/jobs.sqlite", dry_run=True, sources=["ats_watchlist"], use_renderer=False, client=c, fixtures=True)
+    assert not (root / "data/jobs.sqlite").exists()
+    assert (root / "reports/dry-run/latest.md").exists()
+
+
+def test_report_sections(root):
+    c = FakeClient()
+    bad = GOOD_DESC.replace("$95,000 - $115,000", "$90,000 - $100,000")
+    setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Senior Salesforce Administrator", desc=bad)])
+    info = run(root, c)
+    md = (root / "reports/latest.md").read_text()
+    for h in ("## Qualified matches", "## Needs Verification", "## Rejected", "## Source coverage and limitations", "TEST FIXTURES"):
+        assert h in md
+    assert "upper $100,000 not > $100,000" in md
+
+
+def test_all_blocked_run_is_not_baseline(root):
+    c = FakeClient()  # every URL 404 / nothing returned
+    (root / "data/boards.json").write_text("{}")
+    info = run(root, c, sources=("ats_watchlist", "web_search_leads"))
+    assert not info["is_baseline"]
+    assert not Store(root / "data/jobs.sqlite").baseline_done()
+
+
+def test_closed_lead_marked_closed_not_rejected(root):
+    c = FakeClient()
+    (root / "data/leads.json").write_text(json.dumps([{"url": "https://job-boards.greenhouse.io/acme/jobs/404", "title": "Salesforce Administrator", "employer": "Acme Nonprofit"}]))
+    c.set("https://boards-api.greenhouse.io/v1/boards/acme/jobs?content=true", {"jobs": []})
+    run(root, c, sources=("web_search_leads", "ats_watchlist"))
+    j = jobs(root)[0]
+    assert j["status"] == "Closed" and j["closed_at"]
+
+
+def test_job_board_lead_without_text_is_not_rejected(root):
+    c = FakeClient()
+    (root / "data/leads.json").write_text(json.dumps([{"url": "https://www.linkedin.com/jobs/view/123", "title": "Salesforce Administrator", "employer": "Acme Nonprofit"}]))
+    run(root, c, sources=("web_search_leads",))
+    j = jobs(root)[0]
+    assert j["status"] == "Needs Verification"
+    assert "linkedin.com/jobs/view/123" not in " ".join(c.calls)  # job board never fetched
+
+
+def test_dedupe_ignores_location_label_differences(root):
+    c = FakeClient()
+    job = gh_job(1, "Salesforce Administrator")
+    setup_board(c, [job])
+    c.set("https://remotive.com/api/remote-jobs?search=Salesforce+Administrator&limit=100", {"jobs": [{
+        "id": 9, "url": "https://remotive.com/remote-jobs/x/9", "title": "Salesforce Administrator",
+        "company_name": "Acme Nonprofit", "candidate_required_location": "United States", "description": GOOD_DESC}]})
+    run(root, c, sources=("ats_watchlist", "remotive"))
+    assert len(jobs(root)) == 1
+
+
+def test_one_criterion_near_miss_shared_once(root):
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    run(root, c)  # baseline
+    bad_salary = GOOD_DESC.replace("$95,000 - $115,000", "$90,000 - $100,000")
+    two_fail = bad_salary.replace("anywhere in the United States", "in Canada").replace("Remote - US", "Remote - Canada")
+    setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Senior Salesforce Administrator", desc=bad_salary),
+                    gh_job(3, "Salesforce Business Systems Analyst", desc=two_fail)])
+    c.set("https://boards-api.greenhouse.io/v1/boards/acme/jobs/3?pay_transparency=true",
+          dict(gh_job(3, "Salesforce Business Systems Analyst", desc=two_fail), location={"name": "Remote - Canada"}))
+    run(root, c)
+    out = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
+    body = out["draft"]["body"]
+    assert "NEAR MISSES" in body and "Senior Salesforce Administrator — Acme Nonprofit" in body
+    assert "  • salary:" in body and "Salesforce Business Systems Analyst" not in body  # two failures: not a near miss
+    st = Store(root / "data/jobs.sqlite")
+    for nid in out["notification_ids"]:
+        st.mark_notification(nid, "delivered", channel="chat", ref="t")
+    run(root, c)
+    out2 = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
+    assert out2["draft"] is None  # not repeated
+
+
+def test_near_miss_does_not_block_later_qualified_alert(root):
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    run(root, c)
+    bad = GOOD_DESC.replace("$95,000 - $115,000", "$90,000 - $100,000")
+    setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Senior Salesforce Administrator", desc=bad)])
+    run(root, c)
+    out = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
+    st = Store(root / "data/jobs.sqlite")
+    for nid in out["notification_ids"]:
+        st.mark_notification(nid, "delivered", channel="chat", ref="t")
+    setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Senior Salesforce Administrator")])
+    run(root, c)
+    out2 = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
+    assert out2["draft"] and "NEWLY VERIFIED" in out2["draft"]["body"]
