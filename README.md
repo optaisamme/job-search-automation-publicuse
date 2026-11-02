@@ -45,7 +45,7 @@ Open the **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)** folder.
       sure (for example, no salary listed), with what to check.
    e. **Popular job boards to search yourself:** one-click searches for your job titles on
       LinkedIn, Indeed, Google Jobs, Glassdoor, ZipRecruiter, HiringCafe, Idealist, DiversityJobs,
-      Green Jobs Board, HigherEdJobs, Tech Jobs for Good, Handshake, Built In and Dice.
+      Remote100k, Green Jobs Board, HigherEdJobs, Tech Jobs for Good, Handshake, Built In and Dice.
 2. **One report per search**, numbered and dated, for example
    `REPORT_001_2026-11-06_13-47_UTC.md`. The newest is listed first. Each report also lists
    every job checked in that search and why it did or did not match.
@@ -139,8 +139,8 @@ yourself. If you want a search to run by itself every week, open file 3 above
    under **Issues**.
 
 The tool never applies to jobs or contacts employers. It does not search LinkedIn, Indeed,
-Google Jobs, Glassdoor, ZipRecruiter, HiringCafe, Idealist, DiversityJobs, Green Jobs Board,
-HigherEdJobs, Tech Jobs for Good, Handshake, Built In or Dice: they have no public job API, require signing in, or their terms do not allow
+Google Jobs, Glassdoor, ZipRecruiter, HiringCafe, Idealist, DiversityJobs, Remote100k, Green Jobs
+Board, HigherEdJobs, Tech Jobs for Good, Handshake, Built In or Dice: they have no public job API, require signing in, or their terms do not allow
 automated searching. Instead, the results page has **one-click search links** for each of
 them, built from your job titles, so you can open those searches yourself.
 It does not get around sites that block automated checks.

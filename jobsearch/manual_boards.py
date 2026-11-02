@@ -26,6 +26,8 @@ BOARDS = [
      lambda t, r: f"https://www.idealist.org/en/jobs?q={q(t)}"),
     ("DiversityJobs", "jobs at employers focused on diversity and inclusion",
      lambda t, r: f"https://diversityjobs.com/candidate/job_search/quick/results?keyword={q(t)}" + ("&location=remote" if r else "")),
+    ("Remote100k", "remote jobs paying $100k or more (no keyword search: opens its US remote jobs list)",
+     lambda t, r: "https://remote100k.com/remote-jobs/usa"),
     ("Green Jobs Board", "climate and environmental jobs",
      lambda t, r: f"https://www.greenjobsboard.us/jobs?search={q(t)}"),
     ("HigherEdJobs", "jobs at colleges and universities",
