@@ -78,12 +78,14 @@ reject_when = "mentioned"
 Your profile never rejects a job. It is only used to explain how well each job fits you
 and which requirements are not yet in your profile. It can stay empty.
 
-## Step 4: Turn on the weekly run and run your first search
+## Step 4: Run your first search
 
 Only after Steps 1 and 2 are done (your own copy, and at least one job title saved), follow
 **[HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md)** once. Enabling the
-workflow there (its Step 3) also turns on the automatic weekly run. Use the same guide
-any time you want results without waiting for the weekly run.
+workflow there (its Step 3) lets you start searches. Use the same guide any time you want
+new results.
+
+**Automatic weekly searches stay OFF** until you turn them on (Step 6, item 1).
 
 ## Step 5: Where to see your results
 
@@ -105,11 +107,15 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 
 ## Step 6: Optional changes
 
-1. **Change the day or time (EDIT ME file 3):** edit
-   `.github/workflows/EDIT_ME_3_weekly_schedule.yml`, the line
-   `cron: "47 13 * * 5"`. The format is `minute hour * * day-of-week`, in UTC time
-   (Mountain Time is UTC minus 7 in winter, minus 6 in summer; day 5 = Friday).
-   Example: `"0 15 * * 1"` = Mondays 15:00 UTC.
+1. **Turn on automatic weekly searches (EDIT ME file 3; they start OFF):**
+   a. Open `.github/workflows/EDIT_ME_3_weekly_schedule.yml` and click the pencil icon.
+   b. Change `AUTOMATIC_WEEKLY_SEARCH: "off"` to `AUTOMATIC_WEEKLY_SEARCH: "on"` (keep the quote marks).
+   c. Commit changes. A search now runs by itself every week.
+   d. To change the day or time, edit the line `cron: "47 13 * * 5"` in the same file. The
+      format is `minute hour * * day-of-week`, in UTC time (Mountain Time is UTC minus 7 in
+      winter, minus 6 in summer; day 5 = Friday). Example: `"0 15 * * 1"` = Mondays 15:00 UTC.
+   e. While it is off, GitHub still starts the file at the weekly time, but it stops after a few
+      seconds without searching. The Actions tab shows those as short runs with the search skipped.
 2. **More job sources (free):**
    a. USAJOBS (federal jobs): request a key at https://developer.usajobs.gov
    b. Adzuna: register at https://developer.adzuna.com
@@ -119,7 +125,7 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 
 ## When you change your settings later
 
-1. Edit the EDIT_ME file and commit. Changes take effect on the next run (weekly, or start
+1. Edit the EDIT_ME file and commit. Changes take effect on the next run (weekly if turned on, or start
    one now with [HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md)).
 2. Jobs still listed online are re-checked: a job that now passes is posted as
    **NEWLY VERIFIED**; one that now fails moves to **Rejected** in the report. Jobs

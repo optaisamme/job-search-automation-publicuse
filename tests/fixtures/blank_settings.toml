@@ -18,8 +18,8 @@
 #  EVERYTHING ELSE IS OPTIONAL and stays OFF until you fill it in.
 #
 #  WHAT HAPPENS AFTER YOU SAVE
-#    - Your changes are used on the NEXT run (the weekly run, or right away
-#      if you press "Run workflow" on the Actions tab).
+#    - Your changes are used on the NEXT run (right away if you press "Run
+#      workflow" on the Actions tab, or the weekly run if you turned it on).
 #    - The first step of every run, "Check settings files", lists exactly
 #      what is ON and OFF. If something is typed wrong, the run stops there
 #      and names the line to fix.

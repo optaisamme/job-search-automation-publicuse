@@ -1,25 +1,39 @@
 # =====================================================================
-#  EDIT ME  (file 3 of 3, optional): WHEN THE SEARCH RUNS
+#  EDIT ME  (file 3 of 3, optional): AUTOMATIC WEEKLY SEARCHES
 # =====================================================================
-#  The only line you may want to change is the "cron" line below.
-#  Format: "minute hour * * day-of-week", in UTC time.
-#    - Mountain Time = UTC minus 7 in winter, minus 6 in summer.
-#    - Days: 0 = Sunday, 1 = Monday ... 5 = Friday, 6 = Saturday.
-#  Examples:
-#    "47 13 * * 5"  = Fridays at 13:47 UTC (6:47 AM Mountain in winter)
-#    "0 15 * * 1"   = Mondays at 15:00 UTC (8:00 AM Mountain in winter)
-#    "0 15 * * 1,4" = Mondays and Thursdays at 15:00 UTC
+#  AUTOMATIC WEEKLY SEARCHES START OFF.
+#  Searches only run when you start one yourself (see HOW_TO_RUN_A_SEARCH_NOW.md).
+#
+#  TO TURN ON AUTOMATIC WEEKLY SEARCHES:
+#    1. Click the pencil icon (top right of this file).
+#    2. Find the line   AUTOMATIC_WEEKLY_SEARCH: "off"   below.
+#    3. Change "off" to "on"   (keep the quote marks).
+#    4. Click "Commit changes", then "Commit changes" again.
+#  To turn them off again, change "on" back to "off".
+#
+#  TO CHANGE THE DAY OR TIME (only matters when turned on):
+#    Edit the "cron" line below. Format: "minute hour * * day-of-week", in UTC time.
+#      - Mountain Time = UTC minus 7 in winter, minus 6 in summer.
+#      - Days: 0 = Sunday, 1 = Monday ... 5 = Friday, 6 = Saturday.
+#    Examples:
+#      "47 13 * * 5"  = Fridays at 13:47 UTC (6:47 AM Mountain in winter)
+#      "0 15 * * 1"   = Mondays at 15:00 UTC (8:00 AM Mountain in winter)
+#      "0 15 * * 1,4" = Mondays and Thursdays at 15:00 UTC
+#
 #  Do not change anything else in this file.
-#  To run a search now instead of waiting: see HOW_TO_RUN_A_SEARCH_NOW.md.
 # =====================================================================
 
 name: Weekly job search
 
 on:
   schedule:
-    # Fridays 13:47 UTC = 6:47 AM Mountain Standard Time (7:47 AM during daylight time).
+    # The weekly time. It only starts a search when AUTOMATIC_WEEKLY_SEARCH is "on".
     - cron: "47 13 * * 5"
   workflow_dispatch: {}   # adds a "Run workflow" button on the Actions tab
+
+env:
+  # ===== EDIT ME: "off" = no automatic weekly searches; "on" = search every week at the time above =====
+  AUTOMATIC_WEEKLY_SEARCH: "off"
 
 permissions:
   contents: write   # save results back to this repository
@@ -30,7 +44,28 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Decides whether to search. A search you start yourself always runs.
+  # A weekly (scheduled) start only runs when AUTOMATIC_WEEKLY_SEARCH is "on".
+  check-automatic-search-switch:
+    runs-on: ubuntu-24.04
+    outputs:
+      run: ${{ steps.decide.outputs.run }}
+    steps:
+      - id: decide
+        run: |
+          switch=$(echo "$AUTOMATIC_WEEKLY_SEARCH" | tr '[:upper:]' '[:lower:]')
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$switch" != "on" ]; then
+            echo "Automatic weekly searches are OFF, so no search ran."
+            echo "To turn them on, set AUTOMATIC_WEEKLY_SEARCH to \"on\" in .github/workflows/EDIT_ME_3_weekly_schedule.yml."
+            echo "### Automatic weekly searches are OFF. No search ran. To turn them on, edit EDIT_ME_3_weekly_schedule.yml." >> "$GITHUB_STEP_SUMMARY"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
   search:
+    needs: check-automatic-search-switch
+    if: needs.check-automatic-search-switch.outputs.run == 'true'
     runs-on: ubuntu-24.04   # pinned: ubuntu-latest is moving to Ubuntu 26.04
     timeout-minutes: 60
     steps:

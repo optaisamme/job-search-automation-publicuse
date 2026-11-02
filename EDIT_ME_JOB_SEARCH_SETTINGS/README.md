@@ -7,7 +7,7 @@ Do not edit any other file.
 |---|---|---|---|
 | 1 | [`EDIT_ME_1_job_search_settings.toml`](EDIT_ME_1_job_search_settings.toml) | **Yes** (job titles) | Which jobs are found and which are rejected: job titles, your state, salary, certifications, your own rules |
 | 2 | [`EDIT_ME_2_my_experience.toml`](EDIT_ME_2_my_experience.toml) | No | Your skills, used to explain how well each job fits you. Never rejects a job |
-| 3 | [`../.github/workflows/EDIT_ME_3_weekly_schedule.yml`](../.github/workflows/EDIT_ME_3_weekly_schedule.yml) | No | Day and time of the weekly search (default: Fridays) |
+| 3 | [`../.github/workflows/EDIT_ME_3_weekly_schedule.yml`](../.github/workflows/EDIT_ME_3_weekly_schedule.yml) | No | Automatic weekly searches (start **OFF**; change `"off"` to `"on"` to turn them on), and their day and time of the weekly search (default: Fridays) |
 
 ## How to edit a file
 
@@ -37,7 +37,7 @@ numbered, dated report per search. New results are also posted under the **Issue
 
 ## What happens after you save
 
-1. Changes are used on the **next run**: the weekly run, or right away if you start one
+1. Changes are used on the **next run**: the weekly run (if you turned it on), or right away if you start one
    yourself in your own copy (step-by-step: [HOW_TO_RUN_A_SEARCH_NOW.md](../HOW_TO_RUN_A_SEARCH_NOW.md)).
 2. The first step of each run, **Check settings files**, lists exactly what is **ON** and
    **OFF**. If something is typed wrong, or no job title is filled in, the run stops there
