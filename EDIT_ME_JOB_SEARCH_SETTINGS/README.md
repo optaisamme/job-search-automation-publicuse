@@ -21,11 +21,9 @@ Do not edit any other file.
 
 ## Minimum setup (5 minutes)
 
-In file 1, section 1, "Job title group 1", fill in a name and at least one title:
+In file 1, section 1, "Job title group 1", type at least one job title:
 
 ```toml
-name = "Salesforce Administrator"
-track = "A"
 titles = ["Salesforce Administrator", "Salesforce Admin"]
 ```
 

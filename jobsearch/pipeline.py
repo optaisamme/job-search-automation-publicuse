@@ -62,7 +62,7 @@ def load_config(root: Path) -> tuple[dict, dict]:
         criteria.configure(criteria.from_settings(settings), base=criteria.NEUTRAL)
         groups = [g for g in ((settings.get("job_titles") or {}).get("group") or []) if any(t.strip() for t in g.get("titles", []))]
         # With a settings file, only what the user wrote is used: no built-in titles or filters.
-        prof["titles"] = [{"track": g.get("track") or "A", "family": (g.get("name") or "").strip() or f"Job titles {i}",
+        prof["titles"] = [{"track": (g.get("track") or "").strip(), "family": (g.get("name") or "").strip() or f"Group {i}",
                            "plain_titles": [t for t in g.get("titles", []) if t.strip()],
                            "require_any": g.get("description_must_mention_one_of", []), "include": []}
                           for i, g in enumerate(groups, 1)]

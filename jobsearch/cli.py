@@ -138,7 +138,7 @@ def main(argv=None) -> int:
         if "exclude_plain" in tr:
             print(f"Titles skipped: {', '.join(tr['exclude_plain']) or 'OFF (none)'}")
         for t in prof["titles"]:
-            print(f"Title group [{t['track']}] {t['family']}: {', '.join(t.get('plain_titles') or ['(advanced patterns)'])}")
+            print(f"Job title {t['family']}: {', '.join(t.get('plain_titles') or [])}")
         print(f"Experience profile: {len(exp.get('skills', []))} skills, {len(exp.get('gaps', []))} gap areas")
         if not prof["titles"]:
             print("NO JOB TITLES SET YET: open EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml, go to section 1, type at least one job title "

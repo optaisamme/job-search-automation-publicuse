@@ -53,7 +53,7 @@ def render_item(p: dict, kind: str) -> str:
     lines = []
     head = f"[{label}] {p['title']} — {p['employer']}"
     lines.append(head)
-    lines.append(f"Track: {p['track']} ({p['family']})")
+    lines.append(f"Job title group: {p['family']}" + (f" (track {p['track']})" if p.get("track") else ""))
     lines.append(f"Advertised annual base salary: {p['salary']}")
     lines.append(f"Remote / location eligibility: {p['remote_eligibility']}  [location: {p['location_label']}]")
     lines.append("Travel: " + ("; ".join(p["travel"]) if p["travel"] else "none stated"))

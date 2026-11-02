@@ -42,35 +42,26 @@
 #  inside square brackets:   ["Salesforce Administrator", "Salesforce Admin"]
 #
 #  A FILLED-IN GROUP LOOKS LIKE THIS:
-#     name = "Salesforce Administrator"
-#     track = "A"
 #     titles = ["Salesforce Administrator", "Salesforce Admin"]
 #     description_must_mention_one_of = []
 #
-#  name   = a label for the group (shown in results)
-#  track  = any label you like, for example "A" = main target, "B" = related
 #  titles = the job titles to look for
 #  description_must_mention_one_of = optional extra condition: the job
 #           description must also mention one of these words. [] = off.
+#  Results show which group a job came from: Group 1, Group 2 or Group 3.
 
 # ---- Job title group 1 ----
 [[job_titles.group]]
-name = ""
-track = "A"
 titles = []
 description_must_mention_one_of = []
 
 # ---- Job title group 2 ----
 [[job_titles.group]]
-name = ""
-track = "A"
 titles = []
 description_must_mention_one_of = []
 
 # ---- Job title group 3 ----
 [[job_titles.group]]
-name = ""
-track = "B"
 titles = []
 description_must_mention_one_of = []
 

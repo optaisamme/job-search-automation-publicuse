@@ -34,7 +34,7 @@ def _job_md(row, detail=True) -> str:
     reasons = _j(row, "reasons", []) or []
     out = []
     out.append(f"### {row['title']} — {row['employer']}")
-    out.append(f"Track: {row['track']} / {row['family']}  ")
+    out.append(f"Job title group: {row['family']}" + (f" (track {row['track']})" if row["track"] else "") + "  ")
     out.append(f"Status: **{row['status']}** — " + "; ".join(reasons))
     out.append(f"Canonical URL: {row['canonical_url'] or 'n/a'}")
     route = ver.get("apply_route")

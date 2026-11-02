@@ -33,11 +33,9 @@ A list is typed as items in quotes, separated by commas, inside brackets:
 
 1. In your new repository, open the `EDIT_ME_JOB_SEARCH_SETTINGS` folder, then `EDIT_ME_1_job_search_settings.toml`.
 2. Click the pencil icon (Edit).
-3. **Required, section 1:** in "Job title group 1", type a name and at least one title:
+3. **Required, section 1:** in "Job title group 1", type at least one job title:
 
 ```toml
-name = "Salesforce Administrator"
-track = "A"
 titles = ["Salesforce Administrator", "Salesforce Admin"]
 description_must_mention_one_of = []
 ```

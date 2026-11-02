@@ -462,14 +462,14 @@ def test_fill_in_slots_with_yes_no(tmp_path):
     root = Path(__file__).resolve().parent.parent
     text = (root / "tests/fixtures/blank_settings.toml").read_text()
     # simulate a user filling group 1 and rule 1 in place
-    text = text.replace('# ---- Job title group 1 ----\n[[job_titles.group]]\nname = ""\ntrack = "A"\ntitles = []',
-                        '# ---- Job title group 1 ----\n[[job_titles.group]]\nname = "Admin"\ntrack = "A"\ntitles = ["Salesforce Administrator"]', 1)
+    text = text.replace('# ---- Job title group 1 ----\n[[job_titles.group]]\ntitles = []',
+                        '# ---- Job title group 1 ----\n[[job_titles.group]]\ntitles = ["Salesforce Administrator"]', 1)
     text = text.replace('# ---- Rule 1 ----\n[[filters.requirement_rule]]\nname = ""\non = "no"\nterms = []',
                         '# ---- Rule 1 ----\n[[filters.requirement_rule]]\nname = "Clearance"\non = "yes"\nterms = ["security clearance"]', 1)
     assert 'titles = ["Salesforce Administrator"]' in text and 'on = "yes"' in text
     try:
         prof, exp = pipeline.load_config(_settings_root(tmp_path, text))
-        assert [t["family"] for t in prof["titles"]] == ["Admin"]
+        assert [t["family"] for t in prof["titles"]] == ["Group 1"]  # no name needed
         assert criteria.CRITERIA["custom_rules"] == [{"name": "Clearance", "on": True, "terms": ["security clearance"], "reject_when": "required"}]
     finally:
         criteria.configure(None)
