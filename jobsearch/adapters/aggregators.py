@@ -221,6 +221,70 @@ class WorkingNomadsAdapter(Adapter):
         return out
 
 
+class JobspressoAdapter(Adapter):
+    # https://jobspresso.co — public RSS feed of the newest hand-checked remote jobs.
+    name = "jobspresso"
+
+    def search(self, status: SourceStatus) -> list[RawPosting]:
+        import html as _html
+        import re as _re
+        import xml.etree.ElementTree as ET
+        r = self.client.get("https://jobspresso.co/feed/?post_type=job_listing")
+        if r.status >= 400:
+            raise RuntimeError(f"HTTP {r.status}")
+        out = []
+        for it in ET.fromstring(r.body).findall("./channel/item"):
+            f = {c.tag.split("}")[-1]: (c.text or "").strip() for c in it}
+            # creator looks like "Figma<br>⚲&nbsp;United States": company, then location
+            parts = [x.strip(" \u26b2\xa0") for x in _re.split(r"<br\s*/?>", _html.unescape(f.get("creator", "")))]
+            out.append(RawPosting(
+                source="jobspresso", source_url=f.get("link", ""), employer=parts[0] if parts else "", title=f.get("title", ""),
+                description_text=html_to_text(f.get("encoded") or f.get("description")),
+                location_text=parts[1] if len(parts) > 1 else "", workplace_type="remote", apply_url=f.get("link"),
+                extra={"third_party_published": f.get("pubDate")},
+            ))
+        return out
+
+
+class JoobleAdapter(Adapter):
+    # https://jooble.org/api/about — free key (request on that page). Jooble collects jobs from many job sites.
+    # Request format: POST https://jooble.org/api/<key> with {"keywords": ..., "location": ...}.
+    name = "jooble"
+    env_keys = ("JOOBLE_API_KEY",)
+
+    def search(self, status: SourceStatus) -> list[RawPosting]:
+        from ..criteria import CRITERIA
+        out, seen = [], set()
+        url = "https://jooble.org/api/" + os.environ["JOOBLE_API_KEY"].strip()
+        remote = CRITERIA.get("remote_only", True)
+        where = "Remote" if remote else (CRITERIA.get("home_state") or "United States")
+        for q in self.ctx["queries"][:8]:
+            for page in (1, 2):
+                r = self.client.post_json(url, {"keywords": q, "location": where, "page": str(page)})
+                if r.status >= 400:
+                    status.errors.append(f"query {q!r}: HTTP {r.status}")
+                    break
+                jobs = (r.json() or {}).get("jobs") or []
+                for j in jobs:
+                    jid = j.get("id") or j.get("link")
+                    if not jid or jid in seen:
+                        continue
+                    seen.add(jid)
+                    typ = (j.get("type") or "")
+                    out.append(RawPosting(
+                        source="jooble", source_url=j.get("link", ""), employer=j.get("company", ""), title=" ".join(html_to_text(j.get("title")).split()),
+                        description_text=html_to_text(j.get("snippet")) + (f"\nSalary: {j.get('salary')}" if j.get("salary") else ""),
+                        location_text=j.get("location", ""), apply_url=j.get("link"),
+                        workplace_type="remote" if "remote" in (j.get("location") or "").lower() else None,
+                        employment_type=typ or None,
+                        extra={"third_party_salary": j.get("salary"), "third_party_published": j.get("updated"),
+                               "found_on": j.get("source")},
+                    ))
+                if len(jobs) < 20:
+                    break
+        return out
+
+
 class AdzunaAdapter(Adapter):
     # https://developer.adzuna.com — free key. Salary may be model-predicted: never used.
     name = "adzuna"

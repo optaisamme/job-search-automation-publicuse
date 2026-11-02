@@ -475,3 +475,20 @@ def test_himalayas_feed_listing_counts_when_site_blocks_checks():
     assert feed_listing(p, blocked, "now") is None            # no closing date
     other = RawPosting("remoteok", "u", "X", "Data Analyst", "", extra={"expiry": str(int(time.time()) + 86400)})
     assert feed_listing(other, blocked, "now") is None        # only Himalayas
+
+
+def test_jobspresso_and_jooble_parse(monkeypatch):
+    from jobsearch.adapters.aggregators import JobspressoAdapter, JoobleAdapter
+    from jobsearch.adapters.base import SourceStatus
+    c = FakeClient()
+    c.set("https://jobspresso.co/feed/?post_type=job_listing",
+          '<rss xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><item><title>Data Analyst</title>'
+          '<link>https://jobspresso.co/job/data-analyst</link><dc:creator>Figma&lt;br&gt;&#9906;&amp;nbsp;United States</dc:creator>'
+          '<description>&lt;p&gt;x&lt;/p&gt;</description></item></channel></rss>')
+    p = JobspressoAdapter(c, {"queries": []}).search(SourceStatus("jobspresso"))[0]
+    assert (p.employer, p.location_text, p.title) == ("Figma", "United States", "Data Analyst")
+    monkeypatch.setenv("JOOBLE_API_KEY", "k")
+    c.set("https://jooble.org/api/k", {"totalCount": 1, "jobs": [{"id": 5, "title": "<b>Data</b> Analyst", "company": "J Co",
+          "location": "Remote", "snippet": "x", "salary": "$100k", "link": "https://jooble.org/desc/5", "source": "example.com"}]})
+    j = JoobleAdapter(c, {"queries": ["Data Analyst"]}).search(SourceStatus("jooble"))
+    assert len(j) == 1 and j[0].title == "Data Analyst" and j[0].workplace_type == "remote"

@@ -111,12 +111,17 @@ yourself. If you want a search to run by itself every week, open file 3 above
 ## How a search works
 
 1. **Checks your settings** and lists what is ON and OFF.
-2. **Collects public job listings** from Himalayas, The Muse, Remote OK, Jobicy, We Work
-   Remotely, Working Nomads and Remotive. Several of these send their newest jobs whatever
-   your search words are, so each search looks at more than 1,000 listings. It also checks the
-   job pages of companies you add in settings section 7, "Companies to watch," and of
-   companies it found in earlier searches. Optional: USAJOBS and Adzuna, if you add their free
-   keys (see SETUP.md).
+2. **Collects public job listings** from these job sites:
+   a. **No setup needed:** Himalayas, The Muse, Remote OK, Jobicy, We Work Remotely, Working
+      Nomads, Jobspresso and Remotive. Several send their newest jobs whatever your search
+      words are, so each search looks at more than 1,000 listings.
+   b. **Free key needed (recommended, see SETUP.md Step 6):** Adzuna and Jooble (large sites
+      that collect jobs from many other job sites) and USAJOBS (federal jobs).
+   c. **Company careers pages** (Greenhouse, Lever, Ashby, SmartRecruiters), checked in two ways:
+      1. **Automatically:** when a job found on a job site links to the company's own careers
+         page, that company is remembered and all its jobs are checked in later searches.
+      2. **Companies you add** in settings section 7, "Companies to watch." This is optional;
+         if you leave it empty, everything above still runs.
 3. **Keeps jobs with your job titles.**
 4. **Applies your rules**: remote only (on unless you turn it off), your state, salary,
    certifications, your own rules. When a
@@ -130,7 +135,8 @@ yourself. If you want a search to run by itself every week, open file 3 above
    under **Issues**.
 
 The tool never applies to jobs or contacts employers. It does not read LinkedIn, Indeed,
-Glassdoor, ZipRecruiter or Built In, because their terms do not allow automated access.
+Glassdoor, ZipRecruiter, Built In, HiringCafe, Handshake, Wellfound or Dice: they have no
+public job API, require signing in, or their terms do not allow automated access.
 It does not get around sites that block automated checks.
 
 ---

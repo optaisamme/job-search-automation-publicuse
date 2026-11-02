@@ -189,11 +189,20 @@ keywords = []
 
 
 # ---------------------------------------------------------------------
-#  7. COMPANIES TO WATCH  (optional)
+#  7. COMPANIES TO WATCH  (optional: fine to leave empty)
 # ---------------------------------------------------------------------
-#  Add employers you want checked every search. Paste the link to the
-#  company's job page. Every job there with one of your job titles is
-#  checked against your rules.
+#  IF YOU LEAVE THIS EMPTY: nothing breaks. Every search still checks all
+#  the job sites (Himalayas, The Muse, Remote OK and the others listed in
+#  the README). You simply get no extra jobs from specific companies.
+#
+#  WHAT IT ADDS: many employers post jobs only on their own careers page,
+#  not on job sites. Paste a company's careers-page link here and EVERY
+#  job at that company is checked each search, not only the ones that
+#  reached a job site.
+#
+#  ALSO AUTOMATIC: when a job found on a job site links to a company's own
+#  careers page, that company is remembered and its careers page is checked
+#  in later searches too. You do not need to add those companies here.
 #
 #  HOW TO FIND THE LINK
 #    1. Open the company's website and click "Careers" or "Jobs".

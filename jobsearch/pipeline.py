@@ -12,7 +12,8 @@ from dataclasses import asdict
 from pathlib import Path
 
 from .adapters.aggregators import (RemotiveAdapter, RemoteOKAdapter, HimalayasAdapter, TheMuseAdapter, JobicyAdapter,
-                                   WeWorkRemotelyAdapter, WorkingNomadsAdapter, AdzunaAdapter, UsaJobsAdapter)
+                                   WeWorkRemotelyAdapter, WorkingNomadsAdapter, JobspressoAdapter, JoobleAdapter,
+                                   AdzunaAdapter, UsaJobsAdapter)
 from .adapters.ats import AtsWatchlistAdapter, FETCHERS
 from .adapters.base import SourceStatus
 from .adapters.leads import LeadsAdapter
@@ -31,8 +32,8 @@ log = logging.getLogger("jobsearch.pipeline")
 ADAPTERS = {  # order matters: leads first so newly discovered boards are scanned in the same run
     "web_search_leads": LeadsAdapter, "ats_watchlist": AtsWatchlistAdapter, "remotive": RemotiveAdapter,
     "remoteok": RemoteOKAdapter, "himalayas": HimalayasAdapter, "themuse": TheMuseAdapter, "jobicy": JobicyAdapter,
-    "weworkremotely": WeWorkRemotelyAdapter, "workingnomads": WorkingNomadsAdapter,
-    "adzuna": AdzunaAdapter, "usajobs": UsaJobsAdapter,
+    "weworkremotely": WeWorkRemotelyAdapter, "workingnomads": WorkingNomadsAdapter, "jobspresso": JobspressoAdapter,
+    "jooble": JoobleAdapter, "adzuna": AdzunaAdapter, "usajobs": UsaJobsAdapter,
 }
 
 

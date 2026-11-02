@@ -14,12 +14,16 @@ SOURCE_NOTES = {
     "Glassdoor": "Not used: no public job API; it requires signing in.",
     "ZipRecruiter": "Not used: its job-search API is only for business partners.",
     "Built In": "Not used: no public job API.",
+    "HiringCafe": "Not used: no public job API.",
+    "Handshake": "Not used: requires signing in.",
+    "Wellfound": "Not used: no public job API.",
+    "Dice": "Not used: no public job API.",
 }
 
 SOURCE_NAMES = {
-    "web_search_leads": "Web search leads", "ats_watchlist": "Companies to watch (and companies found earlier)",
+    "web_search_leads": "Web search leads", "ats_watchlist": "Company job pages (section 7, plus companies found automatically)",
     "remotive": "Remotive", "remoteok": "Remote OK", "himalayas": "Himalayas", "themuse": "The Muse",
-    "jobicy": "Jobicy", "weworkremotely": "We Work Remotely", "workingnomads": "Working Nomads",
+    "jobicy": "Jobicy", "weworkremotely": "We Work Remotely", "workingnomads": "Working Nomads", "jobspresso": "Jobspresso", "jooble": "Jooble",
     "adzuna": "Adzuna", "usajobs": "USAJOBS",
 }
 
