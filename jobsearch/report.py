@@ -18,6 +18,8 @@ SOURCE_NOTES = {
     "Idealist": "Not used: its terms do not allow automated searching.",
     "Tech Jobs for Good": "Not used: its terms do not allow automated access.",
     "DiversityJobs": "Not used: its terms do not allow automated access.",
+    "Green Jobs Board": "Not used: its terms do not allow collecting data from the site.",
+    "HigherEdJobs": "Not used: the site blocks automated access.",
     "Handshake": "Not used: requires signing in.",
     "Wellfound": "Not used: no public job API.",
     "Dice": "Not used: no public job API.",
