@@ -213,3 +213,56 @@ def _check_page(client, p: RawPosting, url: str, use_renderer: bool, checked: st
     v.apply_route = "third_party" if (is_job_board(v.final_url) or p.extra.get("intermediary")) else ("employer_ats" if is_ats(v.final_url) else "employer_site")
     v.detail = ("application form present" if has_form else "apply control present") + ("; rendered with headless browser" if rendered else "")
     return v
+
+
+def plain_link_reason(ver: Verification | None) -> str:
+    """Explain a link-check result in everyday words (shown in results and reports)."""
+    if ver is None:
+        return "Application link: not checked yet."
+    d = ver.detail or ""
+    site = host_of(ver.final_url or "") or ""
+    m = re.search(r"https?://([^/\s]+)", d)
+    if m:
+        site = m.group(1).lower()
+    site = site.removeprefix("www.") or "the job"
+    st = ver.status
+    if st == "blocked":
+        if "CAPTCHA" in d or "challenge" in d:
+            why = "the site showed a 'prove you are human' page"
+        elif "robots.txt" in d:
+            why = "the site's rules for automated tools asked it not to open this page"
+        elif "network policy" in d or "proxy" in d:
+            why = "the computer running the search was not allowed to reach it"
+        elif "HTTP 401" in d:
+            why = "the site asked for a sign-in (error 401)"
+        elif "HTTP 403" in d:
+            why = "the site refused (error 403, \"access forbidden\")"
+        else:
+            why = "the site refused"
+        return (f"Application link not checked: the {site} website does not allow automated checks. When this tool tried to open the job page, {why}. "
+                "This tool does not get around such blocks. Open the link yourself to see if the job is still open.")
+    if st == "closed":
+        if "404" in d or "410" in d:
+            return "The job appears to be closed: its page no longer exists (error 404)."
+        if "ATS API" in d:
+            return "The job appears to be closed: the employer's hiring system no longer lists it."
+        return "The job appears to be closed: its page says it is closed, expired or filled."
+    if st == "generic":
+        return "Application link problem: the link now goes to a general careers page, not to this job."
+    if st == "mismatch":
+        return "Application link problem: the link now goes to a different job, or the page does not name this job."
+    if st == "js_required":
+        return ("Application link not checked: the job page only loads in a full web browser, and this search "
+                "could not read it. Open the link yourself.")
+    if st == "error":
+        return "Application link not checked: the job page could not be opened (a temporary error). It will be tried again next search."
+    if st == "unverified":
+        if "not fetched" in d or "terms/login" in d:
+            return (f"Application link not checked: the only link is on {site}, which this tool does not open "
+                    "(its terms do not allow automated access, or it requires signing in).")
+        if "no application or job-detail URL" in d:
+            return "Application link not found: no link to this job was found."
+        if "no application form or apply control" in d:
+            return "Application link not confirmed: the job page was found, but it has no Apply button or application form."
+        return "Application link not confirmed."
+    return f"Application link: {st}."

@@ -7,7 +7,7 @@ Do not edit any other file.
 |---|---|---|---|
 | 1 | [`EDIT_ME_1_job_search_settings.toml`](EDIT_ME_1_job_search_settings.toml) | **Yes** (job titles) | Which jobs are found and which are rejected: job titles, your state, salary, certifications, your own rules |
 | 2 | [`EDIT_ME_2_my_experience.toml`](EDIT_ME_2_my_experience.toml) | No | Your skills, used to explain how well each job fits you. Never rejects a job |
-| 3 | [`../.github/workflows/EDIT_ME_3_weekly_schedule.yml`](../.github/workflows/EDIT_ME_3_weekly_schedule.yml) | No | Automatic weekly searches (start **OFF**; change `"off"` to `"on"` to turn them on), and their day and time of the weekly search (default: Fridays) |
+| 3 | [`../.github/workflows/EDIT_ME_3_weekly_schedule.yml`](../.github/workflows/EDIT_ME_3_weekly_schedule.yml) | No | Automatic weekly searches (start **OFF**; change `"off"` to `"on"` to turn them on), and their day and time (default: Fridays) |
 
 ## How to edit a file
 

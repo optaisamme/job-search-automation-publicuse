@@ -257,7 +257,7 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
         if status in (REJECTED, NEEDS_VERIFICATION):
             issues = [f"{r.rule}: {r.reason}" for r in ev["rules"] if r.outcome != "pass"]
             if ver is None or ver.status != "verified":
-                issues.append("application link: " + (f"{ver.status} — {ver.detail}" if ver else "not checked"))
+                issues.append(verifymod.plain_link_reason(ver))
             if len(issues) == 1:
                 row = store.job(jid)
                 link = (ver.final_url if ver and ver.final_url else None) or row["canonical_url"] or row["apply_url"] \
@@ -358,7 +358,7 @@ def prepare_outbox(root: Path, db_path: Path, client: HttpClient | None = None, 
                        apply_url=row["apply_url"], authoritative=bool(row["authoritative"]))
         ver = verifymod.verify(client, p, use_renderer=use_renderer)
         if ver.status != "verified":
-            reason = f"pre-send re-verification failed: {ver.status} {ver.detail}"
+            reason = "Checked again just before posting: " + verifymod.plain_link_reason(ver)
             store.mark_notification(n["id"], "held", error=reason)
             new_status = "Closed" if ver.status == "closed" else NEEDS_VERIFICATION
             store.db.execute("UPDATE jobs SET status=?, reasons=?, verification=?, last_verified=? WHERE id=?",

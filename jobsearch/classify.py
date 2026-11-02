@@ -32,7 +32,8 @@ def decide(rules: list[RuleResult], verification: Verification | None, authorita
     reasons += [f"{r.rule}: {r.reason}" for r in unclear]
     if verification is None or verification.status != "verified":
         st = verification.status if verification else "not verified"
-        reasons.append(f"application route: {st}" + (f" ({verification.detail})" if verification and verification.detail else ""))
+        from .verify import plain_link_reason
+        reasons.append(plain_link_reason(verification))
     # Owner policy (2026-11-02): third-party listings and outside-website application links
     # may qualify. They are labeled "THIRD-PARTY" everywhere they are shown (never employer-direct).
     if reasons:

@@ -368,3 +368,12 @@ def test_results_folder_numbered_reports(root):
     assert index.index(names[1]) < index.rindex(names[0])  # newest first
     rep = (folder / names[1]).read_text()
     assert "Every job checked in this search" in rep and "Jobs that match all your rules (1)" in rep
+
+
+def test_plain_language_link_messages():
+    from jobsearch.verify import plain_link_reason
+    from jobsearch.models import Verification
+    m = plain_link_reason(Verification("blocked", detail="HTTP 403 at https://himalayas.app/companies/x/jobs/y?utm_source=api"))
+    assert "himalayas.app website does not allow automated checks" in m and "error 403" in m and "Open the link yourself" in m
+    assert "HTTP 403 at" not in m
+    assert "no longer exists" in plain_link_reason(Verification("closed", detail="HTTP 404"))
