@@ -24,6 +24,8 @@ BOARDS = [
      lambda t, r: "https://hiring.cafe/?searchState=" + q(json.dumps({"searchQuery": t}))),
     ("Idealist", "nonprofit and social-impact jobs",
      lambda t, r: f"https://www.idealist.org/en/jobs?q={q(t)}"),
+    ("DiversityJobs", "jobs at employers focused on diversity and inclusion",
+     lambda t, r: f"https://diversityjobs.com/candidate/job_search/quick/results?keyword={q(t)}" + ("&location=remote" if r else "")),
     ("Tech Jobs for Good", "tech jobs at mission-driven organizations",
      lambda t, r: f"https://techjobsforgood.com/jobs/?q={q(t)}"),
     ("Handshake", "jobs for students and recent graduates (sign in with your school account)",

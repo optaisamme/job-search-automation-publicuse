@@ -17,6 +17,7 @@ SOURCE_NOTES = {
     "HiringCafe": "Not used: no public job API.",
     "Idealist": "Not used: its terms do not allow automated searching.",
     "Tech Jobs for Good": "Not used: its terms do not allow automated access.",
+    "DiversityJobs": "Not used: its terms do not allow automated access.",
     "Handshake": "Not used: requires signing in.",
     "Wellfound": "Not used: no public job API.",
     "Dice": "Not used: no public job API.",

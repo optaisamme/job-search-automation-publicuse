@@ -500,6 +500,7 @@ def test_manual_board_links_use_job_titles():
     assert "https://www.linkedin.com/jobs/search/?keywords=Data+Analyst&f_WT=2" in md
     assert "https://www.idealist.org/en/jobs?q=Program+Manager" in md
     assert "Search: Data Analyst" in md and "Tech Jobs for Good" in md
+    assert "https://diversityjobs.com/candidate/job_search/quick/results?keyword=Data+Analyst&location=remote" in md
     assert "Add a job title" in "\n".join(section([], True))
 
 
