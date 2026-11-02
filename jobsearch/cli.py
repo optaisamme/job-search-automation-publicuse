@@ -141,7 +141,7 @@ def main(argv=None) -> int:
         for t in prof["titles"]:
             print(f"Job title {t['family']}: {', '.join(t.get('plain_titles') or [])}")
         watched, bad = pipeline.watched_boards(prof)
-        print(f"Companies to watch (section 7): {', '.join(b['board'] for b in watched) or 'none added (optional; all job sites are still searched)'}")
+        print(f"Companies to watch (section 7): {', '.join(b['board'] for b in watched) or 'none added (optional: only for companies whose careers page runs on Greenhouse, Lever, Ashby or SmartRecruiters; all job sites are still searched)'}")
         if bad:
             for link in bad:
                 print(f"COMPANY LINK NOT UNDERSTOOD: {link}")

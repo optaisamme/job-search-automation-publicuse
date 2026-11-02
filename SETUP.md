@@ -154,7 +154,7 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 2. It does not read LinkedIn, Indeed, Glassdoor, ZipRecruiter or Built In (their terms do
    not allow automated access). Links from those sites can't be checked automatically.
 3. It does not run general web searches. It uses Himalayas, The Muse, Remote OK, Jobicy,
-   We Work Remotely, Working Nomads, Jobspresso, Remotive, the job pages of companies you add
+   We Work Remotely, Working Nomads, Jobspresso, Remotive, Hacker News "Who is hiring?", the job pages of companies you add
    (settings section 7) or that it found earlier, and Adzuna, Jooble, USAJOBS and ReliefWeb if you
    add their free keys.
 4. Results come from text rules. When a posting is unclear, the job is marked "Needs

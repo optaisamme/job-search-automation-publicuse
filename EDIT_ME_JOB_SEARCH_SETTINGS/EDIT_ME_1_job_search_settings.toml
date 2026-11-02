@@ -193,16 +193,31 @@ keywords = []
 # ---------------------------------------------------------------------
 #  IF YOU LEAVE THIS EMPTY: nothing breaks. Every search still checks all
 #  the job sites (Himalayas, The Muse, Remote OK and the others listed in
-#  the README). You simply get no extra jobs from specific companies.
+#  the README). You only miss jobs that a company posts on its own careers
+#  page and nowhere else.
 #
-#  WHAT IT ADDS: many employers post jobs only on their own careers page,
-#  not on job sites. Paste a company's careers-page link here and EVERY
-#  job at that company is checked each search, not only the ones that
-#  reached a job site.
+#  WHICH COMPANIES CAN BE ADDED: only companies whose careers page runs on
+#  one of these 4 systems: Greenhouse, Lever, Ashby or SmartRecruiters.
+#  These are not job sites that get searched as a whole. They are systems
+#  that many companies use to run their own careers page, and this tool
+#  reads only the careers pages of the companies listed here (plus the ones
+#  it found automatically, see below). Companies whose careers page runs on
+#  anything else (for example Workday, iCIMS, Taleo, or their own website)
+#  cannot be added.
 #
-#  ALSO AUTOMATIC: when a job found on a job site links to a company's own
-#  careers page, that company is remembered and its careers page is checked
-#  in later searches too. You do not need to add those companies here.
+#  WHAT HAPPENS WHEN YOU ADD A COMPANY:
+#    1. Every search opens that company's careers page.
+#    2. It reads every job open there, not only jobs that reached a job site.
+#    3. Jobs whose title matches your job titles (section 1) are checked
+#       against all your rules, like any other job.
+#    4. Matches show in your results with an Apply link to the employer's
+#       own posting.
+#    5. The settings check at the start of each search lists the companies
+#       it will check. A link it cannot use stops the search and says why.
+#
+#  ALSO AUTOMATIC: when a job found on a job site links to a careers page on
+#  one of those 4 systems, that company is remembered and its careers page
+#  is checked in later searches too. You do not need to add it here.
 #
 #  HOW TO FIND THE LINK
 #    1. Open the company's website and click "Careers" or "Jobs".

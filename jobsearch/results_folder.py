@@ -105,7 +105,7 @@ def _manual_boards(root: Path) -> list[str]:
     except Exception:  # noqa: BLE001 — settings problems are reported by the settings check
         return []
     titles = [t for g in prof.get("titles", []) for t in (g.get("plain_titles") or [])[:1]]
-    return manual_boards.section(titles, CRITERIA.get("remote_only", True))
+    return manual_boards.section(titles, CRITERIA.get("remote_only", True), CRITERIA.get("home_state", ""))
 
 
 def write(root: Path) -> dict:

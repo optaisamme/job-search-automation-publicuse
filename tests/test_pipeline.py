@@ -518,3 +518,29 @@ def test_reliefweb_parse(monkeypatch):
                 "date": {"created": "2026-11-01", "closing": "2026-12-01"}}}]})
     got = ReliefWebAdapter(c, {"queries": ["Program Manager"]}).search(SourceStatus("reliefweb"))
     assert len(got) == 1 and got[0].employer == "Example Relief" and got[0].extra["close_date"] == "2026-12-01"
+
+
+def test_manual_boards_grouped_and_use_state():
+    from jobsearch.manual_boards import section, BOARDS
+    md = "\n".join(section(["Program Manager"], False, "New Mexico"))
+    assert len(BOARDS) == 30 and "### Students, early career, hourly and government" in md
+    assert "find-jobs-results.aspx?keyword=Program+Manager&location=New+Mexico" in md
+    assert "https://www.indeed.com/jobs?q=Program+Manager&l=New+Mexico" in md
+    assert "https://wellfound.com/role/r/program-manager" in md
+
+
+def test_hackernews_who_is_hiring_parse():
+    from jobsearch.adapters.aggregators import HackerNewsHiringAdapter
+    from jobsearch.adapters.base import SourceStatus
+    from jobsearch.titles import TitleMatcher
+    c = FakeClient()
+    c.set("https://hn.algolia.com/api/v1/search_by_date?tags=story,author_whoishiring&hitsPerPage=10",
+          {"hits": [{"objectID": "9", "title": "Ask HN: Who wants to be hired? (November 2026)"},
+                    {"objectID": "8", "title": "Ask HN: Who is hiring? (November 2026)"}]})
+    c.set("https://hn.algolia.com/api/v1/items/8", {"children": [
+        {"id": 1, "text": 'Acme | Data Analyst | REMOTE (US) | Full-time<p>Apply: <a href="https://acme.example/jobs/1">here</a>'},
+        {"id": 2, "text": "Just a comment"}]})
+    m = TitleMatcher({"titles": [{"track": "", "family": "G", "plain_titles": ["Data Analyst"], "require_any": []}]})
+    got = HackerNewsHiringAdapter(c, {"queries": [], "title_matcher": m}).search(SourceStatus("hackernews"))
+    assert len(got) == 1 and (got[0].employer, got[0].title) == ("Acme", "Data Analyst")
+    assert got[0].apply_url == "https://acme.example/jobs/1" and got[0].workplace_type == "remote"

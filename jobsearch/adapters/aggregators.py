@@ -319,6 +319,50 @@ class ReliefWebAdapter(Adapter):
         return out
 
 
+class HackerNewsHiringAdapter(Adapter):
+    # Hacker News "Ask HN: Who is hiring?" monthly thread, read through the free public HN Search API
+    # (https://hn.algolia.com/api). Each top-level comment is one employer's post, usually starting
+    # "Company | Job title | Location | ...". Mostly tech jobs.
+    name = "hackernews"
+
+    def search(self, status: SourceStatus) -> list[RawPosting]:
+        import html as _html
+        import re as _re
+        r = self.client.get("https://hn.algolia.com/api/v1/search_by_date?tags=story,author_whoishiring&hitsPerPage=10")
+        if r.status >= 400:
+            raise RuntimeError(f"HTTP {r.status}")
+        story = next((h for h in r.json().get("hits", []) if "who is hiring" in (h.get("title") or "").lower()), None)
+        if not story:
+            status.detail = "no current \"Who is hiring?\" thread found"
+            return []
+        t = self.client.get(f"https://hn.algolia.com/api/v1/items/{story['objectID']}")
+        if t.status >= 400:
+            raise RuntimeError(f"HTTP {t.status}")
+        status.detail = story.get("title", "")
+        matcher = self.ctx.get("title_matcher")
+        out = []
+        for c in t.json().get("children") or []:
+            raw = c.get("text") or ""
+            if not raw:
+                continue
+            first = _html.unescape(_re.split(r"<p>", raw, maxsplit=1)[0])
+            first = _re.sub(r"<[^>]+>", "", first).strip()
+            parts = [x.strip() for x in first.split("|") if x.strip()]
+            if len(parts) < 2:
+                continue
+            title = next((x for x in parts[1:] if matcher and matcher.match_title(x)), parts[1])
+            links = [_html.unescape(u) for u in _re.findall(r'href="([^"]+)"', raw)]
+            url = f"https://news.ycombinator.com/item?id={c.get('id')}"
+            out.append(RawPosting(
+                source="hackernews", source_url=url, employer=parts[0], title=title,
+                description_text=html_to_text(raw), location_text=" | ".join(parts[2:]),
+                apply_url=links[0] if links else url,
+                workplace_type="remote" if _re.search(r"\bremote\b", first, _re.I) and not _re.search(r"\b(onsite|on-site|hybrid)\b", first, _re.I) else None,
+                extra={"third_party_published": c.get("created_at")},
+            ))
+        return out
+
+
 class AdzunaAdapter(Adapter):
     # https://developer.adzuna.com — free key. Salary may be model-predicted: never used.
     name = "adzuna"

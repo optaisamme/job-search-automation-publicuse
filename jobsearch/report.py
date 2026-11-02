@@ -9,27 +9,14 @@ from pathlib import Path
 from .notify import _j
 
 SOURCE_NOTES = {
-    "LinkedIn": "Not used: no public job-search API, and its terms do not allow automated searching.",
-    "Indeed": "Not used: its public job-search API was discontinued, and its terms do not allow automated searching.",
-    "Glassdoor": "Not used: no public job API; it requires signing in.",
-    "ZipRecruiter": "Not used: its job-search API is only for business partners.",
-    "Built In": "Not used: no public job API.",
-    "HiringCafe": "Not used: no public job API.",
-    "Idealist": "Not used: its terms do not allow automated searching.",
-    "Tech Jobs for Good": "Not used: its terms do not allow automated access.",
-    "DiversityJobs": "Not used: its terms do not allow automated access.",
-    "Green Jobs Board": "Not used: its terms do not allow collecting data from the site.",
-    "HigherEdJobs": "Not used: the site blocks automated access.",
-    "Remote100k": "Not used: its terms do not allow robots or data gathering.",
-    "Handshake": "Not used: requires signing in.",
-    "Wellfound": "Not used: no public job API.",
-    "Dice": "Not used: no public job API.",
+    "LinkedIn, Indeed, Handshake, Idealist and 26 more": "Not searched automatically (no public data feed, sign-in "
+    "required, blocked, or terms do not allow it). One-click searches for them are on the JOB_SEARCH_RESULTS page.",
 }
 
 SOURCE_NAMES = {
     "web_search_leads": "Web search leads", "ats_watchlist": "Company job pages (section 7, plus companies found automatically)",
     "remotive": "Remotive", "remoteok": "Remote OK", "himalayas": "Himalayas", "themuse": "The Muse",
-    "jobicy": "Jobicy", "weworkremotely": "We Work Remotely", "workingnomads": "Working Nomads", "jobspresso": "Jobspresso", "jooble": "Jooble", "reliefweb": "ReliefWeb",
+    "jobicy": "Jobicy", "weworkremotely": "We Work Remotely", "workingnomads": "Working Nomads", "jobspresso": "Jobspresso", "jooble": "Jooble", "reliefweb": "ReliefWeb", "hackernews": "Hacker News: Who is hiring?",
     "adzuna": "Adzuna", "usajobs": "USAJOBS",
 }
 

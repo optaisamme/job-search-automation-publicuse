@@ -43,9 +43,11 @@ Open the **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)** folder.
    c. **Jobs whose link could not be checked**, with a link to find the employer's own posting.
    d. **Possible matches:** jobs that failed none of your rules but did not say enough to be
       sure (for example, no salary listed), with what to check.
-   e. **Popular job boards to search yourself:** one-click searches for your job titles on
-      LinkedIn, Indeed, Google Jobs, Glassdoor, ZipRecruiter, HiringCafe, Idealist, DiversityJobs,
-      Remote100k, Green Jobs Board, HigherEdJobs, Tech Jobs for Good, Handshake, Built In and Dice.
+   e. **Popular job boards to search yourself:** one-click searches for your job titles on 30
+      boards, grouped by type: large job sites (LinkedIn, Indeed, Google Jobs and more);
+      students, hourly and government (Handshake, CareerOneStop, Snagajob, Upwork, AmeriCorps);
+      nonprofit and international (Idealist, Chronicle of Philanthropy, Devex and more);
+      diversity (DiversityJobs, PowerToFly and more); and tech and startups.
 2. **One report per search**, numbered and dated, for example
    `REPORT_001_2026-11-06_13-47_UTC.md`. The newest is listed first. Each report also lists
    every job checked in that search and why it did or did not match.
@@ -116,16 +118,21 @@ yourself. If you want a search to run by itself every week, open file 3 above
 1. **Checks your settings** and lists what is ON and OFF.
 2. **Collects public job listings** from these job sites:
    a. **No setup needed:** Himalayas, The Muse, Remote OK, Jobicy, We Work Remotely, Working
-      Nomads, Jobspresso and Remotive. Several send their newest jobs whatever your search
+      Nomads, Jobspresso, Remotive and Hacker News "Who is hiring?" (mostly tech jobs). Several send their newest jobs whatever your search
       words are, so each search looks at more than 1,000 listings.
    b. **Free key needed (recommended, see SETUP.md Step 6):** Adzuna and Jooble (large sites
       that collect jobs from many other job sites), USAJOBS (federal jobs) and ReliefWeb
       (nonprofit, humanitarian and international development jobs).
-   c. **Company careers pages** (Greenhouse, Lever, Ashby, SmartRecruiters), checked in two ways:
-      1. **Automatically:** when a job found on a job site links to the company's own careers
-         page, that company is remembered and all its jobs are checked in later searches.
-      2. **Companies you add** in settings section 7, "Companies to watch." This is optional;
-         if you leave it empty, everything above still runs.
+   c. **Company careers pages**, only for companies whose careers page runs on Greenhouse,
+      Lever, Ashby or SmartRecruiters. These are not searched as whole sites: the tool reads
+      the careers page of one company at a time, and only for these companies:
+      1. **Found automatically:** when a job found on a job site links to a careers page on one
+         of those 4 systems, that company is remembered and every job it has open is checked in
+         later searches.
+      2. **Companies you add** in settings section 7, "Companies to watch." Every search reads
+         every job open on each company's careers page and keeps the ones with your job titles.
+         Companies on other systems (for example Workday or iCIMS) cannot be added. If you leave
+         section 7 empty, everything else above still runs.
 3. **Keeps jobs with your job titles.**
 4. **Applies your rules**: remote only (on unless you turn it off), your state, salary,
    certifications, your own rules. When a
@@ -138,11 +145,11 @@ yourself. If you want a search to run by itself every week, open file 3 above
 7. **Saves the results** in [JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS) and posts anything new
    under **Issues**.
 
-The tool never applies to jobs or contacts employers. It does not search LinkedIn, Indeed,
-Google Jobs, Glassdoor, ZipRecruiter, HiringCafe, Idealist, DiversityJobs, Remote100k, Green Jobs
-Board, HigherEdJobs, Tech Jobs for Good, Handshake, Built In or Dice: they have no public job API, require signing in, or their terms do not allow
-automated searching. Instead, the results page has **one-click search links** for each of
-them, built from your job titles, so you can open those searches yourself.
+The tool never applies to jobs or contacts employers. It does not search popular boards
+such as LinkedIn, Indeed, Handshake or Idealist: they have no public data feed, require
+signing in, block automated requests, or their terms do not allow automated searching.
+Instead, the results page has **one-click search links** for 30 of these boards, built from
+your job titles, so you can open those searches yourself.
 It does not get around sites that block automated checks.
 
 ---
