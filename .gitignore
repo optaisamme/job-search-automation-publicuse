@@ -7,3 +7,5 @@ reports/dry-run/
 .env
 *.pdf
 *.sqlite-journal
+node_modules/
+package-lock.json

@@ -31,7 +31,7 @@ concurrency:
 
 jobs:
   search:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # pinned: ubuntu-latest is moving to Ubuntu 26.04
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
@@ -43,6 +43,11 @@ jobs:
       - name: Check settings files
         run: python -m jobsearch check
 
+      - name: Install headless browser (reads job pages that need JavaScript)
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.64.1
+          npx playwright install --with-deps chromium
+
       - name: Search for jobs
         env:
           # Optional free API keys (Settings > Secrets and variables > Actions). Leave unset to skip.
@@ -50,10 +55,10 @@ jobs:
           USAJOBS_EMAIL: ${{ secrets.USAJOBS_EMAIL }}
           ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
           ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
-        run: python -m jobsearch run --no-render
+        run: python -m jobsearch run
 
       - name: Re-check links and prepare results
-        run: python -m jobsearch outbox prepare --no-render
+        run: python -m jobsearch outbox prepare
 
       - name: Post results as an issue
         env:
