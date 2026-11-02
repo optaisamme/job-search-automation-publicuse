@@ -222,7 +222,10 @@ class AtsWatchlistAdapter(Adapter):
 
     def search(self, status: SourceStatus) -> list[RawPosting]:
         boards: dict = {k: list(v) for k, v in self.ctx.get("boards", {}).items()}
+        agencies = {"jobgether", "hirehangar"} | {x.lower() for x in self.ctx.get("intermediary_boards", [])}
         for b in self.ctx.get("boards_added", []):  # boards discovered from leads earlier in this run
+            if b["board"].lower() in agencies:
+                continue   # recruiting agencies are never read as company careers pages
             lst = boards.setdefault(b["ats"], [])
             if not any(x["board"] == b["board"] for x in lst):
                 lst.append({"board": b["board"], "employer": b.get("employer")})
