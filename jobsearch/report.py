@@ -110,9 +110,8 @@ def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report"
     if errs:
         md += ["", "## Operational errors (this run)", ""] + [f"1. {e}" for e in errs[:30]]
     text = "\n".join(md) + "\n"
-    p = out_dir / "latest.md"
+    p = out_dir / "full_report.md"   # included in JOB_SEARCH_RESULTS/REPORT_*.md by results_folder.py
     p.write_text(text)
-    (out_dir / "latest.html").write_text(_html(text, title))
     return p
 
 

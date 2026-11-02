@@ -67,7 +67,10 @@ def main(argv=None) -> int:
     if a.cmd == "run":
         info = pipeline.run(root, db, dry_run=a.dry_run, sources=a.sources.split(",") if a.sources else None,
                             use_renderer=not a.no_render)
-        print(json.dumps({k: info[k] for k in ("run_id", "mode", "is_baseline", "counts", "report")}, indent=2))
+        if not a.dry_run:
+            from . import results_folder
+            info["results"] = results_folder.write(root)["report"]
+        print(json.dumps({k: info.get(k) for k in ("run_id", "mode", "is_baseline", "counts", "report", "results")}, indent=2))
         print(json.dumps([{k: s[k] for k in ("name", "state", "detail", "fetched", "matched")} for s in info["sources"]], indent=2))
         return 0
     if a.cmd == "outbox":
@@ -96,7 +99,7 @@ def main(argv=None) -> int:
                 "is_baseline": bool(last["is_baseline"]) if last else False,
                 "sources": json.loads(last["sources"] or "[]") if last else [], "errors": json.loads(last["errors"] or "[]") if last else []}
         from . import report
-        print(report.build(st, info, root / "reports"))
+        print(report.build(st, info, root / "out"))
         return 0
     if a.cmd == "boards":
         boards = pipeline.load_boards(root)

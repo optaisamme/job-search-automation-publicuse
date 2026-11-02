@@ -65,7 +65,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python scripts/publish_github_issue.py
 
-      - name: Update RESULTS.md and show results on this page
+      - name: Update JOB_SEARCH_RESULTS folder and show results on this page
         if: always()
         run: python scripts/write_results_page.py
 
@@ -74,7 +74,7 @@ jobs:
         run: |
           git config user.name "job-search-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data reports RESULTS.md || true
+          git add data JOB_SEARCH_RESULTS || true
           git diff --cached --quiet && echo "No changes to save." && exit 0
           git commit -m "Weekly job search results $(date -u +%Y-%m-%d)"
           git push

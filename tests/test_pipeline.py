@@ -261,7 +261,7 @@ def test_dry_run_does_not_persist(root):
     setup_board(c, [gh_job(1, "Salesforce Administrator")])
     pipeline.run(root, root / "data/jobs.sqlite", dry_run=True, sources=["ats_watchlist"], use_renderer=False, client=c, fixtures=True)
     assert not (root / "data/jobs.sqlite").exists()
-    assert (root / "reports/dry-run/latest.md").exists()
+    assert (root / "out/practice-run/full_report.md").exists()
 
 
 def test_report_sections(root):
@@ -269,7 +269,7 @@ def test_report_sections(root):
     bad = GOOD_DESC.replace("$95,000 - $115,000", "$90,000 - $100,000")
     setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Senior Salesforce Administrator", desc=bad)])
     info = run(root, c)
-    md = (root / "reports/latest.md").read_text()
+    md = open(info["report"]).read()
     for h in ("## Qualified matches", "## Needs Verification", "## Rejected", "## Source coverage and limitations", "TEST FIXTURES"):
         assert h in md
     assert "upper $100,000 not > $100,000" in md
@@ -350,3 +350,21 @@ def test_near_miss_does_not_block_later_qualified_alert(root):
     run(root, c)
     out2 = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
     assert out2["draft"] and "NEWLY VERIFIED" in out2["draft"]["body"]
+
+
+def test_results_folder_numbered_reports(root):
+    from jobsearch import results_folder
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    run(root, c)
+    out1 = results_folder.write(root)
+    run(root, c)
+    out2 = results_folder.write(root)
+    folder = root / "JOB_SEARCH_RESULTS"
+    names = sorted(p.name for p in folder.glob("REPORT_*.md"))
+    assert len(names) == 2 and names[0].startswith("REPORT_001_") and names[1].startswith("REPORT_002_") and names[0].endswith("_UTC.md")
+    index = (folder / "README.md").read_text()
+    assert index.startswith("# JOB SEARCH RESULTS") and names[1] in index and "Salesforce Administrator" in index
+    assert index.index(names[1]) < index.rindex(names[0])  # newest first
+    rep = (folder / names[1]).read_text()
+    assert "Every job checked in this search" in rep and "Jobs that match all your rules (1)" in rep

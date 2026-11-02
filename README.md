@@ -1,108 +1,113 @@
 # Job Search Automation
 
-A weekly job search that checks public job listings against **your** rules and posts the
-results to you on GitHub. No coding needed.
+Every week, this tool looks through public job listings, keeps the jobs that fit **your**
+rules (job titles, state, salary, and more), checks that each application link works, and
+shows you the results. You set it up once on the GitHub website. No coding needed.
 
-## START HERE
+---
 
-1. **First time?** Follow **[SETUP.md](SETUP.md)** (about 30 minutes): make your own copy,
-   fill in your settings, turn on the weekly run.
-2. **Want to run a search right now?** Follow
-   **[HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md)** (step by step, 1 minute to start).
-3. **Changing your search later?** Open the **[config](config)** folder. Its page explains
-   each file you can edit.
+## Your 4 steps
 
-## WHERE TO SEE YOUR RESULTS
-
-| What | Where | When |
-|---|---|---|
-| **Everything in one place:** all jobs that currently match, near misses, jobs whose link could not be checked (with a link to find the employer's own posting), and what was new in the last search | The file **[RESULTS.md](RESULTS.md)** at the top of this repository | Rewritten after every run, even when nothing is new |
-| **Summary of one run** | Click that run on the **[Actions](../../actions)** tab; the results are shown on the run's page | After each run |
-| **Matching jobs** (pass all your rules) and **near misses** (failed exactly one rule, with the reason) | The **[Issues](../../issues)** tab at the top of this repository. Each run that finds something new adds one post titled **"Job search results: …"** | After each run (weekly, or when you click Run workflow) |
-| **Email copies** of those posts | Your email inbox | Turn on once: click **Watch** (top right of the repository), choose **All Activity** |
-| **Everything checked**, including jobs that did not match and why | The file **[reports/latest.md](reports/latest.md)** in this repository | Updated by every run |
-| **Whether a run worked** | The **[Actions](../../actions)** tab: green check = worked, red X = click it to read what to fix | Every run |
-
-Notes:
-
-1. The **first run** posts one "Job search results (first run)" post listing the jobs that
-   already match when you start, plus near misses. After that, each job appears only once.
-2. If a run finds nothing new, nothing is posted under Issues; `RESULTS.md` and
-   `reports/latest.md` are still updated.
-
-## What you can edit
-
-Only files whose names start with **EDIT_ME**. Everything else runs the automation; do not
-edit it.
-
-| Step | File | Required? | What it controls |
+| Step | What you do | Where | Time |
 |---|---|---|---|
-| 1 | [`config/EDIT_ME_1_job_search_settings.toml`](config/EDIT_ME_1_job_search_settings.toml) | **Yes**: at least one job title | Which jobs are found and which are rejected: job titles, your state, salary, certifications, your own rules |
-| 2 | [`config/EDIT_ME_2_my_experience.toml`](config/EDIT_ME_2_my_experience.toml) | No | Your skills, used to explain how well each job fits you. Never rejects a job |
-| 3 | [`.github/workflows/EDIT_ME_3_weekly_schedule.yml`](.github/workflows/EDIT_ME_3_weekly_schedule.yml) | No | Day and time of the weekly search (default: Fridays) |
+| **1. Make your own copy** | Copy this project into your own GitHub account | [SETUP.md](SETUP.md), Step 1 | 2 minutes |
+| **2. Fill in your settings** | Type your job titles and rules into one file | [config](config) folder, file **EDIT_ME_1** | 10 minutes |
+| **3. Run a search** | Click a button to start a search (it also runs by itself every Friday) | [HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md) | 1 minute to start, 10 to 20 minutes to finish |
+| **4. Read your results** | Open the results folder | **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)** folder | Any time |
+
+First time? Start with **[SETUP.md](SETUP.md)**. It walks you through steps 1 to 4.
+
+---
+
+## Where your results are
+
+Open the **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)** folder.
+
+1. **The folder's main page** opens automatically and shows your **latest results**:
+   a. **Jobs that match all your rules**, with an **Apply** link for each.
+   b. **Near misses:** jobs that failed exactly one of your rules, and which rule.
+   c. **Jobs whose link could not be checked**, with a link to find the employer's own posting.
+2. **One report per search**, numbered and dated, for example
+   `REPORT_001_2026-11-06_13-47_UTC.md`. The newest is listed first. Each report also lists
+   every job checked in that search and why it did or did not match.
+
+Also:
+
+1. **Issues tab:** when a search finds something new, it adds a post titled
+   "Job search results: …". To get these by email, click **Watch** (top right), then **All Activity**.
+2. **Actions tab:** shows whether a search worked (green check) or needs a fix (red X).
+   Click a finished search to see its results right on that page.
+
+Times are in UTC. Mountain Time is UTC minus 7 hours in winter and minus 6 in summer.
+
+---
+
+## Files you can change
+
+Only files whose names start with **EDIT_ME**. Do not change any other file.
+
+| File | Do I have to? | What it changes |
+|---|---|---|
+| [`config/EDIT_ME_1_job_search_settings.toml`](config/EDIT_ME_1_job_search_settings.toml) | **Yes:** type at least one job title | Which jobs are found and which are left out: job titles, your state, salary, certifications, your own rules |
+| [`config/EDIT_ME_2_my_experience.toml`](config/EDIT_ME_2_my_experience.toml) | No | Your skills, used to show how well each job fits you. It never removes a job |
+| [`.github/workflows/EDIT_ME_3_weekly_schedule.yml`](.github/workflows/EDIT_ME_3_weekly_schedule.yml) | No | The day and time of the automatic weekly search (default: Fridays) |
 
 Both settings files start **empty**: nothing is searched or filtered until you fill them in.
 
-## How to edit a file
+### How to change a file
 
-1. Click the file name above.
-2. Click the **pencil icon** at the top right.
-3. Type only on lines that do **not** start with `#`, between the quotes `""` or brackets
-   `[]`. Lines starting with `#` are notes and examples.
-4. A list is typed as items in quotes, separated by commas, inside brackets:
+1. Click the file name in the table above.
+2. Click the **pencil icon** (top right of the file).
+3. Type only on lines that do **not** start with `#`, between the quotes `""` or the
+   brackets `[]`. Lines starting with `#` are notes and examples.
+4. To type a list, put each item in quotes, with commas between, inside brackets:
    `["Salesforce Administrator", "Salesforce Admin"]`
-5. Click **Commit changes** (green button), then **Commit changes** again.
+5. Click the green **Commit changes** button, then **Commit changes** again to save.
 
-## How the automation works
+### What happens after you change a setting
 
-Each run (weekly, or any time you start one: see [HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md)):
+1. Your change is used in the **next search** (the Friday search, or one you start yourself).
+2. Each search first checks your settings. If something is typed wrong, the search stops
+   and tells you which line to fix.
+3. Jobs found earlier are checked again with your new settings:
+   a. A job that now fits is shown as **NEWLY VERIFIED**.
+   b. A job that no longer fits moves to the "did not match" part of the report.
+   c. A job already shown to you is never shown again as new.
+4. To start completely fresh, delete the file `data/jobs.sqlite`. The next search starts over.
 
-1. **Check settings.** Reads your EDIT_ME files and lists what is **ON** and **OFF**. If a
-   file has a typing mistake, or no job title is filled in, the run stops here and says
-   what to fix.
-2. **Collect jobs.** Gathers public listings from employer job boards it has learned about
-   (Greenhouse, Lever, Ashby, SmartRecruiters), Remotive, Remote OK and Himalayas, plus
-   USAJOBS and Adzuna if you add their free keys (see SETUP.md).
-3. **Match titles.** Keeps jobs whose titles match your job title groups.
-4. **Apply your rules.** Each job is checked against the rules you turned on: fully remote,
-   your state, salary, certifications, your own requirement rules. Unclear postings are
-   marked **Needs Verification** instead of guessed.
-5. **Check the link.** Confirms the application link works and still points to that job.
-6. **Compare with your experience.** Lists matching skills and requirements not yet in
-   your profile.
-7. **Post results** under the **[Issues](../../issues)** tab:
-   a. **New qualifying jobs**: passed every rule.
-   b. **Near misses**: failed exactly one rule, with the reason.
-   Each job is posted only once.
-8. **Save a full report** to `reports/latest.md`, including rejected jobs and why.
+---
 
-## What happens when you edit
-
-1. Your changes take effect on the **next run**.
-2. Jobs still listed online are re-checked against your new settings:
-   a. A job that now passes is posted as **NEWLY VERIFIED**.
-   b. A job that now fails moves to **Rejected** in the report.
-   c. A job already posted to you is never posted again.
-3. Editing your experience only changes the fit notes in future results.
-4. The first successful run posts all jobs that already match in one
-   "Job search results (first run)" post. Later runs post only new jobs. To start over
-   completely, delete `data/jobs.sqlite`; the next run is treated as a first run again.
-
-## Files you do not edit
+## Folders you can ignore
 
 | Folder or file | What it is |
 |---|---|
-| `RESULTS.md`, `data/`, `reports/` | Results page, saved jobs and reports, updated automatically by each run |
-| `jobsearch/` | The program, including `jobsearch/advanced_settings.toml` (built-in defaults) |
-| `scripts/`, `tests/` | Posting results to GitHub, and automated checks of the program |
+| `data/` | Jobs the tool has already seen. Updated automatically |
+| `jobsearch/`, `scripts/`, `tests/` | The program itself |
+| `SETUP.md`, `HOW_TO_RUN_A_SEARCH_NOW.md` | Guides (read them; no need to change them) |
 
-## Safety
+---
 
-Never applies for jobs or contacts employers. Treats all job pages as untrusted data.
-Respects robots.txt and rate limits, and does not bypass logins or CAPTCHAs. LinkedIn,
-Indeed, Glassdoor, ZipRecruiter and Built In are not accessed.
+## How a search works
 
-## For developers
+1. **Checks your settings** and lists what is ON and OFF.
+2. **Collects public job listings** from employer job pages it knows about (Greenhouse,
+   Lever, Ashby, SmartRecruiters), Remotive, Remote OK and Himalayas. Optional: USAJOBS and
+   Adzuna, if you add their free keys (see SETUP.md).
+3. **Keeps jobs with your job titles.**
+4. **Applies your rules**: remote, your state, salary, certifications, your own rules. When a
+   posting is unclear, the job is marked **Needs Verification** instead of guessed.
+5. **Checks the application link** to make sure the job is still open.
+6. **Compares each job with your experience.**
+7. **Saves the results** in [JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS) and posts anything new
+   under **Issues**.
+
+The tool never applies to jobs or contacts employers. It does not read LinkedIn, Indeed,
+Glassdoor, ZipRecruiter or Built In, because their terms do not allow automated access.
+It does not get around sites that block automated checks.
+
+---
+
+## For programmers
 
 ```bash
 python3 -m pytest -q

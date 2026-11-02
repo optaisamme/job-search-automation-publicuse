@@ -87,24 +87,21 @@ any time you want results without waiting for the weekly run.
 
 ## Step 5: Where to see your results
 
-**Quickest:** open the file `RESULTS.md` at the top level of your repository. It is rewritten
-after every run and lists all jobs that currently match and the near misses. After a run, the
-same summary is also shown on that run's page in the **Actions** tab.
+Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 
-1. **Matching jobs and near misses** appear under the **Issues** tab at the top of your
-   repository, in posts titled **"Job search results: …"**:
-   a. **Matching jobs**: pass every rule, with salary, location, fit notes and the
-      application link.
-   b. **Near misses**: failed exactly one rule, with the reason.
-2. **Email copies:** click **Watch** (top right of your repository), then **All Activity**.
-   GitHub then emails you each new results post.
-3. **Every job checked**, including those that did not match and why, is in the file
-   `reports/latest.md` (open the `reports` folder in your repository).
-4. **Whether a run worked:** the **Actions** tab. Green check = worked; red X = click it,
-   then the red step, to read what to fix.
-5. The **first run** posts one "Job search results (first run)" post listing the jobs that
-   already match when you start, plus near misses. After that, each job is posted only
-   once. A week with nothing new posts nothing (the report is still updated).
+1. **The folder's main page** opens automatically and shows your **latest results**:
+   a. **Jobs that match all your rules**, with an **Apply** link for each.
+   b. **Near misses:** jobs that failed exactly one of your rules, and which rule.
+   c. **Jobs whose link could not be checked**, with a **Find employer posting** link.
+2. **One numbered report per search**, for example `REPORT_001_2026-11-06_13-47_UTC.md`
+   (search number, date, time in UTC). The newest is listed first. Each report also lists
+   every job checked in that search and why it did or did not match.
+3. **Issues tab:** a search that finds something new also adds a post titled
+   **"Job search results: …"**. For email copies, click **Watch** (top right), then **All Activity**.
+4. **Actions tab:** green check = the search worked; click it to see its results. Red X =
+   click it, then the red step, to read what to fix.
+5. The **first search** shows all jobs that already match. After that, each job is shown
+   as new only once. A search with nothing new still adds a report to the folder.
 
 ## Step 6: Optional changes
 
@@ -154,4 +151,4 @@ python3 -m jobsearch check
 python3 -m jobsearch run
 ```
 
-4. Results are written to `reports/latest.md` and `reports/latest.html`.
+4. Results are written to the `JOB_SEARCH_RESULTS` folder.

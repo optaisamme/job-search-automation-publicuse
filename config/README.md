@@ -33,13 +33,9 @@ Save. That is enough to start. Everything else is optional and **off** until you
 
 ## Where to see your results
 
-1. **All current matches and near misses:** the file `RESULTS.md` at the top level of the
-   repository, rewritten after every run.
-2. **New matches and near misses:** the **Issues** tab, in posts titled **"Job search results: …"**.
-3. **Email copies:** click **Watch** (top right of the repository) and choose **All Activity**.
-4. **Every job checked, including rejected ones and why:** `reports/latest.md`
-   (in the main folder of the repository, inside `reports`).
-5. **Whether a run worked, and its results:** the **Actions** tab (green check = worked; click the run to see its results; red X = click to read the error).
+Open the **[JOB_SEARCH_RESULTS](../JOB_SEARCH_RESULTS)** folder. Its main page shows your latest
+results (matching jobs, near misses, jobs whose link could not be checked), followed by one
+numbered, dated report per search. New results are also posted under the **Issues** tab.
 
 ## What happens after you save
 
@@ -48,11 +44,11 @@ Save. That is enough to start. Everything else is optional and **off** until you
 2. The first step of each run, **Check settings files**, lists exactly what is **ON** and
    **OFF**. If something is typed wrong, or no job title is filled in, the run stops there
    and says what to fix. Click the red X on the Actions tab to read the message.
-3. Results are posted under the **Issues** tab: new qualifying jobs, and near misses that
-   failed exactly one of your rules.
+3. Results are saved in the **JOB_SEARCH_RESULTS** folder, and anything new is also posted
+   under the **Issues** tab.
 4. Jobs still listed online are re-checked every run against your current settings:
    a. A job that now passes because of your change is posted as **NEWLY VERIFIED**.
-   b. A job that now fails is moved to **Rejected** in `reports/latest.md`.
+   b. A job that now fails moves to the "did not match" part of the next report.
    c. A job already posted to you is never posted again.
 5. The very first successful run posts all jobs that already match in one
    "Job search results (first run)" post. Later runs post only new jobs.

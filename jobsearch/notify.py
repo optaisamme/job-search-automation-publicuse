@@ -116,6 +116,6 @@ def render_digest(items: list[tuple[str, dict]], near: list[dict] | None = None)
         for p in near:
             body.append(render_near_miss(p))
             body.append("")
-    body.append("All other jobs checked this run, and why they did not match, are in reports/latest.md in this repository.")
+    body.append("All other jobs checked, and why they did not match, are in the JOB_SEARCH_RESULTS folder in this repository.")
     body.append("This automation never applies to jobs or contacts employers.")
     return {"subject": subject, "body": "\n".join(body)}

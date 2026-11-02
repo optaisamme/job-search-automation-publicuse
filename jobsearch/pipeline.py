@@ -316,7 +316,7 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
     run_info = {"run_id": run_id, "started_at": now_iso(), "mode": "dry_run" if dry_run else ("fixtures" if fixtures else "live"),
                 "is_baseline": is_baseline, "sources": src_dicts, "errors": errors, "counts": counts, "fixtures": fixtures,
                 "new_boards": new_boards}
-    rdir = report_dir or (root / ("reports/dry-run" if dry_run else "reports"))
+    rdir = report_dir or (root / ("out/practice-run" if dry_run else "out"))
     rp = reportmod.build(store, run_info, rdir, "Initial Job Search Report (baseline)" if is_baseline else "Job Search Report")
     run_info["report"] = str(rp)
     store.db.close()

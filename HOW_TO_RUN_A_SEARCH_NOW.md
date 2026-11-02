@@ -27,18 +27,19 @@ searches in the original shared template.
 
 ## See the results
 
-1. **Right away:** click the finished run (the line with the green check). The results
-   summary is shown on that page: jobs that match, near misses, and what was new.
-2. **Any time:** open the file **`RESULTS.md`** on the **Code** tab (top level of your
-   repository). It is rewritten after every run and always shows all jobs that currently
-   match and the near misses.
-3. **Issues tab:** when a run finds something new, it also adds a post titled
-   **"Job search results: …"** under **Issues** (with an email copy if you Watch the
-   repository). If nothing is new, no post is added; `RESULTS.md` is still updated.
-4. **Jobs whose link could not be checked:** some job sites block automated checks.
-   `RESULTS.md` lists those jobs with a **Find employer posting** link that searches for the
-   same job on the employer's own website, where you can check it and apply.
-5. **Every job checked**, including those that did not match and why: `reports/latest.md`.
+1. **Right away:** click the finished search (the line with the green check). Its results
+   are shown on that page.
+2. **Any time:** click the **Code** tab, then open the **JOB_SEARCH_RESULTS** folder. Its main
+   page shows your latest results:
+   a. jobs that match all your rules, with **Apply** links,
+   b. near misses (failed exactly one rule) and the reason,
+   c. jobs whose link could not be checked, with a **Find employer posting** link.
+3. Below that is the list of reports, one per search, newest first, for example
+   `REPORT_001_2026-11-06_13-47_UTC.md` (search number, date, time in UTC). Open one to see
+   every job checked in that search and why it did or did not match.
+4. **Issues tab:** when a search finds something new, it also adds a post titled
+   **"Job search results: …"**. If nothing is new, no post is added, but the folder still
+   gets a new report.
 
 ## If you see a red X
 
