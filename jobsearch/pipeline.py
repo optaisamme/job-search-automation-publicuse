@@ -388,6 +388,10 @@ def prepare_outbox(root: Path, db_path: Path, client: HttpClient | None = None, 
             near.append(json.loads(n["payload"]))
             near_ids.append(n["id"])
             continue
+        if row["closed_at"] or row["status"] != QUALIFIED:
+            # The job was re-evaluated after this alert was queued and no longer meets every rule.
+            store.mark_notification(n["id"], "cancelled", error=f"job no longer meets all rules (now {row['status']})")
+            continue
         p = RawPosting(source=(json.loads(row["sources"] or "[]") or ["db"])[0], source_url=row["canonical_url"] or "",
                        employer=row["employer"], title=row["title"], description_text="", ats=row["ats"],
                        ats_board=row["ats_board"], ats_job_id=row["ats_job_id"], canonical_url=row["canonical_url"],
