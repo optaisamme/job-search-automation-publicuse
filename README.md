@@ -16,6 +16,8 @@ results to you on GitHub. No coding needed.
 
 | What | Where | When |
 |---|---|---|
+| **Everything in one place:** all jobs that currently match, near misses, and what was new in the last search | The file **[RESULTS.md](RESULTS.md)** at the top of this repository | Rewritten after every run, even when nothing is new |
+| **Summary of one run** | Click that run on the **[Actions](../../actions)** tab; the results are shown on the run's page | After each run |
 | **Matching jobs** (pass all your rules) and **near misses** (failed exactly one rule, with the reason) | The **[Issues](../../issues)** tab at the top of this repository. Each run that finds something new adds one post titled **"Job search results: …"** | After each run (weekly, or when you click Run workflow) |
 | **Email copies** of those posts | Your email inbox | Turn on once: click **Watch** (top right of the repository), choose **All Activity** |
 | **Everything checked**, including jobs that did not match and why | The file **[reports/latest.md](reports/latest.md)** in this repository | Updated by every run |
@@ -25,8 +27,8 @@ Notes:
 
 1. The **first run** posts one "Job search results (first run)" post listing the jobs that
    already match when you start, plus near misses. After that, each job appears only once.
-2. If a run finds nothing new, nothing is posted that week; `reports/latest.md` is still
-   updated.
+2. If a run finds nothing new, nothing is posted under Issues; `RESULTS.md` and
+   `reports/latest.md` are still updated.
 
 ## What you can edit
 
@@ -90,7 +92,7 @@ Each run (weekly, or any time you start one: see [HOW_TO_RUN_A_SEARCH_NOW.md](HO
 
 | Folder or file | What it is |
 |---|---|
-| `data/`, `reports/` | Saved jobs and reports, updated automatically by each run |
+| `RESULTS.md`, `data/`, `reports/` | Results page, saved jobs and reports, updated automatically by each run |
 | `jobsearch/` | The program, including `jobsearch/advanced_settings.toml` (built-in defaults) |
 | `scripts/`, `tests/` | Posting results to GitHub, and automated checks of the program |
 

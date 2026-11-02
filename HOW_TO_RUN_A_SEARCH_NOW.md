@@ -27,13 +27,15 @@ searches in the original shared template.
 
 ## See the results
 
-1. Click the **Issues** tab (next to Actions, near the top of the page).
-2. Open the newest post titled **"Job search results: …"**. It lists:
-   a. **Matching jobs:** pass all your rules, with the application link.
-   b. **Near misses:** failed exactly one of your rules, with the reason.
-3. No new post? Then the search found no new matching jobs or near misses this time.
-   Every job it checked, and why each did or did not match, is still in the file
-   `reports/latest.md` (open the **Code** tab, then the `reports` folder).
+1. **Right away:** click the finished run (the line with the green check). The results
+   summary is shown on that page: jobs that match, near misses, and what was new.
+2. **Any time:** open the file **`RESULTS.md`** on the **Code** tab (top level of your
+   repository). It is rewritten after every run and always shows all jobs that currently
+   match and the near misses.
+3. **Issues tab:** when a run finds something new, it also adds a post titled
+   **"Job search results: …"** under **Issues** (with an email copy if you Watch the
+   repository). If nothing is new, no post is added; `RESULTS.md` is still updated.
+4. **Every job checked**, including those that did not match and why: `reports/latest.md`.
 
 ## If you see a red X
 

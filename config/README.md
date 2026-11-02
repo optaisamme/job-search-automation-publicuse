@@ -33,12 +33,13 @@ Save. That is enough to start. Everything else is optional and **off** until you
 
 ## Where to see your results
 
-1. **Matching jobs and near misses:** the **Issues** tab at the top of the repository, in
-   posts titled **"Job search results: …"**.
-2. **Email copies:** click **Watch** (top right of the repository) and choose **All Activity**.
-3. **Every job checked, including rejected ones and why:** `reports/latest.md`
+1. **All current matches and near misses:** the file `RESULTS.md` at the top level of the
+   repository, rewritten after every run.
+2. **New matches and near misses:** the **Issues** tab, in posts titled **"Job search results: …"**.
+3. **Email copies:** click **Watch** (top right of the repository) and choose **All Activity**.
+4. **Every job checked, including rejected ones and why:** `reports/latest.md`
    (in the main folder of the repository, inside `reports`).
-4. **Whether a run worked:** the **Actions** tab (green check = worked, red X = click to read).
+5. **Whether a run worked, and its results:** the **Actions** tab (green check = worked; click the run to see its results; red X = click to read the error).
 
 ## What happens after you save
 

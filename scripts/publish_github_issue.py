@@ -44,6 +44,7 @@ def main() -> int:
         return 1
     for nid in ids:
         store.mark_notification(nid, "delivered", channel="github_issue", ref=str(issue.get("number")))
+    (ROOT / "out/issue_url.txt").write_text(issue.get("html_url") or "")
     print(f"Posted results: {issue.get('html_url')}")
     return 0
 

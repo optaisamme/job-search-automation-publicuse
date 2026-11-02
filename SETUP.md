@@ -87,6 +87,10 @@ any time you want results without waiting for the weekly run.
 
 ## Step 5: Where to see your results
 
+**Quickest:** open the file `RESULTS.md` at the top level of your repository. It is rewritten
+after every run and lists all jobs that currently match and the near misses. After a run, the
+same summary is also shown on that run's page in the **Actions** tab.
+
 1. **Matching jobs and near misses** appear under the **Issues** tab at the top of your
    repository, in posts titled **"Job search results: …"**:
    a. **Matching jobs**: pass every rule, with salary, location, fit notes and the
