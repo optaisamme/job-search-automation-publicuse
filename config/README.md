@@ -40,7 +40,7 @@ numbered, dated report per search. New results are also posted under the **Issue
 ## What happens after you save
 
 1. Changes are used on the **next run**: the weekly run, or right away if you start one
-   yourself (step-by-step: [HOW_TO_RUN_A_SEARCH_NOW.md](../HOW_TO_RUN_A_SEARCH_NOW.md)).
+   yourself in your own copy (step-by-step: [HOW_TO_RUN_A_SEARCH_NOW.md](../HOW_TO_RUN_A_SEARCH_NOW.md)).
 2. The first step of each run, **Check settings files**, lists exactly what is **ON** and
    **OFF**. If something is typed wrong, or no job title is filled in, the run stops there
    and says what to fix. Click the red X on the Actions tab to read the message.

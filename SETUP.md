@@ -81,7 +81,8 @@ and which requirements are not yet in your profile. It can stay empty.
 
 ## Step 4: Turn on the weekly run and run your first search
 
-Follow **[HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md)** once. Enabling the
+Only after Steps 1 and 2 are done (your own copy, and at least one job title saved), follow
+**[HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md)** once. Enabling the
 workflow there (its Step 3) also turns on the automatic weekly run. Use the same guide
 any time you want results without waiting for the weekly run.
 

@@ -12,10 +12,12 @@ shows you the results. You set it up once on the GitHub website. No coding neede
 |---|---|---|---|
 | **1. Make your own copy** | Copy this project into your own GitHub account | [SETUP.md](SETUP.md), Step 1 | 2 minutes |
 | **2. Fill in your settings** | Type your job titles and rules into one file | [config](config) folder, file **EDIT_ME_1** | 10 minutes |
-| **3. Run a search** | Click a button to start a search (it also runs by itself every Friday) | [HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md) | 1 minute to start, 10 to 20 minutes to finish |
+| **3. Run a search** | **Only after steps 1 and 2.** Click a button in **your copy** to start a search (it also runs by itself every Friday) | [HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md) | 1 minute to start, 10 to 20 minutes to finish |
 | **4. Read your results** | Open the results folder | **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)** folder | Any time |
 
-First time? Start with **[SETUP.md](SETUP.md)**. It walks you through steps 1 to 4.
+Do the steps **in order**. A search cannot run until you have your own copy (step 1) and at
+least one job title in your settings (step 2). First time? Start with **[SETUP.md](SETUP.md)**;
+it walks you through steps 1 to 4.
 
 ---
 

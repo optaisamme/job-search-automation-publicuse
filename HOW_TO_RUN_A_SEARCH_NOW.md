@@ -3,9 +3,16 @@
 You do not have to wait for the weekly run. You can start a search yourself at any time.
 It takes about 10 to 20 minutes and runs on GitHub, so you can close the page while it works.
 
-**Before you start:** you must be signed in to GitHub and be in **your own copy** of this
-project (made with "Use this template" in [SETUP.md](SETUP.md), Step 1). You cannot run
-searches in the original shared template.
+## Before you start: do these 2 things first
+
+A search will **not** work until both are done:
+
+| | Must be done first | How |
+|---|---|---|
+| ☐ | **1. You made your own copy** of this project, and you are signed in to GitHub. You cannot run a search in the original shared project. | [SETUP.md](SETUP.md), Step 1 |
+| ☐ | **2. You typed at least one job title** in your copy's settings file, `config/EDIT_ME_1_job_search_settings.toml`, section 1, and saved it. | [SETUP.md](SETUP.md), Step 2 |
+
+If you skip step 2, the search stops right away with the message **"NO JOB TITLES SET YET"**.
 
 ## Steps
 
