@@ -28,7 +28,20 @@ EXCLUDE_DOMAINS = ["linkedin.com", "indeed.com", "glassdoor.com", "ziprecruiter.
                    "wellfound.com", "dice.com", "himalayas.app", "remoteok.com", "remotive.com", "themuse.com",
                    "jobicy.com", "weworkremotely.com", "workingnomads.com", "jobspresso.co", "adzuna.com",
                    "jooble.org", "usajobs.gov", "reliefweb.int", "news.ycombinator.com", "hiring.cafe",
-                   "facebook.com", "instagram.com", "x.com", "twitter.com", "reddit.com", "youtube.com"]
+                   "facebook.com", "instagram.com", "x.com", "twitter.com", "reddit.com", "youtube.com",
+                   # sites that repost other sites' jobs, or list many jobs on one page
+                   "jobgether.com", "virtualvocations.com", "flexjobs.com", "talent.com", "lensa.com", "careerjet.com",
+                   "jobleads.com", "salary.com", "theladders.com", "roberthalf.com", "edtech.com", "recruit.net",
+                   "jobright.ai", "simplyhired.co", "learn4good.com", "remote.co", "jobs.now"]
+
+# A page title like "Remote Program Manager Jobs in Maryland" or "Search Jobs" is a list of jobs, not one job.
+LIST_PAGE = re.compile(r"(?i)(\bjobs\b(?! at\b)|\bsearch\b|\bresults for\b|\bopenings\b|^\s*careers?\s*$)")
+LIST_URL = re.compile(r"(?i)(/search\b|[?&](q|query|keywords?)=|/q-|-jobs?(\.html|/?$)|/jobs/?$|/careers/?$)")
+
+
+def _is_list_page(url: str, title: str) -> bool:
+    """True for search-result and category pages; one job's own page passes."""
+    return bool(LIST_URL.search(url) or LIST_PAGE.search(re.sub(r"(?i)myworkdayjobs\.com", "", title or "")))
 
 
 def _excluded(url: str) -> bool:
@@ -71,6 +84,8 @@ PROVIDERS = {"tavily": TavilySearch}
 def _clean_title(title: str, url: str) -> tuple[str, str]:
     """Best guess at (job title, employer) from a search result's page title."""
     t = re.sub(r"\s+", " ", title or "").strip()
+    t = re.sub(r"(?i)\s*[-|]\s*myworkdayjobs\.com\s*$", "", t)          # Workday adds " - Myworkdayjobs.com"
+    t = re.sub(r"^[^|]{1,40} careers \| ", "", t, flags=re.I)            # "Stripe Careers | Title"
     m = re.match(r"(?i)job application for (.+?) at (.+)$", t)          # Greenhouse
     if m:
         return m.group(1).strip(), m.group(2).strip()
@@ -117,13 +132,16 @@ class WebSearchAdapter(Adapter):
                     url = x["url"]
                     if not url or url in seen or _excluded(url):
                         continue
+                    if inc is None and _is_list_page(url, x.get("title", "")):
+                        continue   # wider-web result that lists many jobs: not one posting
                     seen.add(url)
                     title, employer = _clean_title(x["title"], url)
                     p = RawPosting(source="websearch", source_url=url, employer=employer, title=title,
                                    description_text=x.get("content", ""), apply_url=url,
                                    extra={"found_via": f"web search: {query}"})
                     hit = parse_board_link(url)
-                    if hit and matcher and matcher.match(title, p.description_text):
+                    agencies = {b.lower() for b in self.ctx.get("intermediary_boards", [])}
+                    if hit and hit[1].lower() not in agencies and matcher and matcher.match(title, p.description_text):
                         # a matching job on a supported careers page: read that company's whole page this search too
                         self.ctx.setdefault("boards_added", []).append({"ats": hit[0], "board": hit[1], "employer": employer or None})
                     out.append(p)

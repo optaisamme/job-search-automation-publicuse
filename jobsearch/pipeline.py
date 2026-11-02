@@ -113,9 +113,14 @@ def with_watched(boards: dict, watched: list[dict]) -> dict:
     return out
 
 
+AGENCY_BOARDS = {"jobgether", "hirehangar"}   # recruiting agencies that post for unnamed employers
+
+
 def save_boards(root: Path, boards: dict, added: list[dict]):
     changed = False
     for b in added:
+        if (b.get("board") or "").lower() in AGENCY_BOARDS:
+            continue
         lst = boards.setdefault(b["ats"], [])
         if not any(x["board"] == b["board"] for x in lst):
             lst.append({"board": b["board"], "employer": b.get("employer"), "added": now_iso()})
@@ -174,7 +179,8 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
     was_baseline_done = store.baseline_done()
 
     ctx = {"queries": prof["search"]["queries"], "boards": with_watched(boards, watched_boards(prof)[0]), "title_matcher": matcher,
-           "leads_path": str(root / "data/leads.json")}
+           "leads_path": str(root / "data/leads.json"),
+           "intermediary_boards": prof.get("sources", {}).get("intermediary_boards", [])}
     statuses: list[SourceStatus] = []
     raw: list[RawPosting] = []
     for name in (sources or list(ADAPTERS)):

@@ -580,3 +580,18 @@ def test_web_search_rejected_key_reported_as_error(root, monkeypatch):
     info = run(root, c, sources=("websearch",))
     ws = next(s for s in info["sources"] if s["name"] == "websearch")
     assert ws["state"] == "error" and "key was not accepted" in ws["detail"]
+
+
+def test_web_search_skips_list_pages_and_cleans_titles():
+    from jobsearch.adapters.websearch import _is_list_page, _clean_title
+    assert _is_list_page("https://careers.labcorp.com/global/en/project-management-remote", "Project Management Remote Jobs")
+    assert _is_list_page("https://jobs.apple.com/en-us/search?location=united-states-USA", "Search Jobs - United States")
+    assert not _is_list_page("https://jobs.centene.com/us/en/jobs/1671643/program-manager-ii", "Program Manager II, Remote-CA | Centene Careers")
+    assert _clean_title("Regional Program Manager - Myworkdayjobs.com", "https://jll.wd1.myworkdayjobs.com/x")[0] == "Regional Program Manager"
+
+
+def test_agency_boards_never_saved(root):
+    pipeline.save_boards(root, {}, [{"ats": "lever", "board": "jobgether", "employer": "Jobgether"},
+                                    {"ats": "lever", "board": "betaorg", "employer": "Beta"}])
+    saved = json.loads((root / "data/boards.json").read_text())
+    assert [b["board"] for b in saved["lever"]] == ["betaorg"]

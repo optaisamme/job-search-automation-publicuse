@@ -137,6 +137,9 @@ class HttpClient:
                 if "403" in msg or "Tunnel" in msg or "tunnel" in msg:
                     st["blocked"] += 1
                     raise AccessBlocked(f"network policy/proxy denied {host}: {msg}")
+                if "CERTIFICATE_VERIFY_FAILED" in msg or "certificate verify failed" in msg:
+                    st["errors"] += 1
+                    raise   # a bad security certificate does not fix itself on retry
                 if attempt <= retries:
                     delay = min(60, 2 ** attempt) + random.random()
                     log.warning("retry %s after %s in %.1fs", url, msg, delay)
