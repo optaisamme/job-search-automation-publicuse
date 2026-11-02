@@ -9,12 +9,30 @@ from pathlib import Path
 from .notify import _j
 
 SOURCE_NOTES = {
-    "linkedin": "Not accessed: no public job-search API; terms prohibit automated scraping. Discovery only via web-search leads (not fetched).",
-    "indeed": "Not accessed: public job-search API discontinued; terms prohibit scraping. Web-search leads only (not fetched).",
-    "glassdoor": "Not accessed: no public job API; requires login. Web-search leads only (not fetched).",
-    "ziprecruiter": "Not accessed: job-search API is partner-only (credentials required). Web-search leads only (not fetched).",
-    "builtin": "Not accessed: no documented public API. Web-search leads only (not fetched).",
+    "LinkedIn": "Not used: no public job-search API, and its terms do not allow automated searching.",
+    "Indeed": "Not used: its public job-search API was discontinued, and its terms do not allow automated searching.",
+    "Glassdoor": "Not used: no public job API; it requires signing in.",
+    "ZipRecruiter": "Not used: its job-search API is only for business partners.",
+    "Built In": "Not used: no public job API.",
 }
+
+SOURCE_NAMES = {
+    "web_search_leads": "Web search leads", "ats_watchlist": "Companies to watch (and companies found earlier)",
+    "remotive": "Remotive", "remoteok": "Remote OK", "himalayas": "Himalayas", "themuse": "The Muse",
+    "jobicy": "Jobicy", "weworkremotely": "We Work Remotely", "workingnomads": "Working Nomads",
+    "adzuna": "Adzuna", "usajobs": "USAJOBS",
+}
+
+
+def _state(s: dict) -> str:
+    st = s.get("state")
+    if st == "ok":
+        return "Yes"
+    if st == "needs_credentials":
+        return "Off: needs a free key (see SETUP.md)"
+    if st == "blocked":
+        return "No: the site blocked the request"
+    return "No: error (see below)"
 
 
 def _rule(row, name):
@@ -79,36 +97,41 @@ def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report"
     rej = [r for r in rows if r["status"] == "Rejected"]
     closed = store.jobs("closed_at IS NOT NULL")
     md = [f"# {title}", "",
-          f"Run: {run_info.get('started_at')} UTC — mode: {run_info.get('mode')} — baseline: {run_info.get('is_baseline')}",
-          "",
-          "Data: " + ("**LIVE listings** fetched from the sources below." if not run_info.get("fixtures") else "**TEST FIXTURES** (not live listings)."),
-          "",
-          f"Totals — Qualified: {len(q)} | Needs Verification: {len(nv)} | Hourly/contract held: {len(held)} | Rejected: {len(rej)} | Closed: {len(closed)}",
-          "", "## Qualified matches", ""]
+          f"Search started: {(run_info.get('started_at') or '')[:16].replace('T', ' ')} UTC", ""]
+    if run_info.get("fixtures"):
+        md += ["**TEST DATA** (not live listings).", ""]
+    md += [f"Totals: match all your rules {len(q)} | need checking {len(nv)} | hourly or contract {len(held)} | "
+           f"did not match {len(rej)} | no longer open {len(closed)}",
+           "", "## Jobs that match all your rules", ""]
     md += [_job_md(r) + "\n" for r in q] or ["None.", ""]
-    md += ["## Needs Verification", ""]
+    md += ["## Jobs that need checking", ""]
     md += [_job_md(r) + "\n" for r in nv] or ["None.", ""]
-    md += ["## Hourly / contract (held separately — no conversion policy approved)", ""]
+    md += ["## Hourly or contract jobs", "",
+           "Pay is listed per hour or per contract, so the yearly salary rule was not applied. Check the pay yourself.", ""]
     md += [_job_md(r, detail=False) + "\n" for r in held] or ["None.", ""]
-    md += ["## Rejected (examples, concise reasons)", ""]
+    md += ["## Jobs that did not match, and why (up to 40)", ""]
     for i, r in enumerate(rej[:40], 1):
         reasons = "; ".join(_j(r, "reasons", []) or [])
-        md.append(f"{i}. {r['title']} — {r['employer']}: {reasons} ({r['canonical_url'] or (_j(r,'source_urls',[]) or [''])[0]})")
+        md.append(f"{i}. {r['title']}, {r['employer']}: {reasons} ({r['canonical_url'] or (_j(r,'source_urls',[]) or [''])[0]})")
     if not rej:
         md.append("None.")
-    md += ["", "## Source coverage and limitations", "", "| Source | State | Detail | Fetched | Title matches |", "|---|---|---|---|---|"]
+    md += ["", "## Where jobs were looked for", "",
+           "| Job site | Worked? | Jobs looked at | Matched your job titles |", "|---|---|---|---|"]
     for s in run_info.get("sources", []):
-        md.append(f"| {s['name']} | {s['state']} | {s['detail'][:180].replace('|','/')} | {s['fetched']} | {s['matched']} |")
+        if s["name"] == "web_search_leads" and not s["fetched"]:
+            continue   # not used unless leads are added by hand
+        md.append(f"| {SOURCE_NAMES.get(s['name'], s['name'])} | {_state(s)} | {s['fetched']} | {s['matched']} |")
     for k, v in SOURCE_NOTES.items():
-        md.append(f"| {k} | not_accessed | {v} | 0 | 0 |")
-    md += ["", "Limitations:",
-           "1. Coverage is limited to the sources marked ok above and to boards on the ATS watchlist; it is not comprehensive.",
-           "2. 'First seen' is when this automation first saw a job, not the employer's posting date.",
-           "3. Hard filters are rule-based text analysis; ambiguous wording is routed to Needs Verification rather than guessed.",
-           "4. Experience fit is evidence-based keyword matching against the approved profile; absence means 'not documented'."]
+        md.append(f"| {k} | {v} | 0 | 0 |")
+    md += ["", "Good to know:",
+           "1. Only the job sites marked Yes above were searched. No tool finds every job.",
+           "2. \"First found\" is when this tool first saw a job, not when the employer posted it.",
+           "3. Rules are checked by reading the posting's text. When the wording is unclear, the job is put under "
+           "\"need checking\" instead of guessed.",
+           "4. The fit notes compare the posting with your experience file. A skill not listed there shows as \"not documented\"."]
     errs = run_info.get("errors") or []
     if errs:
-        md += ["", "## Operational errors (this run)", ""] + [f"1. {e}" for e in errs[:30]]
+        md += ["", "## Problems during this search", ""] + [f"1. {e}" for e in errs[:30]]
     text = "\n".join(md) + "\n"
     p = out_dir / "full_report.md"   # included in JOB_SEARCH_RESULTS/REPORT_*.md by results_folder.py
     p.write_text(text)

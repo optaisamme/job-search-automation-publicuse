@@ -12,6 +12,8 @@ own computer does not need to be on. Everything is edited on the GitHub website.
 
 ## Step 1: Make your own copy
 
+![Where to click: 1 the green Use this template button, 2 Create a new repository, 3 type a name, 4 choose Private, 5 Create repository](docs/how_to_copy.svg)
+
 1. Open the shared project page (the link you were given).
 2. Click the green **Use this template** button, then **Create a new repository**.
    (If you don't see that button, ask the person who shared it to give you access.)
@@ -141,8 +143,9 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 1. It never applies to jobs or contacts employers.
 2. It does not read LinkedIn, Indeed, Glassdoor, ZipRecruiter or Built In (their terms do
    not allow automated access). Links from those sites can't be checked automatically.
-3. Without Claude, it does not run its own web searches. It uses the job boards of the
-   employers it already knows, Remotive, Remote OK, Himalayas, and any optional API keys.
+3. It does not run general web searches. It uses Himalayas, The Muse, Remote OK, Jobicy,
+   We Work Remotely, Working Nomads, Remotive, the job pages of companies you add (settings
+   section 7) or that it found earlier, and Adzuna and USAJOBS if you add their free keys.
 4. Results come from text rules. When a posting is unclear, the job is marked "Needs
    Verification" rather than guessed, so read each posting yourself before applying.
 

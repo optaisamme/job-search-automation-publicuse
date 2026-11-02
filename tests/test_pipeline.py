@@ -270,7 +270,7 @@ def test_report_sections(root):
     setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Senior Salesforce Administrator", desc=bad)])
     info = run(root, c)
     md = open(info["report"]).read()
-    for h in ("## Qualified matches", "## Needs Verification", "## Rejected", "## Source coverage and limitations", "TEST FIXTURES"):
+    for h in ("## Jobs that match all your rules", "## Jobs that need checking", "## Jobs that did not match", "## Where jobs were looked for", "TEST DATA"):
         assert h in md
     assert "upper $100,000 not > $100,000" in md
 
@@ -422,3 +422,39 @@ def test_results_page_lists_possible_matches(root):
     index = results_folder.write(root)["text"]
     assert "## Possible matches: check these yourself (1)" in index
     assert "salary: no salary listed; location: not clear which states" in index
+
+
+def test_title_words_any_order():
+    from jobsearch.titles import TitleMatcher
+    m = TitleMatcher({"titles": [{"track": "", "family": "G1", "plain_titles": ["Data Analyst"], "require_any": []}]})
+    assert m.match_title("Senior Data Analyst") and m.match_title("Analyst, Data Platform")
+    assert not m.match_title("Data Analytics Lead") and not m.match_title("Data Engineer")
+
+
+def test_new_job_sites_parse():
+    from jobsearch.adapters.aggregators import TheMuseAdapter, JobicyAdapter, WeWorkRemotelyAdapter, WorkingNomadsAdapter
+    from jobsearch.adapters.base import SourceStatus
+    c = FakeClient()
+    c.set("https://www.themuse.com/api/public/jobs?page=1&location=Flexible+%2F+Remote",
+          {"page": 1, "page_count": 1, "results": [{"id": 1, "name": "Data Analyst", "contents": "<p>Remote</p>",
+           "locations": [{"name": "Flexible / Remote"}], "company": {"name": "Muse Co"},
+           "refs": {"landing_page": "https://www.themuse.com/jobs/museco/data-analyst"}}]})
+    c.set("https://jobicy.com/api/v2/remote-jobs?count=100&geo=usa",
+          {"jobs": [{"jobTitle": "Data Analyst", "companyName": "Jobicy Co", "url": "https://jobicy.com/jobs/1",
+                     "jobDescription": "<p>x</p>", "jobGeo": "USA", "jobType": ["Full-Time"],
+                     "salaryMin": 95000, "salaryMax": 115000, "salaryCurrency": "USD", "salaryPeriod": "yearly"}]})
+    c.set("https://weworkremotely.com/remote-jobs.rss",
+          "<rss><channel><item><title>WWR Co: Data Analyst</title><region>USA Only</region>"
+          "<link>https://weworkremotely.com/remote-jobs/wwr-data-analyst</link><description>&lt;p&gt;x&lt;/p&gt;</description>"
+          "</item></channel></rss>")
+    c.set("https://www.workingnomads.com/api/exposed_jobs/",
+          [{"url": "https://www.workingnomads.com/job/go/1/", "title": "Data Analyst", "company_name": "WN Co",
+            "description": "<p>x</p>", "location": "USA"}])
+    ctx = {"queries": []}
+    got = {}
+    for A in (TheMuseAdapter, JobicyAdapter, WeWorkRemotelyAdapter, WorkingNomadsAdapter):
+        got[A.name] = A(c, ctx).search(SourceStatus(A.name))
+    assert got["themuse"][0].employer == "Muse Co" and got["themuse"][0].workplace_type == "remote"
+    assert got["jobicy"][0].structured_salaries[0]["min"] == 95000
+    assert (got["weworkremotely"][0].employer, got["weworkremotely"][0].title) == ("WWR Co", "Data Analyst")
+    assert got["workingnomads"][0].employer == "WN Co"

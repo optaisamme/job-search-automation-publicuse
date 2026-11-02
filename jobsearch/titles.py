@@ -12,8 +12,9 @@ class TitleMatcher:
     def __init__(self, profile: dict):
         self.families = []
         for t in profile.get("titles", []):
-            # words in order, any spacing/punctuation between them; "Senior ..." etc. still match
-            pats = [_c(r"\b" + r"[\s,\-–/]+".join(map(re.escape, pt.split())) + r"\b") for pt in t.get("plain_titles", [])]
+            # all of the title's words, in any order: "Data Analyst" also finds "Analyst, Data" and "Senior Data Analyst"
+            pats = [_c("".join(r"(?=.*\b" + re.escape(w) + r"(?!\w))" for w in pt.split()))
+                    for pt in t.get("plain_titles", []) if pt.split()]
             if pats:
                 self.families.append({"track": t["track"], "family": t["family"], "include": pats,
                                       "require_any": [w.lower() for w in t.get("require_any", [])]})

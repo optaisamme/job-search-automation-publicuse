@@ -126,8 +126,20 @@ def write(root: Path) -> dict:
         if draft:
             R.append(f"**{draft['subject']}**" + (f" (also posted: {issue_url})" if issue_url else ""))
             R += ["", "```text", draft["body"], "```", ""]
+        elif c.get("title_matched", 0) == 0:
+            R += ["Nothing new in this search.", "",
+                  "**None of the listings matched your job titles.** To find more:", "",
+                  "1. Use shorter, common titles. For example, \"Data Analyst\" also finds \"Senior Data Analyst\" "
+                  "and \"Analyst, Data\", but \"Data Analyst for Nonprofit Programs\" finds almost nothing.",
+                  "2. Add other names for the same job in the same group, for example "
+                  "`[\"Program Manager\", \"Program Director\", \"Program Lead\"]`.",
+                  "3. Leave `description_must_mention_one_of` and \"Description must mention\" empty to start; "
+                  "add them later if you get too many jobs.",
+                  "4. Add the free Adzuna and USAJOBS keys (SETUP.md). They search far more jobs than the other sites.",
+                  "5. Add employers you like in settings section 7, \"Companies to watch.\"", ""]
         else:
-            R += ["Nothing new in this search. The jobs below were already reported earlier.", ""]
+            R += ["Nothing new in this search."
+                  + (" The jobs below were already reported earlier." if c.get("qualified") or c.get("needs_verification") else ""), ""]
         R += current
         full_p = root / "out/full_report.md"
         if full_p.exists():

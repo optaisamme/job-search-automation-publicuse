@@ -58,32 +58,166 @@ class RemoteOKAdapter(Adapter):
 
 
 class HimalayasAdapter(Adapter):
-    # https://himalayas.app/api
+    # https://himalayas.app/api — search returns 20 per page (?page=N); the browse feed pages by ?cursor=.
     name = "himalayas"
+    SEARCH_PAGES = 5     # per search word: up to 100 jobs
+    BROWSE_PAGES = 10    # newest jobs regardless of search words: up to 200 jobs
+
+    def _posting(self, j: dict) -> RawPosting:
+        return RawPosting(
+            source="himalayas", source_url=j.get("guid") or "", employer=j.get("companyName", ""), title=j.get("title", ""),
+            description_text=html_to_text(j.get("description")),
+            location_text="; ".join(j.get("locationRestrictions") or []), workplace_type="remote",
+            apply_url=j.get("applicationLink"), employment_type=j.get("employmentType"),
+            structured_salaries=([{"min": j.get("minSalary"), "max": j.get("maxSalary"), "interval": "year",
+                                   "context": f"Himalayas listing salary {j.get('currency') or ''} {j.get('minSalary')}-{j.get('maxSalary')}"}]
+                                 if j.get("minSalary") and j.get("maxSalary") and (j.get("currency") or "USD") == "USD"
+                                 and (j.get("salaryPeriod") or "annual") == "annual" else []),
+            extra={"third_party_salary": [j.get("minSalary"), j.get("maxSalary")], "third_party_published": j.get("pubDate"),
+                   "expiry": j.get("expiryDate")},
+        )
 
     def search(self, status: SourceStatus) -> list[RawPosting]:
         out, seen = [], set()
-        for q in self.ctx["queries"][:6]:
-            r = self.client.get("https://himalayas.app/jobs/api/search?" + urllib.parse.urlencode({"q": q, "country": "US"}))
-            if r.status >= 400:
-                status.errors.append(f"query {q!r}: HTTP {r.status}")
-                continue
-            for j in r.json().get("jobs", []):
+
+        def add(jobs):
+            for j in jobs:
                 gid = j.get("guid") or j.get("applicationLink")
-                if gid in seen:
+                if gid and gid not in seen:
+                    seen.add(gid)
+                    out.append(self._posting(j))
+
+        for q in self.ctx["queries"][:6]:
+            for page in range(1, self.SEARCH_PAGES + 1):
+                r = self.client.get("https://himalayas.app/jobs/api/search?" + urllib.parse.urlencode({"q": q, "country": "US", "page": page}))
+                if r.status >= 400:
+                    status.errors.append(f"query {q!r} page {page}: HTTP {r.status}")
+                    break
+                jobs = r.json().get("jobs", [])
+                add(jobs)
+                if len(jobs) < 20:
+                    break
+        cursor = None
+        for _ in range(self.BROWSE_PAGES):
+            r = self.client.get("https://himalayas.app/jobs/api?" + urllib.parse.urlencode({"limit": 20, **({"cursor": cursor} if cursor else {})}))
+            if r.status >= 400:
+                status.errors.append(f"newest jobs feed: HTTP {r.status}")
+                break
+            d = r.json()
+            add(d.get("jobs", []))
+            cursor = d.get("nextCursor")
+            if not cursor:
+                break
+        return out
+
+
+def _num(v):
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
+class TheMuseAdapter(Adapter):
+    # https://www.themuse.com/developers/api/v2 — public jobs API, all job types; no key needed at low volume.
+    # Not searchable by keyword, so the newest jobs are collected and matched to your titles here.
+    name = "themuse"
+    PAGES = 20   # 20 jobs per page: newest 400
+
+    def search(self, status: SourceStatus) -> list[RawPosting]:
+        from ..criteria import CRITERIA
+        remote = CRITERIA.get("remote_only", True)
+        out, seen = [], set()
+        for page in range(1, self.PAGES + 1):
+            params = [("page", page)] + ([("location", "Flexible / Remote")] if remote else [])
+            r = self.client.get("https://www.themuse.com/api/public/jobs?" + urllib.parse.urlencode(params))
+            if r.status >= 400:
+                status.errors.append(f"page {page}: HTTP {r.status}")
+                break
+            d = r.json()
+            for j in d.get("results", []):
+                if j.get("id") in seen:
                     continue
-                seen.add(gid)
+                seen.add(j.get("id"))
+                locs = [l.get("name", "") for l in j.get("locations") or []]
+                url = (j.get("refs") or {}).get("landing_page", "")
                 out.append(RawPosting(
-                    source="himalayas", source_url=j.get("guid") or "", employer=j.get("companyName", ""), title=j.get("title", ""),
-                    description_text=html_to_text(j.get("description")),
-                    location_text="; ".join(j.get("locationRestrictions") or []), workplace_type="remote",
-                    apply_url=j.get("applicationLink"), employment_type=j.get("employmentType"),
-                    structured_salaries=([{"min": j.get("minSalary"), "max": j.get("maxSalary"), "interval": "year",
-                                           "context": f"Himalayas listing salary {j.get('currency') or ''} {j.get('minSalary')}-{j.get('maxSalary')}"}]
-                                         if j.get("minSalary") and j.get("maxSalary") and (j.get("currency") or "USD") == "USD" else []),
-                    extra={"third_party_salary": [j.get("minSalary"), j.get("maxSalary")], "third_party_published": j.get("pubDate"),
-                           "expiry": j.get("expiryDate")},
+                    source="themuse", source_url=url, employer=(j.get("company") or {}).get("name", ""), title=j.get("name", ""),
+                    description_text=html_to_text(j.get("contents")), location_text="; ".join(locs), apply_url=url,
+                    workplace_type="remote" if locs and all(l == "Flexible / Remote" for l in locs) else None,
+                    extra={"third_party_published": j.get("publication_date")},
                 ))
+            if page >= (d.get("page_count") or 0):
+                break
+        return out
+
+
+class JobicyAdapter(Adapter):
+    # https://jobicy.com/jobs-rss-feed — free remote-jobs API. Jobicy asks to be credited with a link
+    # and for apply buttons to go to the original job URL (results link to each Jobicy job page).
+    name = "jobicy"
+
+    def search(self, status: SourceStatus) -> list[RawPosting]:
+        r = self.client.get("https://jobicy.com/api/v2/remote-jobs?" + urllib.parse.urlencode({"count": 100, "geo": "usa"}))
+        if r.status >= 400:
+            raise RuntimeError(f"HTTP {r.status}")
+        out = []
+        for j in r.json().get("jobs", []):
+            lo, hi = _num(j.get("salaryMin")), _num(j.get("salaryMax"))
+            yearly = (j.get("salaryPeriod") or "") == "yearly" and (j.get("salaryCurrency") or "USD") == "USD"
+            out.append(RawPosting(
+                source="jobicy", source_url=j.get("url", ""), employer=j.get("companyName", ""), title=j.get("jobTitle", ""),
+                description_text=html_to_text(j.get("jobDescription")), location_text=j.get("jobGeo", ""),
+                workplace_type="remote", apply_url=j.get("url"),
+                employment_type=", ".join(j.get("jobType") or []) or None,
+                structured_salaries=([{"min": lo, "max": hi, "interval": "year", "context": f"Jobicy listing salary USD {lo:,.0f}-{hi:,.0f}"}]
+                                     if yearly and lo and hi else []),
+                extra={"third_party_salary": [lo, hi], "third_party_published": j.get("pubDate")},
+            ))
+        return out
+
+
+class WeWorkRemotelyAdapter(Adapter):
+    # https://weworkremotely.com/remote-job-rss-feed — public RSS feed of the newest remote jobs, all categories.
+    name = "weworkremotely"
+
+    def search(self, status: SourceStatus) -> list[RawPosting]:
+        import xml.etree.ElementTree as ET
+        r = self.client.get("https://weworkremotely.com/remote-jobs.rss")
+        if r.status >= 400:
+            raise RuntimeError(f"HTTP {r.status}")
+        out = []
+        for it in ET.fromstring(r.body).findall("./channel/item"):
+            f = {c.tag.split("}")[-1]: (c.text or "").strip() for c in it}
+            company, _, title = f.get("title", "").partition(": ")
+            if not title:
+                company, title = "", f.get("title", "")
+            where = "; ".join(x for x in (f.get("region"), f.get("country"), f.get("state")) if x)
+            out.append(RawPosting(
+                source="weworkremotely", source_url=f.get("link", ""), employer=company.strip(), title=title.strip(),
+                description_text=html_to_text(f.get("description")), location_text=where, workplace_type="remote",
+                apply_url=f.get("link"), employment_type=f.get("type") or None,
+                extra={"third_party_published": f.get("pubDate"), "expiry": f.get("expires_at")},
+            ))
+        return out
+
+
+class WorkingNomadsAdapter(Adapter):
+    # https://www.workingnomads.com/api/exposed_jobs/ — public feed of the newest remote jobs.
+    name = "workingnomads"
+
+    def search(self, status: SourceStatus) -> list[RawPosting]:
+        r = self.client.get("https://www.workingnomads.com/api/exposed_jobs/")
+        if r.status >= 400:
+            raise RuntimeError(f"HTTP {r.status}")
+        out = []
+        for j in r.json():
+            out.append(RawPosting(
+                source="workingnomads", source_url=j.get("url", ""), employer=j.get("company_name", ""), title=j.get("title", ""),
+                description_text=html_to_text(j.get("description")), location_text=j.get("location", ""),
+                workplace_type="remote", apply_url=j.get("url"),
+                extra={"third_party_published": j.get("pub_date")},
+            ))
         return out
 
 

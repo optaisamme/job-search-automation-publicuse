@@ -4,6 +4,13 @@ Every week, this tool looks through public job listings, keeps the jobs that fit
 rules (job titles, state, salary, and more), checks that each application link works, and
 shows you the results. You set it up once on the GitHub website. No coding needed.
 
+## Why I built this
+
+The search filters on sites like LinkedIn, Indeed and HiringCafe either did not let me narrow
+my search the way I wanted, or did not search a wide enough variety of job boards. I built
+this tool to meet the needs of the students I work with, and I am sharing it for anyone else
+it can help.
+
 **Already set up?** Open your copy, then click
 **[START A SEARCH NOW](../../actions/workflows/EDIT_ME_3_weekly_schedule.yml)**, then click the
 grey **Run workflow** button and the green **Run workflow** button.
@@ -15,7 +22,7 @@ grey **Run workflow** button and the green **Run workflow** button.
 
 | Step | What you do | Where | Time |
 |---|---|---|---|
-| **1. Make your own copy** | Copy this project into your own GitHub account | [SETUP.md](SETUP.md), Step 1 | 2 minutes |
+| **1. Make your own copy** | Copy this project into your own GitHub account ([picture of where to click](SETUP.md#step-1-make-your-own-copy)) | [SETUP.md](SETUP.md), Step 1 | 2 minutes |
 | **2. Fill in your settings** | Type your job titles and rules into one file | [EDIT_ME_JOB_SEARCH_SETTINGS](EDIT_ME_JOB_SEARCH_SETTINGS) folder, file **EDIT_ME_1** | 10 minutes |
 | **3. Run a search** | **Only after steps 1 and 2.** In **your copy**: **Actions** tab, then **Run job search**, then **Run workflow** (twice). Automatic weekly searches start **off** (see below) | [HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md) | 1 minute to start, 10 to 20 minutes to finish |
 | **4. Read your results** | Open the results folder | **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)** folder | Any time |
@@ -104,10 +111,12 @@ yourself. If you want a search to run by itself every week, open file 3 above
 ## How a search works
 
 1. **Checks your settings** and lists what is ON and OFF.
-2. **Collects public job listings** from Remotive, Remote OK and Himalayas, plus the job
-   pages of any companies you add in settings section 7, "Companies to watch" (Greenhouse,
-   Lever, Ashby or SmartRecruiters pages). Optional: USAJOBS and Adzuna, if you add their
-   free keys (see SETUP.md).
+2. **Collects public job listings** from Himalayas, The Muse, Remote OK, Jobicy, We Work
+   Remotely, Working Nomads and Remotive. Several of these send their newest jobs whatever
+   your search words are, so each search looks at more than 1,000 listings. It also checks the
+   job pages of companies you add in settings section 7, "Companies to watch," and of
+   companies it found in earlier searches. Optional: USAJOBS and Adzuna, if you add their free
+   keys (see SETUP.md).
 3. **Keeps jobs with your job titles.**
 4. **Applies your rules**: remote only (on unless you turn it off), your state, salary,
    certifications, your own rules. When a
