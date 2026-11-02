@@ -11,7 +11,7 @@ shows you the results. You set it up once on the GitHub website. No coding neede
 | Step | What you do | Where | Time |
 |---|---|---|---|
 | **1. Make your own copy** | Copy this project into your own GitHub account | [SETUP.md](SETUP.md), Step 1 | 2 minutes |
-| **2. Fill in your settings** | Type your job titles and rules into one file | [config](config) folder, file **EDIT_ME_1** | 10 minutes |
+| **2. Fill in your settings** | Type your job titles and rules into one file | [EDIT_ME_JOB_SEARCH_SETTINGS](EDIT_ME_JOB_SEARCH_SETTINGS) folder, file **EDIT_ME_1** | 10 minutes |
 | **3. Run a search** | **Only after steps 1 and 2.** Click a button in **your copy** to start a search (it also runs by itself every Friday) | [HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md) | 1 minute to start, 10 to 20 minutes to finish |
 | **4. Read your results** | Open the results folder | **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)** folder | Any time |
 
@@ -50,8 +50,8 @@ Only files whose names start with **EDIT_ME**. Do not change any other file.
 
 | File | Do I have to? | What it changes |
 |---|---|---|
-| [`config/EDIT_ME_1_job_search_settings.toml`](config/EDIT_ME_1_job_search_settings.toml) | **Yes:** type at least one job title | Which jobs are found and which are left out: job titles, remote only or not, your state, salary, certifications, your own rules |
-| [`config/EDIT_ME_2_my_experience.toml`](config/EDIT_ME_2_my_experience.toml) | No | Your skills, used to show how well each job fits you. It never removes a job |
+| [`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml`](EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml) | **Yes:** type at least one job title | Which jobs are found and which are left out: job titles, remote only or not, your state, salary, certifications, your own rules |
+| [`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml`](EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml) | No | Your skills, used to show how well each job fits you. It never removes a job |
 | [`.github/workflows/EDIT_ME_3_weekly_schedule.yml`](.github/workflows/EDIT_ME_3_weekly_schedule.yml) | No | The day and time of the automatic weekly search (default: Fridays) |
 
 Both settings files start **empty**: nothing is searched or filtered until you fill them in.

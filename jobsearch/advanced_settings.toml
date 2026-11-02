@@ -1,5 +1,5 @@
 # DO NOT EDIT. Built-in technical defaults used by the program.
-# Your own search settings go in config/EDIT_ME_1_job_search_settings.toml.
+# Your own search settings go in EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml.
 
 titles = []          # filled from your settings file
 

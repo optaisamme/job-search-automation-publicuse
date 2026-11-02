@@ -1,5 +1,5 @@
 """Runtime hard-filter criteria. Everything is off until set in
-config/EDIT_ME_1_job_search_settings.toml (see from_settings)."""
+EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml (see from_settings)."""
 from __future__ import annotations
 
 DEFAULTS = {

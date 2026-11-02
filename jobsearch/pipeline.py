@@ -33,25 +33,29 @@ ADAPTERS = {  # order matters: leads first so newly discovered boards are scanne
 }
 
 
+SETTINGS_DIR = "EDIT_ME_JOB_SEARCH_SETTINGS"   # the folder people edit
+
+
 def load_config(root: Path) -> tuple[dict, dict]:
-    """Load search configuration. config/EDIT_ME_1_job_search_settings.toml (plain language), when present,
+    """Load search configuration. EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml (plain language), when present,
     overrides the hard-filter criteria, job titles and search keywords in jobsearch/advanced_settings.toml."""
     from . import criteria
-    adv = root / "config/search_profile.toml"           # optional local override (developers)
+    cfg = root / SETTINGS_DIR if (root / SETTINGS_DIR).exists() else root / "config"   # "config" = older copies/tests
+    adv = cfg / "search_profile.toml"           # optional local override (developers)
     if not adv.exists():
         adv = Path(__file__).with_name("advanced_settings.toml")  # built-in defaults; not edited by users
     with open(adv, "rb") as f:
         prof = tomllib.load(f)
-    ep = root / "config/EDIT_ME_2_my_experience.toml"
+    ep = cfg / "EDIT_ME_2_my_experience.toml"
     if not ep.exists():
-        ep = root / "config/experience_profile.toml"
+        ep = cfg / "experience_profile.toml"
     exp = {}
     if ep.exists():
         with open(ep, "rb") as f:
             exp = tomllib.load(f)
-    sp = root / "config/EDIT_ME_1_job_search_settings.toml"
+    sp = cfg / "EDIT_ME_1_job_search_settings.toml"
     if not sp.exists():
-        sp = root / "config/settings.toml"
+        sp = cfg / "settings.toml"
     if sp.exists():
         with open(sp, "rb") as f:
             settings = tomllib.load(f)

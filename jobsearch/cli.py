@@ -141,7 +141,7 @@ def main(argv=None) -> int:
             print(f"Title group [{t['track']}] {t['family']}: {', '.join(t.get('plain_titles') or ['(advanced patterns)'])}")
         print(f"Experience profile: {len(exp.get('skills', []))} skills, {len(exp.get('gaps', []))} gap areas")
         if not prof["titles"]:
-            print("NO JOB TITLES SET YET: open config/EDIT_ME_1_job_search_settings.toml, go to section 1, type at least one job title "
+            print("NO JOB TITLES SET YET: open EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml, go to section 1, type at least one job title "
                   "inside the brackets of a group, for example  titles = [\"Data Analyst\"],  and save. "
                   "Nothing will be searched until then.")
             return 1

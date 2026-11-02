@@ -20,18 +20,18 @@ own computer does not need to be on. Everything is edited on the GitHub website.
 5. Click **Create repository**.
 
 Every file you edit has **EDIT_ME** at the start of its name. Do not edit other files.
-The [config folder page](config) lists them.
+The [EDIT_ME_JOB_SEARCH_SETTINGS folder page](EDIT_ME_JOB_SEARCH_SETTINGS) lists them.
 
 ## Step 2: Set your search rules (EDIT ME file 1, required)
 
-`config/EDIT_ME_1_job_search_settings.toml` starts empty: no titles, no filters. You fill in the blanks: type
+`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml` starts empty: no titles, no filters. You fill in the blanks: type
 between the quotes `""` or the brackets `[]` on lines that do NOT start with `#`.
 Lines starting with `#` are notes and examples; you never need to edit them.
 
 A list is typed as items in quotes, separated by commas, inside brackets:
 `["Salesforce Administrator", "Salesforce Admin"]`
 
-1. In your new repository, open the `config` folder, then `EDIT_ME_1_job_search_settings.toml`.
+1. In your new repository, open the `EDIT_ME_JOB_SEARCH_SETTINGS` folder, then `EDIT_ME_1_job_search_settings.toml`.
 2. Click the pencil icon (Edit).
 3. **Required, section 1:** in "Job title group 1", type a name and at least one title:
 
@@ -68,9 +68,9 @@ reject_when = "mentioned"
 
 ## Step 3: Add your experience (EDIT ME file 2, optional)
 
-`config/EDIT_ME_2_my_experience.toml` also starts empty, with examples as notes.
+`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml` also starts empty, with examples as notes.
 
-1. Open `config/EDIT_ME_2_my_experience.toml` and click the pencil icon.
+1. Open `EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml` and click the pencil icon.
 2. For each skill you have, copy the example block to the bottom of the file, remove
    the `# ` marks, and fill in the skill, the words a job posting might use for it, and
    where you did it.
