@@ -115,13 +115,14 @@ each stays off until you add its key. You add keys in your copy's **Settings**, 
 | Service | What it adds | Where to get the free key | Secret name(s) to add |
 |---|---|---|---|
 | **Tavily** (web search) | Searches the whole web for each of your job titles, including company careers pages. Also finds new companies to check | https://app.tavily.com | `TAVILY_API_KEY` |
-| **Adzuna** | Large job search site that collects jobs from many other job sites; all job types, not only remote | https://developer.adzuna.com | `ADZUNA_APP_ID` and `ADZUNA_APP_KEY` |
+| **Adzuna** | Large job search site that collects jobs from many other job sites; all job types, not only remote. **Its sign-up form asks for an organization name and website:** you can type your own name and the web address of your copy of this project | https://developer.adzuna.com | `ADZUNA_APP_ID` and `ADZUNA_APP_KEY` |
 | **Jooble** | Another large site that collects jobs from many job sites | https://jooble.org/api/about | `JOOBLE_API_KEY` |
 | **USAJOBS** | Official US federal government jobs | https://developer.usajobs.gov | `USAJOBS_API_KEY` and `USAJOBS_EMAIL` (the email you registered with) |
 | **ReliefWeb** | Nonprofit, humanitarian and international development jobs (run by the United Nations) | https://apidoc.reliefweb.int/parameters#appname (ask for an "appname") | `RELIEFWEB_APPNAME` (the appname they approve) |
 
-**Recommended first:** Tavily (finds jobs that are on no job site) and Adzuna (the largest
-number of jobs).
+**Recommended first:** Tavily. It finds jobs that are on no job site, and its free plan
+does not ask for a credit card, according to published comparisons. Add the others only if
+you want more jobs.
 
 **Tavily free plan:** 1,000 web searches a month (check the current plan on Tavily's pricing
 page). Each search uses 2 web searches per job title, for up to 4 titles: at most 8 per
