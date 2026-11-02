@@ -377,3 +377,48 @@ def test_plain_language_link_messages():
     assert "himalayas.app website does not allow automated checks" in m and "error 403" in m and "Open the link yourself" in m
     assert "HTTP 403 at" not in m
     assert "no longer exists" in plain_link_reason(Verification("closed", detail="HTTP 404"))
+
+
+# ---------------------------------------------------------------- companies to watch (settings section 7)
+def test_parse_board_link_variants():
+    from jobsearch.adapters.ats import parse_board_link
+    assert parse_board_link("https://job-boards.greenhouse.io/examplecompany") == ("greenhouse", "examplecompany")
+    assert parse_board_link("https://boards.greenhouse.io/examplecompany/") == ("greenhouse", "examplecompany")
+    assert parse_board_link("https://job-boards.greenhouse.io/examplecompany/jobs/123") == ("greenhouse", "examplecompany")
+    assert parse_board_link("https://jobs.lever.co/another?team=x") == ("lever", "another")
+    assert parse_board_link("https://jobs.ashbyhq.com/third") == ("ashby", "third")
+    assert parse_board_link("https://jobs.smartrecruiters.com/Fourth") == ("smartrecruiters", "Fourth")
+    assert parse_board_link("https://www.example.com/careers") is None
+
+
+def test_watched_company_scanned_but_not_saved(root):
+    (root / "data/boards.json").write_text("{}")
+    s = root / "config/settings.toml"
+    s.write_text(s.read_text() + '\n[companies_to_watch]\njob_page_links = ["https://job-boards.greenhouse.io/beta"]\n')
+    c = FakeClient()
+    setup_board(c, [gh_job(7, "Salesforce Administrator", board="beta")], board="beta", employer="Beta Org")
+    run(root, c)
+    assert [j["employer"] for j in jobs(root)] == ["Beta Org"]
+    assert json.loads((root / "data/boards.json").read_text()) == {}
+
+
+def test_check_reports_unknown_company_link(root, capsys):
+    from jobsearch import cli
+    s = root / "config/settings.toml"
+    s.write_text(s.read_text() + '\n[companies_to_watch]\njob_page_links = ["https://www.example.com/careers"]\n')
+    assert cli.main(["--root", str(root), "check"]) == 1
+    assert "COMPANY LINK NOT UNDERSTOOD: https://www.example.com/careers" in capsys.readouterr().out
+
+
+def test_results_page_lists_possible_matches(root):
+    from jobsearch import results_folder
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    run(root, c)
+    st = Store(root / "data/jobs.sqlite")
+    st.db.execute("UPDATE jobs SET status='Needs Verification', reasons=?",
+                  (json.dumps(["salary: no salary listed", "location: not clear which states"]),))
+    st.db.commit()
+    index = results_folder.write(root)["text"]
+    assert "## Possible matches: check these yourself (1)" in index
+    assert "salary: no salary listed; location: not clear which states" in index

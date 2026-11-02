@@ -17,6 +17,7 @@ import sys
 from pathlib import Path
 
 from . import pipeline
+from .adapters.ats import SUPPORTED_JOB_PAGES
 from .store import Store
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -139,6 +140,14 @@ def main(argv=None) -> int:
             print(f"Titles skipped: {', '.join(tr['exclude_plain']) or 'OFF (none)'}")
         for t in prof["titles"]:
             print(f"Job title {t['family']}: {', '.join(t.get('plain_titles') or [])}")
+        watched, bad = pipeline.watched_boards(prof)
+        print(f"Companies to watch: {', '.join(b['board'] for b in watched) or 'none added'}")
+        if bad:
+            for link in bad:
+                print(f"COMPANY LINK NOT UNDERSTOOD: {link}")
+            print("In EDIT_ME_1 section 7, each link must be a company's job page on one of these sites: "
+                  f"{SUPPORTED_JOB_PAGES}. Fix or delete the link above and save.")
+            return 1
         print(f"Experience profile: {len(exp.get('skills', []))} skills, {len(exp.get('gaps', []))} gap areas")
         if not prof["titles"]:
             print("NO JOB TITLES SET YET: open EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml, go to section 1, type at least one job title "

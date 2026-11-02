@@ -186,3 +186,31 @@ reject_when = "required"
 #  EXAMPLE:  keywords = ["Salesforce Administrator", "CRM Administrator"]
 [search]
 keywords = []
+
+
+# ---------------------------------------------------------------------
+#  7. COMPANIES TO WATCH  (optional)
+# ---------------------------------------------------------------------
+#  Add employers you want checked every search. Paste the link to the
+#  company's job page. Every job there with one of your job titles is
+#  checked against your rules.
+#
+#  HOW TO FIND THE LINK
+#    1. Open the company's website and click "Careers" or "Jobs".
+#    2. Click any job. Look at the web address at the top of the browser.
+#    3. If it starts with one of these, copy it and paste it below:
+#         job-boards.greenhouse.io/...     (or boards.greenhouse.io/...)
+#         jobs.lever.co/...
+#         jobs.ashbyhq.com/...
+#         jobs.smartrecruiters.com/...
+#       A link to the whole job page or to one job both work.
+#    4. If the address starts with something else, that company's job
+#       page cannot be checked automatically. Skip it.
+#
+#  EXAMPLE:
+#     job_page_links = ["https://job-boards.greenhouse.io/examplecompany",
+#                       "https://jobs.lever.co/anothercompany"]
+#
+#  To stop watching a company, delete its link and save.
+[companies_to_watch]
+job_page_links = []

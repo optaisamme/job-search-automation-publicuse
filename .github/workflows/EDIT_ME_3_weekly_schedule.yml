@@ -112,4 +112,12 @@ jobs:
           git add data JOB_SEARCH_RESULTS || true
           git diff --cached --quiet && echo "No changes to save." && exit 0
           git commit -m "Weekly job search results $(date -u +%Y-%m-%d)"
-          git push
+          # If a file was saved on GitHub while the search ran, merge that change first, then save again.
+          for attempt in 1 2 3 4; do
+            git push && exit 0
+            echo "A file was changed while the search ran. Adding that change and trying again ($attempt of 4)."
+            sleep $((attempt * 5))
+            git pull --rebase --no-edit origin "${GITHUB_REF_NAME}" || git rebase --abort
+          done
+          echo "::error::The results could not be saved. Start the search again from the Actions tab."
+          exit 1

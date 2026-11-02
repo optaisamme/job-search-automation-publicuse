@@ -60,6 +60,9 @@ reject_when = "mentioned"
       `reject_when = "required"` rejects a job only when it REQUIRES prior experience
       with a term; `"mentioned"` rejects it whenever a term appears.
    e. Section 6: search words (leave empty to search for your job titles).
+   f. Section 7: companies to watch. Paste links to employers' job pages on Greenhouse,
+      Lever, Ashby or SmartRecruiters. **Recommended:** the more companies you add, the more
+      jobs each search finds. The file explains how to find the link.
 5. Click **Commit changes** (green button), then **Commit changes** again.
 6. The first step of every run ("Check settings files") lists exactly what is ON and
    OFF. If no job titles are set, the run stops there and says so.

@@ -29,6 +29,8 @@ Open the **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)** folder.
    a. **Jobs that match all your rules**, with an **Apply** link for each.
    b. **Near misses:** jobs that failed exactly one of your rules, and which rule.
    c. **Jobs whose link could not be checked**, with a link to find the employer's own posting.
+   d. **Possible matches:** jobs that failed none of your rules but did not say enough to be
+      sure (for example, no salary listed), with what to check.
 2. **One report per search**, numbered and dated, for example
    `REPORT_001_2026-11-06_13-47_UTC.md`. The newest is listed first. Each report also lists
    every job checked in that search and why it did or did not match.
@@ -50,7 +52,7 @@ Only files whose names start with **EDIT_ME**. Do not change any other file.
 
 | File | Do I have to? | What it changes |
 |---|---|---|
-| [`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml`](EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml) | **Yes:** type at least one job title | Which jobs are found and which are left out: job titles, remote only or not, your state, salary, certifications, your own rules |
+| [`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml`](EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml) | **Yes:** type at least one job title | Which jobs are found and which are left out: job titles, remote only or not, your state, salary, certifications, your own rules, companies to watch |
 | [`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml`](EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml) | No | Your skills, used to show how well each job fits you. It never removes a job |
 | [`.github/workflows/EDIT_ME_3_weekly_schedule.yml`](.github/workflows/EDIT_ME_3_weekly_schedule.yml) | No | **Automatic weekly searches. They start OFF.** To turn them on, change `AUTOMATIC_WEEKLY_SEARCH: "off"` to `"on"`. Also sets the day and time (default: Fridays) |
 
@@ -97,9 +99,10 @@ yourself. If you want a search to run by itself every week, open file 3 above
 ## How a search works
 
 1. **Checks your settings** and lists what is ON and OFF.
-2. **Collects public job listings** from employer job pages it knows about (Greenhouse,
-   Lever, Ashby, SmartRecruiters), Remotive, Remote OK and Himalayas. Optional: USAJOBS and
-   Adzuna, if you add their free keys (see SETUP.md).
+2. **Collects public job listings** from Remotive, Remote OK and Himalayas, plus the job
+   pages of any companies you add in settings section 7, "Companies to watch" (Greenhouse,
+   Lever, Ashby or SmartRecruiters pages). Optional: USAJOBS and Adzuna, if you add their
+   free keys (see SETUP.md).
 3. **Keeps jobs with your job titles.**
 4. **Applies your rules**: remote only (on unless you turn it off), your state, salary,
    certifications, your own rules. When a

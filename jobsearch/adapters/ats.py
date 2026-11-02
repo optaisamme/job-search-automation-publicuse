@@ -21,6 +21,30 @@ ATS_URL_PATTERNS = [
 ]
 
 
+BOARD_URL_PATTERNS = [  # a company's whole job page (no job id)
+    ("greenhouse", re.compile(r"^https?://(?:boards|job-boards)(?:\.eu)?\.greenhouse\.io/([A-Za-z0-9_-]+)/?(?:[?#].*)?$")),
+    ("lever", re.compile(r"^https?://jobs\.(?:eu\.)?lever\.co/([A-Za-z0-9_.-]+)/?(?:[?#].*)?$")),
+    ("ashby", re.compile(r"^https?://jobs\.ashbyhq\.com/([^/?#]+)/?(?:[?#].*)?$")),
+    ("smartrecruiters", re.compile(r"^https?://(?:jobs|careers)\.smartrecruiters\.com/([A-Za-z0-9_-]+)/?(?:[?#].*)?$")),
+]
+
+SUPPORTED_JOB_PAGES = ("job-boards.greenhouse.io/COMPANY, jobs.lever.co/COMPANY, "
+                       "jobs.ashbyhq.com/COMPANY, jobs.smartrecruiters.com/COMPANY")
+
+
+def parse_board_link(url: str) -> tuple[str, str] | None:
+    """A company job-page link -> (ats, board). Also accepts a link to one job on that page."""
+    u = (url or "").strip()
+    for ats, pat in BOARD_URL_PATTERNS:
+        m = pat.match(u)
+        if m:
+            return ats, urllib.parse.unquote(m.group(1))
+    hit = parse_ats_url(u)
+    if hit and hit[1]:
+        return hit[0], hit[1]
+    return None
+
+
 def parse_ats_url(url: str) -> tuple[str, str, str] | None:
     for ats, pat in ATS_URL_PATTERNS:
         m = pat.search(url or "")

@@ -69,6 +69,8 @@ def load_config(root: Path) -> tuple[dict, dict]:
         flt = settings.get("filters") or {}
         prof["title_rules"] = {"must_mention": list(flt.get("description_must_mention", [])),
                                "exclude_plain": list(flt.get("exclude_titles_containing", []))}
+        prof["watch_links"] = [u for u in ((settings.get("companies_to_watch") or {}).get("job_page_links") or [])
+                               if isinstance(u, str) and u.strip()]
         kw = list((settings.get("search") or {}).get("keywords") or [])
         if not kw:  # default: search for the titles themselves
             kw = [t for g in groups for t in g.get("titles", [])]
@@ -81,6 +83,30 @@ def load_config(root: Path) -> tuple[dict, dict]:
 def load_boards(root: Path) -> dict:
     p = root / "data/boards.json"
     return json.loads(p.read_text()) if p.exists() else {}
+
+
+def watched_boards(prof: dict) -> tuple[list[dict], list[str]]:
+    """Company job pages typed in settings (section "companies to watch"). Returns (boards, links not understood)."""
+    from .adapters.ats import parse_board_link
+    ok, bad = [], []
+    for link in prof.get("watch_links", []):
+        hit = parse_board_link(link)
+        if hit:
+            ok.append({"ats": hit[0], "board": hit[1], "employer": None})
+        else:
+            bad.append(link)
+    return ok, bad
+
+
+def with_watched(boards: dict, watched: list[dict]) -> dict:
+    """Boards to scan this run: the saved list plus the settings list (the settings list is not saved,
+    so deleting a link from settings stops it being scanned)."""
+    out = {k: [dict(x) for x in v] for k, v in boards.items()}
+    for b in watched:
+        lst = out.setdefault(b["ats"], [])
+        if not any(x["board"].lower() == b["board"].lower() for x in lst):
+            lst.append({"board": b["board"], "employer": b.get("employer")})
+    return out
 
 
 def save_boards(root: Path, boards: dict, added: list[dict]):
@@ -143,7 +169,7 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
     run_id = store.start_run("dry_run" if dry_run else ("fixtures" if fixtures else "live"))
     was_baseline_done = store.baseline_done()
 
-    ctx = {"queries": prof["search"]["queries"], "boards": boards, "title_matcher": matcher,
+    ctx = {"queries": prof["search"]["queries"], "boards": with_watched(boards, watched_boards(prof)[0]), "title_matcher": matcher,
            "leads_path": str(root / "data/leads.json")}
     statuses: list[SourceStatus] = []
     raw: list[RawPosting] = []
