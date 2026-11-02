@@ -132,10 +132,15 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
    d. ReliefWeb (nonprofit, humanitarian and international development jobs, run by the
       United Nations): request a free "appname" at https://apidoc.reliefweb.int/parameters#appname.
       Secret name: `RELIEFWEB_APPNAME` (the appname they approve).
-   e. To add a key: in your copy, click **Settings**, then **Secrets and variables**, then
+   e. **Web search (Tavily): searches the whole web for your job titles, beyond the job sites
+      above.** Sign up at https://app.tavily.com (free plan: 1,000 searches a month; check the
+      current plan on their pricing page). Copy your API key (it starts with `tvly-`).
+      Secret name: `TAVILY_API_KEY`. Each search uses 2 web searches per job title (up to 4
+      titles), so a weekly search uses about 35 a month at most.
+   f. To add a key: in your copy, click **Settings**, then **Secrets and variables**, then
       **Actions**, then **New repository secret**. Type the secret name exactly as shown above,
       paste the key, and click **Add secret**. Add one secret per name.
-   f. The next search uses them. The report's "Where jobs were looked for" table shows
+   g. The next search uses them. The report's "Where jobs were looked for" table shows
       **Yes** next to each site that worked.
 
 ## When you change your settings later
@@ -155,8 +160,8 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
    not allow automated access). Links from those sites can't be checked automatically.
 3. It does not run general web searches. It uses Himalayas, The Muse, Remote OK, Jobicy,
    We Work Remotely, Working Nomads, Jobspresso, Remotive, Hacker News "Who is hiring?", the job pages of companies you add
-   (settings section 7) or that it found earlier, and Adzuna, Jooble, USAJOBS and ReliefWeb if you
-   add their free keys.
+   (settings section 7) or that it found earlier, Adzuna, Jooble, USAJOBS and ReliefWeb if you add
+   their free keys, and a web search for your job titles if you add a Tavily key.
 4. Results come from text rules. When a posting is unclear, the job is marked "Needs
    Verification" rather than guessed, so read each posting yourself before applying.
 

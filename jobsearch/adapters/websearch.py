@@ -1,0 +1,129 @@
+"""Web search for job postings outside the job sites this tool reads directly.
+
+Optional: runs only when a web search key is set (TAVILY_API_KEY). For each of your job titles it runs
+two searches:
+  1. Careers pages: postings on the systems companies use for their own careers pages
+     (Greenhouse, Lever, Ashby, SmartRecruiters, Workday).
+  2. The wider web: any other page that looks like a job posting for that title.
+Each result is then handled like any other job: the tool opens the link, uses the employer's own posting
+when it can find it, applies your rules, and checks the link. Companies found on Greenhouse, Lever, Ashby or
+SmartRecruiters are remembered and their whole careers page is read in later searches.
+
+The search service is pluggable: add a class with the same `search` method to PROVIDERS to use another one.
+"""
+from __future__ import annotations
+
+import os
+import re
+
+from ..models import RawPosting
+from .base import Adapter, SourceStatus
+from .ats import parse_board_link
+
+CAREERS_DOMAINS = ["job-boards.greenhouse.io", "boards.greenhouse.io", "jobs.lever.co", "jobs.ashbyhq.com",
+                   "jobs.smartrecruiters.com", "myworkdayjobs.com"]
+# Sites this tool does not open (terms or sign-in), plus sites it already reads directly.
+EXCLUDE_DOMAINS = ["linkedin.com", "indeed.com", "glassdoor.com", "ziprecruiter.com", "builtin.com", "idealist.org",
+                   "monster.com", "careerbuilder.com", "simplyhired.com", "handshake.com", "joinhandshake.com",
+                   "wellfound.com", "dice.com", "himalayas.app", "remoteok.com", "remotive.com", "themuse.com",
+                   "jobicy.com", "weworkremotely.com", "workingnomads.com", "jobspresso.co", "adzuna.com",
+                   "jooble.org", "usajobs.gov", "reliefweb.int", "news.ycombinator.com", "hiring.cafe",
+                   "facebook.com", "instagram.com", "x.com", "twitter.com", "reddit.com", "youtube.com"]
+
+
+def _excluded(url: str) -> bool:
+    """Never keep results on sites this tool does not open or already reads directly."""
+    from urllib.parse import urlsplit
+    host = urlsplit(url).netloc.lower().split(":")[0]
+    return any(host == d or host.endswith("." + d) for d in EXCLUDE_DOMAINS)
+
+
+class TavilySearch:
+    """https://docs.tavily.com/documentation/api-reference/endpoint/search — 1 credit per basic search."""
+    key_env = "TAVILY_API_KEY"
+
+    def __init__(self, client):
+        self.client = client
+        self.key = os.environ.get(self.key_env, "").strip()
+
+    def search(self, query: str, include_domains=None, exclude_domains=None, max_results: int = 20,
+               time_range: str = "month") -> list[dict]:
+        body = {"query": query, "search_depth": "basic", "max_results": max_results, "topic": "general",
+                "time_range": time_range}
+        if include_domains:
+            body["include_domains"] = list(include_domains)
+        if exclude_domains:
+            body["exclude_domains"] = list(exclude_domains)
+        r = self.client.post_json("https://api.tavily.com/search", body, headers={"Authorization": f"Bearer {self.key}"})
+        if r.status in (401, 403):
+            raise RuntimeError("the web search key was not accepted. Check the TAVILY_API_KEY secret")
+        if r.status == 429 or r.status == 432 or r.status == 433:
+            raise RuntimeError("the web search service's monthly free allowance is used up")
+        if r.status >= 400:
+            raise RuntimeError(f"web search failed (HTTP {r.status})")
+        return [{"url": x.get("url", ""), "title": x.get("title", ""), "content": x.get("content", "")}
+                for x in (r.json() or {}).get("results") or []]
+
+
+PROVIDERS = {"tavily": TavilySearch}
+
+
+def _clean_title(title: str, url: str) -> tuple[str, str]:
+    """Best guess at (job title, employer) from a search result's page title."""
+    t = re.sub(r"\s+", " ", title or "").strip()
+    m = re.match(r"(?i)job application for (.+?) at (.+)$", t)          # Greenhouse
+    if m:
+        return m.group(1).strip(), m.group(2).strip()
+    hit = parse_board_link(url)
+    if hit and "lever.co" in url:                                        # Lever: "Company - Title"
+        company, _, job = t.partition(" - ")
+        if job:
+            return job.strip(), company.strip()
+    m = re.match(r"(.+?) (?:@|at) (.+?)(?: \| .*)?$", t)                 # "Title @ Company" / "Title at Company"
+    if m:
+        return m.group(1).strip(), m.group(2).strip()
+    return t, ""
+
+
+class WebSearchAdapter(Adapter):
+    name = "websearch"
+    env_keys = ("TAVILY_API_KEY",)
+    MAX_TITLES = 4
+
+    def search(self, status: SourceStatus) -> list[RawPosting]:
+        from ..criteria import CRITERIA
+        provider = PROVIDERS[os.environ.get("WEB_SEARCH_PROVIDER", "tavily").strip().lower() or "tavily"](self.client)
+        matcher = self.ctx.get("title_matcher")
+        remote = CRITERIA.get("remote_only", True)
+        where = "remote" if remote else (CRITERIA.get("home_state") or "")
+        titles = list(dict.fromkeys(self.ctx.get("queries", [])))[: self.MAX_TITLES]
+        out, seen, searches = [], set(), 0
+        for t in titles:
+            plan = [
+                (f'"{t}" {where}'.strip(), CAREERS_DOMAINS, None, 20, "month"),
+                (f'"{t}" job opening apply {where}'.strip(), None, EXCLUDE_DOMAINS, 10, "week"),
+            ]
+            for query, inc, exc, n, rng in plan:
+                try:
+                    results = provider.search(query, include_domains=inc, exclude_domains=exc, max_results=n, time_range=rng)
+                    searches += 1
+                except RuntimeError as e:
+                    status.errors.append(str(e))
+                    status.detail = f"{searches} searches"
+                    return out
+                for x in results:
+                    url = x["url"]
+                    if not url or url in seen or _excluded(url):
+                        continue
+                    seen.add(url)
+                    title, employer = _clean_title(x["title"], url)
+                    p = RawPosting(source="websearch", source_url=url, employer=employer, title=title,
+                                   description_text=x.get("content", ""), apply_url=url,
+                                   extra={"found_via": f"web search: {query}"})
+                    hit = parse_board_link(url)
+                    if hit and matcher and matcher.match(title, p.description_text):
+                        # a matching job on a supported careers page: read that company's whole page this search too
+                        self.ctx.setdefault("boards_added", []).append({"ats": hit[0], "board": hit[1], "employer": employer or None})
+                    out.append(p)
+        status.detail = f"{searches} searches ({searches} of the free monthly allowance used)"
+        return out

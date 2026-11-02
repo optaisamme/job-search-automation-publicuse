@@ -557,3 +557,35 @@ def test_results_page_lists_companies_checked_every_search(root):
     assert "## Companies checked every search" in index
     assert "| Acme Nonprofit | Greenhouse | found automatically |" in index
     assert "| betaorg | Lever | you added it (section 7) |" in index
+
+
+def test_web_search_finds_job_and_remembers_company(root, monkeypatch):
+    monkeypatch.setenv("TAVILY_API_KEY", "tvly-test")
+    (root / "data/boards.json").write_text("{}")
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    c.set("https://api.tavily.com/search", {"results": [
+        {"url": "https://job-boards.greenhouse.io/acme/jobs/1", "title": "Job Application for Salesforce Administrator at Acme Nonprofit",
+         "content": "Remote within the United States. Salesforce administration."},
+        {"url": "https://www.linkedin.com/jobs/view/1", "title": "Salesforce Administrator", "content": "x"}]})
+    info = run(root, c, sources=("websearch", "ats_watchlist"))
+    js = jobs(root)
+    assert len(js) == 1 and js[0]["status"] == "Qualified", [(j["title"], j["status"], j["reasons"]) for j in js]
+    assert js[0]["employer"] == "Acme Nonprofit"
+    saved = json.loads((root / "data/boards.json").read_text())
+    assert [b["board"] for b in saved.get("greenhouse", [])] == ["acme"]
+    ws = next(s for s in info["sources"] if s["name"] == "websearch")
+    assert ws["state"] == "ok" and "searches" in ws["detail"]
+
+
+def test_web_search_off_without_key(root, monkeypatch):
+    monkeypatch.delenv("TAVILY_API_KEY", raising=False)
+    info = run(root, FakeClient(), sources=("websearch",))
+    assert next(s for s in info["sources"] if s["name"] == "websearch")["state"] == "needs_credentials"
+
+
+def test_web_search_result_titles():
+    from jobsearch.adapters.websearch import _clean_title
+    assert _clean_title("Job Application for Data Analyst at Acme", "https://job-boards.greenhouse.io/acme/jobs/1") == ("Data Analyst", "Acme")
+    assert _clean_title("Acme - Data Analyst", "https://jobs.lever.co/acme/0b1c2d3e-0000-0000-0000-000000000000") == ("Data Analyst", "Acme")
+    assert _clean_title("Data Analyst @ Acme", "https://jobs.ashbyhq.com/acme/x") == ("Data Analyst", "Acme")

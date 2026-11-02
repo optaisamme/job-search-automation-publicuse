@@ -14,6 +14,7 @@ SOURCE_NOTES = {
 }
 
 SOURCE_NAMES = {
+    "websearch": "Web search (Tavily)",
     "web_search_leads": "Web search leads", "ats_watchlist": "Company job pages (section 7, plus companies found automatically)",
     "remotive": "Remotive", "remoteok": "Remote OK", "himalayas": "Himalayas", "themuse": "The Muse",
     "jobicy": "Jobicy", "weworkremotely": "We Work Remotely", "workingnomads": "Working Nomads", "jobspresso": "Jobspresso", "jooble": "Jooble", "reliefweb": "ReliefWeb", "hackernews": "Hacker News: Who is hiring?",

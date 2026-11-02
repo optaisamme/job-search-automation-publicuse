@@ -18,6 +18,7 @@ from .adapters.aggregators import (RemotiveAdapter, RemoteOKAdapter, HimalayasAd
 from .adapters.ats import AtsWatchlistAdapter, FETCHERS
 from .adapters.base import SourceStatus
 from .adapters.leads import LeadsAdapter
+from .adapters.websearch import WebSearchAdapter
 from .classify import evaluate_posting, decide
 from .http import HttpClient
 from .models import RawPosting, Verification, QUALIFIED, REJECTED, NEEDS_VERIFICATION
@@ -30,8 +31,8 @@ from . import verify as verifymod
 
 log = logging.getLogger("jobsearch.pipeline")
 
-ADAPTERS = {  # order matters: leads first so newly discovered boards are scanned in the same run
-    "web_search_leads": LeadsAdapter, "ats_watchlist": AtsWatchlistAdapter, "remotive": RemotiveAdapter,
+ADAPTERS = {  # order matters: web search and leads first so newly discovered boards are scanned in the same run
+    "websearch": WebSearchAdapter, "web_search_leads": LeadsAdapter, "ats_watchlist": AtsWatchlistAdapter, "remotive": RemotiveAdapter,
     "remoteok": RemoteOKAdapter, "himalayas": HimalayasAdapter, "themuse": TheMuseAdapter, "jobicy": JobicyAdapter,
     "weworkremotely": WeWorkRemotelyAdapter, "workingnomads": WorkingNomadsAdapter, "jobspresso": JobspressoAdapter, "hackernews": HackerNewsHiringAdapter,
     "jooble": JoobleAdapter, "reliefweb": ReliefWebAdapter, "adzuna": AdzunaAdapter, "usajobs": UsaJobsAdapter,

@@ -118,12 +118,18 @@ yourself. If you want a search to run by itself every week, open file 3 above
 1. **Checks your settings** and lists what is ON and OFF.
 2. **Collects public job listings** from these job sites:
    a. **No setup needed:** Himalayas, The Muse, Remote OK, Jobicy, We Work Remotely, Working
-      Nomads, Jobspresso, Remotive and Hacker News "Who is hiring?" (mostly tech jobs). Several send their newest jobs whatever your search
-      words are, so each search looks at more than 1,000 listings.
+      Nomads, Jobspresso, Remotive and Hacker News "Who is hiring?" (mostly tech jobs).
+      Several send their newest jobs whatever your search words are, so each search looks at
+      more than 1,000 listings.
    b. **Free key needed (recommended, see SETUP.md Step 6):** Adzuna and Jooble (large sites
       that collect jobs from many other job sites), USAJOBS (federal jobs) and ReliefWeb
       (nonprofit, humanitarian and international development jobs).
-   c. **Company careers pages**, only for companies whose careers page runs on Greenhouse,
+   c. **Web search (free key, recommended, see SETUP.md Step 6):** searches the whole web for
+      each of your job titles, finding jobs that are on no job site above. For each title it
+      runs 2 searches: one across company careers pages (Greenhouse, Lever, Ashby,
+      SmartRecruiters, Workday) and one across the rest of the web. Every result is checked
+      like any other job.
+   d. **Company careers pages**, only for companies whose careers page runs on Greenhouse,
       Lever, Ashby or SmartRecruiters. These are not searched as whole sites: the tool reads
       the careers page of one company at a time, and only for these companies:
       1. **Found automatically**, step by step:
@@ -133,7 +139,9 @@ yourself. If you want a search to run by itself every week, open file 3 above
             the tool uses the employer's own posting and remembers the company (in
             `data/boards.json`).
          4. From the next search on, it reads every job open on that company's careers page.
-         5. Companies on other systems (for example Workday), and links a job site blocks (for
+         5. With a web search key, companies are also remembered when the web search finds a
+            matching job on their careers page; their whole careers page is read in the same search.
+         6. Companies on other systems (for example Workday), and links a job site blocks (for
             example Himalayas), are not remembered. The results page lists every remembered
             company under "Companies checked every search."
       2. **Companies you add** in settings section 7, "Companies to watch." Every search reads
