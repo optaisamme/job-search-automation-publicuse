@@ -215,9 +215,22 @@ keywords = []
 #    5. The settings check at the start of each search lists the companies
 #       it will check. A link it cannot use stops the search and says why.
 #
-#  ALSO AUTOMATIC: when a job found on a job site links to a careers page on
-#  one of those 4 systems, that company is remembered and its careers page
-#  is checked in later searches too. You do not need to add it here.
+#  ALSO AUTOMATIC: HOW THE TOOL FINDS COMPANIES BY ITSELF
+#    1. A job site (for example Remote OK or Jobicy) lists a job whose title
+#       matches your job titles.
+#    2. The tool opens that job's "apply" link, the one the job site gives.
+#    3. If the link leads to a job posting on a careers page that runs on
+#       Greenhouse, Lever, Ashby or SmartRecruiters, the tool:
+#       a. uses the employer's own posting instead of the job site's copy, and
+#       b. remembers the company (saved in the file data/boards.json).
+#    4. From the next search on, the tool reads EVERY job open on that
+#       company's careers page, so you also see its other jobs with your
+#       titles, even ones that never appear on a job site.
+#    5. The list of remembered companies grows a little with each search.
+#       Your results page lists them under "Companies checked every search."
+#    It does not happen when: the apply link leads to a careers page on any
+#    other system (for example Workday), the job site blocks the link (for
+#    example Himalayas), or the job's title does not match yours.
 #
 #  HOW TO FIND THE LINK
 #    1. Open the company's website and click "Careers" or "Jobs".

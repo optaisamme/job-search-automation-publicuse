@@ -108,6 +108,30 @@ def _manual_boards(root: Path) -> list[str]:
     return manual_boards.section(titles, CRITERIA.get("remote_only", True), CRITERIA.get("home_state", ""))
 
 
+def _companies(root: Path) -> list[str]:
+    """Companies whose careers pages are read every search: found automatically, and added in section 7."""
+    from . import pipeline
+    names = {"greenhouse": "Greenhouse", "lever": "Lever", "ashby": "Ashby", "smartrecruiters": "SmartRecruiters"}
+    try:
+        prof, _ = pipeline.load_config(root)
+        added, _bad = pipeline.watched_boards(prof)
+    except Exception:  # noqa: BLE001
+        added = []
+    found = pipeline.load_boards(root)
+    rows = [(b.get("employer") or b["board"], names.get(ats, ats), "found automatically")
+            for ats, lst in found.items() for b in lst]
+    rows += [(b["board"], names.get(b["ats"], b["ats"]), "you added it (section 7)") for b in added]
+    L = ["## Companies checked every search", "",
+         "The tool reads every open job on these companies' careers pages each search. Companies are found "
+         "automatically when a matching job's apply link leads to a careers page on Greenhouse, Lever, Ashby "
+         "or SmartRecruiters, or you can add them in settings section 7.", ""]
+    if not rows:
+        return L + ["None yet.", ""]
+    L += ["| Company | Careers page runs on | How it was added |", "|---|---|---|"]
+    L += [f"| {_cell(n)} | {a} | {h} |" for n, a, h in sorted(rows, key=lambda x: x[0].lower())]
+    return L + [""]
+
+
 def write(root: Path) -> dict:
     """Write this search's numbered report and the folder's README. Returns paths and text."""
     root = Path(root)
@@ -174,6 +198,7 @@ def write(root: Path) -> dict:
               f"Full details: [{reports[0].name}]({reports[0].name})" if reports else "", ""]
     I += current
     I += [""] + _manual_boards(root)
+    I += _companies(root)
     I += ["", "## All reports (newest first)", "",
           "Each search adds one numbered report with its date and time (UTC).", ""]
     I += [f"{i}. [{p.name}]({p.name})" for i, p in enumerate(reports, 1)] or ["None yet."]

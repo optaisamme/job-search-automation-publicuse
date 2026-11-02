@@ -544,3 +544,16 @@ def test_hackernews_who_is_hiring_parse():
     got = HackerNewsHiringAdapter(c, {"queries": [], "title_matcher": m}).search(SourceStatus("hackernews"))
     assert len(got) == 1 and (got[0].employer, got[0].title) == ("Acme", "Data Analyst")
     assert got[0].apply_url == "https://acme.example/jobs/1" and got[0].workplace_type == "remote"
+
+
+def test_results_page_lists_companies_checked_every_search(root):
+    from jobsearch import results_folder
+    s = root / "config/settings.toml"
+    s.write_text(s.read_text() + '\n[companies_to_watch]\njob_page_links = ["https://jobs.lever.co/betaorg"]\n')
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    run(root, c)
+    index = results_folder.write(root)["text"]
+    assert "## Companies checked every search" in index
+    assert "| Acme Nonprofit | Greenhouse | found automatically |" in index
+    assert "| betaorg | Lever | you added it (section 7) |" in index

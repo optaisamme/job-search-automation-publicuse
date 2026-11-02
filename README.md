@@ -126,9 +126,16 @@ yourself. If you want a search to run by itself every week, open file 3 above
    c. **Company careers pages**, only for companies whose careers page runs on Greenhouse,
       Lever, Ashby or SmartRecruiters. These are not searched as whole sites: the tool reads
       the careers page of one company at a time, and only for these companies:
-      1. **Found automatically:** when a job found on a job site links to a careers page on one
-         of those 4 systems, that company is remembered and every job it has open is checked in
-         later searches.
+      1. **Found automatically**, step by step:
+         1. A job site lists a job whose title matches yours.
+         2. The tool opens that job's apply link (the one the job site gives).
+         3. If the link leads to a posting on a careers page that runs on one of those 4 systems,
+            the tool uses the employer's own posting and remembers the company (in
+            `data/boards.json`).
+         4. From the next search on, it reads every job open on that company's careers page.
+         5. Companies on other systems (for example Workday), and links a job site blocks (for
+            example Himalayas), are not remembered. The results page lists every remembered
+            company under "Companies checked every search."
       2. **Companies you add** in settings section 7, "Companies to watch." Every search reads
          every job open on each company's careers page and keeps the ones with your job titles.
          Companies on other systems (for example Workday or iCIMS) cannot be added. If you leave
