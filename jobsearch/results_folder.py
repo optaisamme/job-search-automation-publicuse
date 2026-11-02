@@ -96,6 +96,18 @@ def _current_sections(db) -> list[str]:
     return L
 
 
+def _manual_boards(root: Path) -> list[str]:
+    """Search links for popular boards, built from the job titles in settings."""
+    from . import manual_boards, pipeline
+    from .criteria import CRITERIA
+    try:
+        prof, _ = pipeline.load_config(root)
+    except Exception:  # noqa: BLE001 — settings problems are reported by the settings check
+        return []
+    titles = [t for g in prof.get("titles", []) for t in (g.get("plain_titles") or [])[:1]]
+    return manual_boards.section(titles, CRITERIA.get("remote_only", True))
+
+
 def write(root: Path) -> dict:
     """Write this search's numbered report and the folder's README. Returns paths and text."""
     root = Path(root)
@@ -105,7 +117,7 @@ def write(root: Path) -> dict:
     if not dbp.exists():
         text = (f"# {FOLDER.replace('_', ' ')}\n\nNo search has run yet. Your results appear here after your first search.\n\n"
                 f"To start one: **[START A SEARCH NOW]({RUN_LINK})**, then click the grey **Run workflow** button "
-                "and the green **Run workflow** button.\n")
+                "and the green **Run workflow** button.\n\n" + "\n".join(_manual_boards(root)) + "\n")
         (folder / "README.md").write_text(text)
         return {"index": str(folder / "README.md"), "report": None, "text": text}
     db = sqlite3.connect(dbp)
@@ -161,6 +173,7 @@ def write(root: Path) -> dict:
         I += [f"**Latest search:** {last['finished_at'][:16].replace('T', ' ')} UTC. "
               f"Full details: [{reports[0].name}]({reports[0].name})" if reports else "", ""]
     I += current
+    I += [""] + _manual_boards(root)
     I += ["", "## All reports (newest first)", "",
           "Each search adds one numbered report with its date and time (UTC).", ""]
     I += [f"{i}. [{p.name}]({p.name})" for i, p in enumerate(reports, 1)] or ["None yet."]

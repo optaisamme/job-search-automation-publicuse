@@ -285,6 +285,40 @@ class JoobleAdapter(Adapter):
         return out
 
 
+class ReliefWebAdapter(Adapter):
+    # https://apidoc.reliefweb.int — UN OCHA's humanitarian and nonprofit job board. Free, but requests must
+    # carry an approved "appname" (request one at https://apidoc.reliefweb.int/parameters#appname).
+    name = "reliefweb"
+    env_keys = ("RELIEFWEB_APPNAME",)
+
+    def search(self, status: SourceStatus) -> list[RawPosting]:
+        out, seen = [], set()
+        app = os.environ["RELIEFWEB_APPNAME"].strip()
+        for q in self.ctx["queries"][:6]:
+            params = [("appname", app), ("profile", "full"), ("limit", 50), ("sort[]", "date.created:desc"),
+                      ("query[value]", q), ("query[fields][]", "title")]
+            r = self.client.get("https://api.reliefweb.int/v2/jobs?" + urllib.parse.urlencode(params))
+            if r.status >= 400:
+                status.errors.append(f"query {q!r}: HTTP {r.status}")
+                continue
+            for item in (r.json() or {}).get("data") or []:
+                f = item.get("fields") or {}
+                url = f.get("url") or f.get("url_alias") or ""
+                if not url or url in seen:
+                    continue
+                seen.add(url)
+                orgs = [x.get("name", "") for x in f.get("source") or [] if isinstance(x, dict)]
+                countries = [x.get("name", "") for x in f.get("country") or [] if isinstance(x, dict)]
+                date = f.get("date") or {}
+                out.append(RawPosting(
+                    source="reliefweb", source_url=url, employer=orgs[0] if orgs else "", title=f.get("title", ""),
+                    description_text=html_to_text(f.get("body-html") or f.get("body")),
+                    location_text="; ".join(countries), apply_url=url,
+                    extra={"third_party_published": date.get("created"), "close_date": date.get("closing")},
+                ))
+        return out
+
+
 class AdzunaAdapter(Adapter):
     # https://developer.adzuna.com — free key. Salary may be model-predicted: never used.
     name = "adzuna"

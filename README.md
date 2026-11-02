@@ -43,6 +43,9 @@ Open the **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)** folder.
    c. **Jobs whose link could not be checked**, with a link to find the employer's own posting.
    d. **Possible matches:** jobs that failed none of your rules but did not say enough to be
       sure (for example, no salary listed), with what to check.
+   e. **Popular job boards to search yourself:** one-click searches for your job titles on
+      LinkedIn, Indeed, Google Jobs, Glassdoor, ZipRecruiter, HiringCafe, Idealist, Tech Jobs
+      for Good, Handshake, Built In and Dice.
 2. **One report per search**, numbered and dated, for example
    `REPORT_001_2026-11-06_13-47_UTC.md`. The newest is listed first. Each report also lists
    every job checked in that search and why it did or did not match.
@@ -116,7 +119,8 @@ yourself. If you want a search to run by itself every week, open file 3 above
       Nomads, Jobspresso and Remotive. Several send their newest jobs whatever your search
       words are, so each search looks at more than 1,000 listings.
    b. **Free key needed (recommended, see SETUP.md Step 6):** Adzuna and Jooble (large sites
-      that collect jobs from many other job sites) and USAJOBS (federal jobs).
+      that collect jobs from many other job sites), USAJOBS (federal jobs) and ReliefWeb
+      (nonprofit, humanitarian and international development jobs).
    c. **Company careers pages** (Greenhouse, Lever, Ashby, SmartRecruiters), checked in two ways:
       1. **Automatically:** when a job found on a job site links to the company's own careers
          page, that company is remembered and all its jobs are checked in later searches.
@@ -134,9 +138,11 @@ yourself. If you want a search to run by itself every week, open file 3 above
 7. **Saves the results** in [JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS) and posts anything new
    under **Issues**.
 
-The tool never applies to jobs or contacts employers. It does not read LinkedIn, Indeed,
-Glassdoor, ZipRecruiter, Built In, HiringCafe, Handshake, Wellfound or Dice: they have no
-public job API, require signing in, or their terms do not allow automated access.
+The tool never applies to jobs or contacts employers. It does not search LinkedIn, Indeed,
+Google Jobs, Glassdoor, ZipRecruiter, HiringCafe, Idealist, Tech Jobs for Good, Handshake,
+Built In or Dice: they have no public job API, require signing in, or their terms do not allow
+automated searching. Instead, the results page has **one-click search links** for each of
+them, built from your job titles, so you can open those searches yourself.
 It does not get around sites that block automated checks.
 
 ---

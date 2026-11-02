@@ -13,6 +13,7 @@ from pathlib import Path
 
 from .adapters.aggregators import (RemotiveAdapter, RemoteOKAdapter, HimalayasAdapter, TheMuseAdapter, JobicyAdapter,
                                    WeWorkRemotelyAdapter, WorkingNomadsAdapter, JobspressoAdapter, JoobleAdapter,
+                                   ReliefWebAdapter,
                                    AdzunaAdapter, UsaJobsAdapter)
 from .adapters.ats import AtsWatchlistAdapter, FETCHERS
 from .adapters.base import SourceStatus
@@ -33,7 +34,7 @@ ADAPTERS = {  # order matters: leads first so newly discovered boards are scanne
     "web_search_leads": LeadsAdapter, "ats_watchlist": AtsWatchlistAdapter, "remotive": RemotiveAdapter,
     "remoteok": RemoteOKAdapter, "himalayas": HimalayasAdapter, "themuse": TheMuseAdapter, "jobicy": JobicyAdapter,
     "weworkremotely": WeWorkRemotelyAdapter, "workingnomads": WorkingNomadsAdapter, "jobspresso": JobspressoAdapter,
-    "jooble": JoobleAdapter, "adzuna": AdzunaAdapter, "usajobs": UsaJobsAdapter,
+    "jooble": JoobleAdapter, "reliefweb": ReliefWebAdapter, "adzuna": AdzunaAdapter, "usajobs": UsaJobsAdapter,
 }
 
 

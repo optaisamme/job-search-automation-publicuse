@@ -15,6 +15,8 @@ SOURCE_NOTES = {
     "ZipRecruiter": "Not used: its job-search API is only for business partners.",
     "Built In": "Not used: no public job API.",
     "HiringCafe": "Not used: no public job API.",
+    "Idealist": "Not used: its terms do not allow automated searching.",
+    "Tech Jobs for Good": "Not used: its terms do not allow automated access.",
     "Handshake": "Not used: requires signing in.",
     "Wellfound": "Not used: no public job API.",
     "Dice": "Not used: no public job API.",
@@ -23,7 +25,7 @@ SOURCE_NOTES = {
 SOURCE_NAMES = {
     "web_search_leads": "Web search leads", "ats_watchlist": "Company job pages (section 7, plus companies found automatically)",
     "remotive": "Remotive", "remoteok": "Remote OK", "himalayas": "Himalayas", "themuse": "The Muse",
-    "jobicy": "Jobicy", "weworkremotely": "We Work Remotely", "workingnomads": "Working Nomads", "jobspresso": "Jobspresso", "jooble": "Jooble",
+    "jobicy": "Jobicy", "weworkremotely": "We Work Remotely", "workingnomads": "Working Nomads", "jobspresso": "Jobspresso", "jooble": "Jooble", "reliefweb": "ReliefWeb",
     "adzuna": "Adzuna", "usajobs": "USAJOBS",
 }
 

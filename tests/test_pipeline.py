@@ -492,3 +492,26 @@ def test_jobspresso_and_jooble_parse(monkeypatch):
           "location": "Remote", "snippet": "x", "salary": "$100k", "link": "https://jooble.org/desc/5", "source": "example.com"}]})
     j = JoobleAdapter(c, {"queries": ["Data Analyst"]}).search(SourceStatus("jooble"))
     assert len(j) == 1 and j[0].title == "Data Analyst" and j[0].workplace_type == "remote"
+
+
+def test_manual_board_links_use_job_titles():
+    from jobsearch.manual_boards import section
+    md = "\n".join(section(["Data Analyst", "Program Manager"], True))
+    assert "https://www.linkedin.com/jobs/search/?keywords=Data+Analyst&f_WT=2" in md
+    assert "https://www.idealist.org/en/jobs?q=Program+Manager" in md
+    assert "Search: Data Analyst" in md and "Tech Jobs for Good" in md
+    assert "Add a job title" in "\n".join(section([], True))
+
+
+def test_reliefweb_parse(monkeypatch):
+    from jobsearch.adapters.aggregators import ReliefWebAdapter
+    from jobsearch.adapters.base import SourceStatus
+    monkeypatch.setenv("RELIEFWEB_APPNAME", "app")
+    c = FakeClient()
+    url = ("https://api.reliefweb.int/v2/jobs?appname=app&profile=full&limit=50&sort%5B%5D=date.created%3Adesc"
+           "&query%5Bvalue%5D=Program+Manager&query%5Bfields%5D%5B%5D=title")
+    c.set(url, {"data": [{"id": "1", "fields": {"title": "Program Manager", "url": "https://reliefweb.int/job/1/pm",
+                "body": "Remote, United States", "source": [{"name": "Example Relief"}], "country": [{"name": "United States of America"}],
+                "date": {"created": "2026-11-01", "closing": "2026-12-01"}}}]})
+    got = ReliefWebAdapter(c, {"queries": ["Program Manager"]}).search(SourceStatus("reliefweb"))
+    assert len(got) == 1 and got[0].employer == "Example Relief" and got[0].extra["close_date"] == "2026-12-01"

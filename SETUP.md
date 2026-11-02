@@ -121,7 +121,7 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
       winter, minus 6 in summer; day 5 = Friday). Example: `"0 15 * * 1"` = Mondays 15:00 UTC.
    e. While it is off, GitHub still starts the file at the weekly time, but it stops after a few
       seconds without searching. The Actions tab shows those as short runs with the search skipped.
-2. **More job sources (free keys; recommended):** these three search far more jobs than
+2. **More job sources (free keys; recommended):** these search far more jobs than
    the sites that need no key, including jobs that are not remote.
    a. Adzuna (a large job search site that collects jobs from many sites): register at
       https://developer.adzuna.com. Secret names: `ADZUNA_APP_ID`, `ADZUNA_APP_KEY`.
@@ -129,10 +129,13 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
       key at https://jooble.org/api/about. Secret name: `JOOBLE_API_KEY`.
    c. USAJOBS (US federal government jobs): request a key at https://developer.usajobs.gov.
       Secret names: `USAJOBS_API_KEY`, and `USAJOBS_EMAIL` (the email you registered with).
-   d. To add a key: in your copy, click **Settings**, then **Secrets and variables**, then
+   d. ReliefWeb (nonprofit, humanitarian and international development jobs, run by the
+      United Nations): request a free "appname" at https://apidoc.reliefweb.int/parameters#appname.
+      Secret name: `RELIEFWEB_APPNAME` (the appname they approve).
+   e. To add a key: in your copy, click **Settings**, then **Secrets and variables**, then
       **Actions**, then **New repository secret**. Type the secret name exactly as shown above,
       paste the key, and click **Add secret**. Add one secret per name.
-   e. The next search uses them. The report's "Where jobs were looked for" table shows
+   f. The next search uses them. The report's "Where jobs were looked for" table shows
       **Yes** next to each site that worked.
 
 ## When you change your settings later
@@ -152,8 +155,8 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
    not allow automated access). Links from those sites can't be checked automatically.
 3. It does not run general web searches. It uses Himalayas, The Muse, Remote OK, Jobicy,
    We Work Remotely, Working Nomads, Jobspresso, Remotive, the job pages of companies you add
-   (settings section 7) or that it found earlier, and Adzuna, Jooble and USAJOBS if you add their
-   free keys.
+   (settings section 7) or that it found earlier, and Adzuna, Jooble, USAJOBS and ReliefWeb if you
+   add their free keys.
 4. Results come from text rules. When a posting is unclear, the job is marked "Needs
    Verification" rather than guessed, so read each posting yourself before applying.
 
