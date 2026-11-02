@@ -15,6 +15,8 @@ import sqlite3
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+import sys  # noqa: E402
+sys.path.insert(0, str(ROOT))
 
 
 def _j(v, default):
@@ -79,6 +81,19 @@ def build() -> str:
             why = "; ".join(p.get("reasons", [])).replace("|", "/")
             link = p.get("link") or r["canonical_url"] or ""
             L.append(f"| {r['title']} | {r['employer']} | {why} | [Link]({link}) |")
+    else:
+        L.append("None right now.")
+    from jobsearch.lookup import needs_employer_posting
+    look = needs_employer_posting(db)
+    L += ["", f"## Jobs whose link could not be checked automatically ({len(look)})", "",
+          "These come from job sites that block automated checks, or only from a third-party site. "
+          "The automation does not get around those blocks. Use **Find employer posting** to search for the "
+          "same job on the employer's own website, then apply there.", ""]
+    if look:
+        L += ["| Job | Company | Listing found | Find the employer's posting |", "|---|---|---|---|"]
+        for x in look:
+            L.append(f"| {x['title']} | {x['employer']} | [Listing]({x['current_link']}) | "
+                     f"[Find employer posting]({x['search_link']}) |")
     else:
         L.append("None right now.")
     L += ["", "## Everything else", "",

@@ -16,7 +16,7 @@ results to you on GitHub. No coding needed.
 
 | What | Where | When |
 |---|---|---|
-| **Everything in one place:** all jobs that currently match, near misses, and what was new in the last search | The file **[RESULTS.md](RESULTS.md)** at the top of this repository | Rewritten after every run, even when nothing is new |
+| **Everything in one place:** all jobs that currently match, near misses, jobs whose link could not be checked (with a link to find the employer's own posting), and what was new in the last search | The file **[RESULTS.md](RESULTS.md)** at the top of this repository | Rewritten after every run, even when nothing is new |
 | **Summary of one run** | Click that run on the **[Actions](../../actions)** tab; the results are shown on the run's page | After each run |
 | **Matching jobs** (pass all your rules) and **near misses** (failed exactly one rule, with the reason) | The **[Issues](../../issues)** tab at the top of this repository. Each run that finds something new adds one post titled **"Job search results: …"** | After each run (weekly, or when you click Run workflow) |
 | **Email copies** of those posts | Your email inbox | Turn on once: click **Watch** (top right of the repository), choose **All Activity** |

@@ -3,6 +3,7 @@ verify application route -> classify -> persist/dedupe -> newness -> outbox -> r
 from __future__ import annotations
 
 import json
+import re
 import logging
 import shutil
 import tempfile
@@ -184,6 +185,12 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
             rec = _record(p, m2, ev, ver, "Closed", [f"closed: {ver.detail}"])
             jid, _ = store.upsert(rec, run_id)
             store.mark_closed(jid, f"closed: {ver.detail}")
+            m_lookup = re.search(r"employer lookup for job (\d+)", str(p.extra.get("found_via") or ""))
+            if m_lookup:
+                old_id = int(m_lookup.group(1))
+                old = store.job(old_id)
+                if old is not None and (old_id == jid or old["closed_at"] is None):
+                    store.mark_closed(old_id, "the employer's own posting is closed (found by employer lookup)")
             counts["closed"] += 1
             seen_ids.add(jid)
             continue
@@ -219,6 +226,17 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
             status, reasons = decide(ev["rules"], ver, ev["authoritative"])
         rec = _record(p, m2, ev, ver, status, reasons)
         jid, change = store.upsert(rec, run_id)
+        if store.job(jid)["closed_at"]:
+            seen_ids.add(jid)
+            continue  # replaced or closed by the employer's own posting
+        m_lookup = re.search(r"employer lookup for job (\d+)", str(p.extra.get("found_via") or ""))
+        if m_lookup and p.authoritative and int(m_lookup.group(1)) != jid:
+            old_id = int(m_lookup.group(1))
+            old = store.job(old_id)
+            if old is not None and old["closed_at"] is None:
+                store.mark_closed(old_id, f"replaced by the employer's own posting (job #{jid})")
+                for n in store.db.execute("SELECT id FROM notifications WHERE job_id=? AND status IN ('pending','failed','held')", (old_id,)).fetchall():
+                    store.mark_notification(n["id"], "cancelled", error=f"replaced by employer posting job #{jid}")
         if status == "Closed":
             store.mark_closed(jid, reasons[0])
             counts["closed"] += 1

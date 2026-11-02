@@ -56,6 +56,8 @@ def main(argv=None) -> int:
     b.add_argument("--board")
     b.add_argument("--employer")
     sub.add_parser("status")
+    sub.add_parser("needs-employer-posting",
+                   help="list jobs whose link could not be checked, with a search link for the employer's own posting")
     sub.add_parser("check", help="check that the settings files can be read, and summarize them")
     a = ap.parse_args(argv)
     root = Path(a.root)
@@ -139,6 +141,10 @@ def main(argv=None) -> int:
                   "Nothing will be searched until then.")
             return 1
         print("Settings OK.")
+        return 0
+    if a.cmd == "needs-employer-posting":
+        from .lookup import needs_employer_posting
+        print(json.dumps(needs_employer_posting(Store(db).db), indent=1))
         return 0
     if a.cmd == "status":
         st = Store(db)

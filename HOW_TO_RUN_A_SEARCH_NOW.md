@@ -35,7 +35,10 @@ searches in the original shared template.
 3. **Issues tab:** when a run finds something new, it also adds a post titled
    **"Job search results: …"** under **Issues** (with an email copy if you Watch the
    repository). If nothing is new, no post is added; `RESULTS.md` is still updated.
-4. **Every job checked**, including those that did not match and why: `reports/latest.md`.
+4. **Jobs whose link could not be checked:** some job sites block automated checks.
+   `RESULTS.md` lists those jobs with a **Find employer posting** link that searches for the
+   same job on the employer's own website, where you can check it and apply.
+5. **Every job checked**, including those that did not match and why: `reports/latest.md`.
 
 ## If you see a red X
 

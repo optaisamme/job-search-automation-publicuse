@@ -159,6 +159,11 @@ class Store:
             cur = self.db.execute(f"INSERT INTO jobs({cols}) VALUES({','.join('?' * len(vals))})", list(vals.values()))
             return cur.lastrowid, "new"
         jid = existing["id"]
+        if existing["closed_at"] and not rec.get("authoritative") and re.search(
+                r"replaced by the employer's own posting|employer's own posting is closed", existing["reasons"] or ""):
+            # a third-party site still lists a job the employer has replaced or closed: keep it closed
+            self.db.execute("UPDATE jobs SET last_seen=?, last_run_id=? WHERE id=?", (ts, run_id, jid))
+            return jid, "unchanged"
         old_urls = json.loads(existing["source_urls"] or "[]")
         merged_urls = list(dict.fromkeys(old_urls + rec.get("source_urls", [])))
         old_sources = json.loads(existing["sources"] or "[]")

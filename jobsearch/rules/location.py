@@ -213,6 +213,13 @@ def evaluate(location_text: str, workplace_type: str | None, text: str, url: str
         ev.append(Evidence(excerpt(full[max(0, vague.start() - 100): vague.end() + 150]), url, src))
         data["nm_eligible"] = None
         return res(UNCLEAR, f"Posting says hiring is limited to certain states; {HOME} not confirmed")
+    remote_us_label = re.search(r"remote\s*[-–,(:/]?\s*(?:in\s+the\s+|within\s+the\s+)?(?:us|u\.s\.|usa|united\s+states)\b", loc, re.I)
+    if loc_states and remote_us_label and not nation:
+        data["nm_eligible"] = True
+        ev.append(Evidence(f"location: {loc}", url, src))
+        if periodic:
+            return res(UNCLEAR, "Remote within the US offered, but periodic office attendance mentioned")
+        return res(PASS, "Remote within the United States offered (the label also names an office location)")
     if loc_states and not nation:
         data["nm_eligible"] = None
         return res(UNCLEAR, f"Location label names {', '.join(sorted(loc_states))}; residency requirement unclear")
