@@ -75,6 +75,9 @@ Only files whose names start with **EDIT_ME**. Do not change any other file.
 
 Both settings files start **empty**: nothing is searched or filtered until you fill them in.
 
+**Also optional:** free keys for more job sources. These are added in **Settings**, not in a
+file. See [Other optional edits: free keys for more job sources](#other-optional-edits-free-keys-for-more-job-sources).
+
 **Automatic weekly searches are OFF to start.** A search only runs when you start one
 yourself. If you want a search to run by itself every week, open file 3 above
 (`EDIT_ME_3_weekly_schedule.yml`) and change `AUTOMATIC_WEEKLY_SEARCH: "off"` to
@@ -100,6 +103,52 @@ yourself. If you want a search to run by itself every week, open file 3 above
    b. A job that no longer fits moves to the "did not match" part of the report.
    c. A job already shown to you is never shown again as new.
 4. To start completely fresh, delete the file `data/jobs.sqlite`. The next search starts over.
+
+---
+
+## Other optional edits: free keys for more job sources
+
+Without any keys, every search already checks 9 job sites and company careers pages. You can
+add a free key for any of the services below to search more jobs. Each one is optional, and
+each stays off until you add its key. You add keys in your copy's **Settings**, not in a file.
+
+| Service | What it adds | Where to get the free key | Secret name(s) to add |
+|---|---|---|---|
+| **Tavily** (web search) | Searches the whole web for each of your job titles, including company careers pages. Also finds new companies to check | https://app.tavily.com | `TAVILY_API_KEY` |
+| **Adzuna** | Large job search site that collects jobs from many other job sites; all job types, not only remote | https://developer.adzuna.com | `ADZUNA_APP_ID` and `ADZUNA_APP_KEY` |
+| **Jooble** | Another large site that collects jobs from many job sites | https://jooble.org/api/about | `JOOBLE_API_KEY` |
+| **USAJOBS** | Official US federal government jobs | https://developer.usajobs.gov | `USAJOBS_API_KEY` and `USAJOBS_EMAIL` (the email you registered with) |
+| **ReliefWeb** | Nonprofit, humanitarian and international development jobs (run by the United Nations) | https://apidoc.reliefweb.int/parameters#appname (ask for an "appname") | `RELIEFWEB_APPNAME` (the appname they approve) |
+
+**Recommended first:** Tavily (finds jobs that are on no job site) and Adzuna (the largest
+number of jobs).
+
+**Tavily free plan:** 1,000 web searches a month (check the current plan on Tavily's pricing
+page). Each search uses 2 web searches per job title, for up to 4 titles: at most 8 per
+search, about 35 a month with weekly searches.
+
+### How to add a key
+
+1. Get the free key from the service's website (column 3). Some services email it to you;
+   some take a day or two to approve.
+2. Open **your copy** of this project on github.com.
+3. Click **Settings** (top row of tabs, far right).
+4. On the left, click **Secrets and variables**, then **Actions**.
+5. Click the green **New repository secret** button.
+6. In **Name**, type the secret name exactly as shown in the table (capital letters and
+   underscores included). In **Secret**, paste the key. Click **Add secret**.
+7. Repeat steps 5 and 6 for each secret name. Adzuna and USAJOBS need 2 secrets each.
+8. Start a search. In the full report, the table "Where jobs were looked for" shows **Yes**
+   next to each service that worked. "Off: needs a free key" means the secret is missing or
+   its name is misspelled. "No: error" means the key was not accepted; check it and add it
+   again.
+
+Keys are private: only you can see your secrets, and they are never shown in results. To
+remove a key, open the same page and click the trash icon next to it.
+
+**Boards that do not offer keys:** LinkedIn, Indeed, Handshake, Idealist and the other popular
+boards on your results page offer no key for automated searching. Use the one-click search
+links on the results page for those.
 
 ---
 

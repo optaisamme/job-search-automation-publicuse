@@ -589,3 +589,12 @@ def test_web_search_result_titles():
     assert _clean_title("Job Application for Data Analyst at Acme", "https://job-boards.greenhouse.io/acme/jobs/1") == ("Data Analyst", "Acme")
     assert _clean_title("Acme - Data Analyst", "https://jobs.lever.co/acme/0b1c2d3e-0000-0000-0000-000000000000") == ("Data Analyst", "Acme")
     assert _clean_title("Data Analyst @ Acme", "https://jobs.ashbyhq.com/acme/x") == ("Data Analyst", "Acme")
+
+
+def test_web_search_rejected_key_reported_as_error(root, monkeypatch):
+    monkeypatch.setenv("TAVILY_API_KEY", "tvly-wrong")
+    c = FakeClient()
+    c.set("https://api.tavily.com/search", {"detail": {"error": "Unauthorized"}}, status=401)
+    info = run(root, c, sources=("websearch",))
+    ws = next(s for s in info["sources"] if s["name"] == "websearch")
+    assert ws["state"] == "error" and "key was not accepted" in ws["detail"]

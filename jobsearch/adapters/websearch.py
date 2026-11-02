@@ -109,7 +109,9 @@ class WebSearchAdapter(Adapter):
                     searches += 1
                 except RuntimeError as e:
                     status.errors.append(str(e))
-                    status.detail = f"{searches} searches"
+                    status.detail = f"{searches} searches; stopped: {e}"
+                    if not out:
+                        status.state = "error"   # report shows "No: error" instead of "Yes"
                     return out
                 for x in results:
                     url = x["url"]

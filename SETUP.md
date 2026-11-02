@@ -121,27 +121,44 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
       winter, minus 6 in summer; day 5 = Friday). Example: `"0 15 * * 1"` = Mondays 15:00 UTC.
    e. While it is off, GitHub still starts the file at the weekly time, but it stops after a few
       seconds without searching. The Actions tab shows those as short runs with the search skipped.
-2. **More job sources (free keys; recommended):** these search far more jobs than
-   the sites that need no key, including jobs that are not remote.
-   a. Adzuna (a large job search site that collects jobs from many sites): register at
-      https://developer.adzuna.com. Secret names: `ADZUNA_APP_ID`, `ADZUNA_APP_KEY`.
-   b. Jooble (another large job search site that collects jobs from many sites): request a
-      key at https://jooble.org/api/about. Secret name: `JOOBLE_API_KEY`.
-   c. USAJOBS (US federal government jobs): request a key at https://developer.usajobs.gov.
-      Secret names: `USAJOBS_API_KEY`, and `USAJOBS_EMAIL` (the email you registered with).
-   d. ReliefWeb (nonprofit, humanitarian and international development jobs, run by the
-      United Nations): request a free "appname" at https://apidoc.reliefweb.int/parameters#appname.
-      Secret name: `RELIEFWEB_APPNAME` (the appname they approve).
-   e. **Web search (Tavily): searches the whole web for your job titles, beyond the job sites
-      above.** Sign up at https://app.tavily.com (free plan: 1,000 searches a month; check the
-      current plan on their pricing page). Copy your API key (it starts with `tvly-`).
-      Secret name: `TAVILY_API_KEY`. Each search uses 2 web searches per job title (up to 4
-      titles), so a weekly search uses about 35 a month at most.
-   f. To add a key: in your copy, click **Settings**, then **Secrets and variables**, then
-      **Actions**, then **New repository secret**. Type the secret name exactly as shown above,
-      paste the key, and click **Add secret**. Add one secret per name.
-   g. The next search uses them. The report's "Where jobs were looked for" table shows
-      **Yes** next to each site that worked.
+2. **Free keys for more job sources (recommended).** Without keys, every search already checks
+   9 job sites and company careers pages. Each key below adds another source. Each is
+   optional and stays off until you add its key.
+
+| Service | What it adds | Where to get the free key | Secret name(s) to add |
+|---|---|---|---|
+| **Tavily** (web search) | Searches the whole web for each of your job titles, including company careers pages. Also finds new companies to check | https://app.tavily.com | `TAVILY_API_KEY` |
+| **Adzuna** | Large job search site that collects jobs from many other job sites; all job types, not only remote | https://developer.adzuna.com | `ADZUNA_APP_ID` and `ADZUNA_APP_KEY` |
+| **Jooble** | Another large site that collects jobs from many job sites | https://jooble.org/api/about | `JOOBLE_API_KEY` |
+| **USAJOBS** | Official US federal government jobs | https://developer.usajobs.gov | `USAJOBS_API_KEY` and `USAJOBS_EMAIL` (the email you registered with) |
+| **ReliefWeb** | Nonprofit, humanitarian and international development jobs (run by the United Nations) | https://apidoc.reliefweb.int/parameters#appname (ask for an "appname") | `RELIEFWEB_APPNAME` (the appname they approve) |
+
+   **Recommended first:** Tavily (finds jobs that are on no job site) and Adzuna (the largest
+   number of jobs). Tavily's free plan is 1,000 web searches a month (check the current plan
+   on its pricing page); this tool uses at most 8 per search, about 35 a month with weekly
+   searches.
+
+   **How to add a key:**
+
+   1. Get the free key from the service's website (column 3). Some services email it to you;
+      some take a day or two to approve.
+   2. Open **your copy** of this project on github.com.
+   3. Click **Settings** (top row of tabs, far right).
+   4. On the left, click **Secrets and variables**, then **Actions**.
+   5. Click the green **New repository secret** button.
+   6. In **Name**, type the secret name exactly as shown in the table (capital letters and
+      underscores included). In **Secret**, paste the key. Click **Add secret**.
+   7. Repeat steps 5 and 6 for each secret name. Adzuna and USAJOBS need 2 secrets each.
+   8. Start a search. In the full report, the table "Where jobs were looked for" shows **Yes**
+      next to each service that worked. "Off: needs a free key" means the secret is missing or
+      its name is misspelled. "No: error" means the key was not accepted; check it and add it
+      again.
+
+   Keys are private: only you can see your secrets, and they are never shown in results. To
+   remove a key, open the same page and click the trash icon next to it.
+
+   **Boards that do not offer keys:** LinkedIn, Indeed, Handshake, Idealist and the other
+   popular boards on your results page. Use the one-click search links there.
 
 ## When you change your settings later
 
