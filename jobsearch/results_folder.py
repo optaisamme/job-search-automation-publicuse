@@ -62,7 +62,7 @@ def _current_sections(db) -> list[str]:
         L += ["| Job | Company | Why it did not match | Link |", "|---|---|---|---|"]
         for r in near:
             p = _j(r["npayload"], {})
-            L.append(f"| {_cell(r['title'])} | {_cell(r['employer'])} | {_cell('; '.join(p.get('reasons', [])))} | "
+            L.append(f"| {_cell(r['title'])} | {_cell(r['employer'])} | {_cell('; '.join(_j(r['reasons'], []) or p.get('reasons', [])))} | "
                      f"[Link]({p.get('link') or r['canonical_url'] or ''}) |")
     else:
         L.append("None right now.")
