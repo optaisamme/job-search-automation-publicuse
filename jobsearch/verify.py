@@ -143,7 +143,31 @@ def verify(client, p: RawPosting, use_renderer: bool = True) -> Verification:
         if v.status in ("closed", "mismatch") and first is None:
             return v  # definitive negative from the primary page
         first = first or v
-    return first
+    return feed_listing(p, first, checked) or first
+
+
+FEED_LISTED = "Listed in the Himalayas job feed during this search"
+FEED_SOURCES = {"himalayas"}   # sites whose own job feed is trusted when they block link checks
+
+
+def feed_listing(p: RawPosting, ver: Verification | None, checked: str) -> Verification | None:
+    """Owner policy: a job from a site that blocks automated link checks (Himalayas) counts as open when
+    the site's own job feed listed it during this search and its closing date has not passed.
+    It is always labeled third-party, link not checked."""
+    import time
+    if p.source not in FEED_SOURCES or ver is None or ver.status not in ("blocked", "js_required", "error"):
+        return None
+    try:
+        expiry = int(float(p.extra.get("expiry")))
+    except (TypeError, ValueError):
+        return None
+    if expiry <= time.time():
+        return None
+    closes = time.strftime("%Y-%m-%d", time.gmtime(expiry))
+    return Verification("verified", final_url=ver.final_url or p.apply_url, apply_url=p.apply_url or p.source_url,
+                        apply_route="third_party", http_status=ver.http_status, checked_at=checked,
+                        detail=f"{FEED_LISTED} (closing date {closes}). The site blocks automated checks, "
+                               "so the link itself was not opened.")
 
 
 def _check_page(client, p: RawPosting, url: str, use_renderer: bool, checked: str) -> Verification:

@@ -458,3 +458,20 @@ def test_new_job_sites_parse():
     assert got["jobicy"][0].structured_salaries[0]["min"] == 95000
     assert (got["weworkremotely"][0].employer, got["weworkremotely"][0].title) == ("WWR Co", "Data Analyst")
     assert got["workingnomads"][0].employer == "WN Co"
+
+
+def test_himalayas_feed_listing_counts_when_site_blocks_checks():
+    import time
+    from jobsearch.verify import feed_listing
+    from jobsearch.models import Verification
+    blocked = Verification("blocked", final_url="https://himalayas.app/companies/x/jobs/y", detail="HTTP 403")
+    p = RawPosting("himalayas", "https://himalayas.app/companies/x/jobs/y", "X", "Data Analyst", "",
+                   apply_url="https://himalayas.app/companies/x/jobs/y", extra={"expiry": str(int(time.time()) + 86400)})
+    v = feed_listing(p, blocked, "now")
+    assert v.status == "verified" and v.apply_route == "third_party" and "link itself was not opened" in v.detail
+    p.extra["expiry"] = str(int(time.time()) - 60)
+    assert feed_listing(p, blocked, "now") is None            # closing date passed
+    p.extra["expiry"] = None
+    assert feed_listing(p, blocked, "now") is None            # no closing date
+    other = RawPosting("remoteok", "u", "X", "Data Analyst", "", extra={"expiry": str(int(time.time()) + 86400)})
+    assert feed_listing(other, blocked, "now") is None        # only Himalayas

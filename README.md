@@ -122,6 +122,9 @@ yourself. If you want a search to run by itself every week, open file 3 above
    certifications, your own rules. When a
    posting is unclear, the job is marked **Needs Verification** instead of guessed.
 5. **Checks the application link** to make sure the job is still open.
+   Himalayas blocks automated link checks. A Himalayas job counts as open when Himalayas'
+   own job feed listed it during the search and its closing date has not passed. These
+   jobs are marked **"third-party site, link not checked."**
 6. **Compares each job with your experience.**
 7. **Saves the results** in [JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS) and posts anything new
    under **Issues**.

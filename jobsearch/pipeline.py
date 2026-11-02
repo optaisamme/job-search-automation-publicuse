@@ -386,6 +386,11 @@ def prepare_outbox(root: Path, db_path: Path, client: HttpClient | None = None, 
                        ats_board=row["ats_board"], ats_job_id=row["ats_job_id"], canonical_url=row["canonical_url"],
                        apply_url=row["apply_url"], authoritative=bool(row["authoritative"]))
         ver = verifymod.verify(client, p, use_renderer=use_renderer)
+        prev = json.loads(row["verification"] or "{}") or {}
+        latest_run = store.db.execute("SELECT MAX(id) FROM runs").fetchone()[0]
+        if (ver.status in ("blocked", "js_required", "error") and (prev.get("detail") or "").startswith(verifymod.FEED_LISTED)
+                and row["last_run_id"] == latest_run):
+            ver = Verification(**{k: v for k, v in prev.items() if k in Verification.__dataclass_fields__})  # still in the feed this search
         if ver.status != "verified":
             reason = "Checked again just before posting: " + verifymod.plain_link_reason(ver)
             store.mark_notification(n["id"], "held", error=reason)

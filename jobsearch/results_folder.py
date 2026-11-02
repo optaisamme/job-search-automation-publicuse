@@ -54,7 +54,8 @@ def _current_sections(db) -> list[str]:
         for r in qualified:
             ver = _j(r["verification"], {}) or {}
             link = ver.get("apply_url") or r["apply_url"] or r["canonical_url"] or ""
-            route = " (third-party site)" if ver.get("apply_route") == "third_party" else ""
+            route = (" (third-party site, link not checked)" if (ver.get("detail") or "").startswith("Listed in the Himalayas job feed")
+                     else " (third-party site)" if ver.get("apply_route") == "third_party" else "")
             L.append(f"| {_cell(r['title'])} | {_cell(r['employer'])} | {_cell(_reason(_j(r['rules'], []), 'salary'))} | "
                      f"{_cell(r['location_text'])} | [Apply]({link}){route} | {(r['first_seen'] or '')[:10]} |")
     else:

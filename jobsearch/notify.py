@@ -34,6 +34,7 @@ def build_payload(row) -> dict:
         "posting_date": row["published_date"],
         "apply_url": ver.get("apply_url") or row["apply_url"],
         "apply_route": ver.get("apply_route"),
+        "link_not_checked": (ver.get("detail") or "").startswith("Listed in the Himalayas job feed"),
         "fit_summary": fit.get("summary"),
         "fit_strong": [f"{s['skill']} — {s['profile_evidence']}" for s in fit.get("strong", [])[:5]],
         "cert_filter": cert.get("reason"),
@@ -62,6 +63,8 @@ def render_item(p: dict, kind: str) -> str:
     lines.append("Posting date: " + (p["posting_date"] or "not provided by employer") + f" (first seen by automation: {p['first_seen']})")
     route = {"employer_ats": "employer ATS (direct)", "employer_site": "employer site (direct)",
              "third_party": "THIRD-PARTY APPLICATION (not employer-direct)"}.get(p["apply_route"], p["apply_route"] or "unknown")
+    if p.get("link_not_checked"):
+        route += "; LINK NOT CHECKED: listed in the Himalayas job feed during this search, but the site blocks automated checks"
     lines.append(f"Apply: {p['apply_url']}  [{route}]")
     lines.append(f"Fit: {p['fit_summary'] or 'see report'}")
     for s in p["fit_strong"][:3]:
