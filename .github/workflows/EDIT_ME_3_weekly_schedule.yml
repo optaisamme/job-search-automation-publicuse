@@ -23,7 +23,7 @@
 #  Do not change anything else in this file.
 # =====================================================================
 
-name: Weekly job search
+name: Run job search
 
 on:
   schedule:

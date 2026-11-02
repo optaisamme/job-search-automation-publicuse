@@ -4,6 +4,11 @@ Every week, this tool looks through public job listings, keeps the jobs that fit
 rules (job titles, state, salary, and more), checks that each application link works, and
 shows you the results. You set it up once on the GitHub website. No coding needed.
 
+**Already set up?** Open your copy, then click
+**[START A SEARCH NOW](../../actions/workflows/EDIT_ME_3_weekly_schedule.yml)**, then click the
+grey **Run workflow** button and the green **Run workflow** button.
+[Picture of where to click](HOW_TO_RUN_A_SEARCH_NOW.md#the-picture-where-to-click)
+
 ---
 
 ## Your 4 steps
@@ -12,7 +17,7 @@ shows you the results. You set it up once on the GitHub website. No coding neede
 |---|---|---|---|
 | **1. Make your own copy** | Copy this project into your own GitHub account | [SETUP.md](SETUP.md), Step 1 | 2 minutes |
 | **2. Fill in your settings** | Type your job titles and rules into one file | [EDIT_ME_JOB_SEARCH_SETTINGS](EDIT_ME_JOB_SEARCH_SETTINGS) folder, file **EDIT_ME_1** | 10 minutes |
-| **3. Run a search** | **Only after steps 1 and 2.** Click a button in **your copy** to start a search. Automatic weekly searches start **off** (see below) | [HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md) | 1 minute to start, 10 to 20 minutes to finish |
+| **3. Run a search** | **Only after steps 1 and 2.** In **your copy**: **Actions** tab, then **Run job search**, then **Run workflow** (twice). Automatic weekly searches start **off** (see below) | [HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md) | 1 minute to start, 10 to 20 minutes to finish |
 | **4. Read your results** | Open the results folder | **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)** folder | Any time |
 
 Do the steps **in order**. A search cannot run until you have your own copy (step 1) and at

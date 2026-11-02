@@ -14,6 +14,8 @@ import sqlite3
 from pathlib import Path
 
 FOLDER = "JOB_SEARCH_RESULTS"
+# Relative to JOB_SEARCH_RESULTS/README.md on github.com: opens this copy's "Run job search" page.
+RUN_LINK = "../../../actions/workflows/EDIT_ME_3_weekly_schedule.yml"
 
 
 def _j(v, default):
@@ -100,7 +102,9 @@ def write(root: Path) -> dict:
     folder.mkdir(exist_ok=True)
     dbp = root / "data/jobs.sqlite"
     if not dbp.exists():
-        text = f"# {FOLDER.replace('_', ' ')}\n\nNo search has run yet. Your results appear here after your first search.\n"
+        text = (f"# {FOLDER.replace('_', ' ')}\n\nNo search has run yet. Your results appear here after your first search.\n\n"
+                f"To start one: **[START A SEARCH NOW]({RUN_LINK})**, then click the grey **Run workflow** button "
+                "and the green **Run workflow** button.\n")
         (folder / "README.md").write_text(text)
         return {"index": str(folder / "README.md"), "report": None, "text": text}
     db = sqlite3.connect(dbp)
@@ -137,7 +141,9 @@ def write(root: Path) -> dict:
 
     reports = sorted(folder.glob("REPORT_*.md"), reverse=True)
     I = ["# JOB SEARCH RESULTS", "",
-         "**This page shows your latest results.** It is updated after every search.", ""]
+         "**This page shows your latest results.** It is updated after every search.", "",
+         f"To search again: **[START A SEARCH NOW]({RUN_LINK})**, then click the grey **Run workflow** "
+         "button and the green **Run workflow** button.", ""]
     if last:
         I += [f"**Latest search:** {last['finished_at'][:16].replace('T', ' ')} UTC. "
               f"Full details: [{reports[0].name}]({reports[0].name})" if reports else "", ""]
