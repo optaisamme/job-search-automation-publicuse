@@ -86,9 +86,6 @@ jobs:
       - name: Search for jobs
         env:
           # Optional free API keys (Settings > Secrets and variables > Actions). Leave unset to skip.
-          USAJOBS_API_KEY: ${{ secrets.USAJOBS_API_KEY }}
-          USAJOBS_EMAIL: ${{ secrets.USAJOBS_EMAIL }}
-          RELIEFWEB_APPNAME: ${{ secrets.RELIEFWEB_APPNAME }}
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
         run: python -m jobsearch run
 

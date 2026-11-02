@@ -121,43 +121,41 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
       winter, minus 6 in summer; day 5 = Friday). Example: `"0 15 * * 1"` = Mondays 15:00 UTC.
    e. While it is off, GitHub still starts the file at the weekly time, but it stops after a few
       seconds without searching. The Actions tab shows those as short runs with the search skipped.
-2. **Free keys for more job sources (recommended).** Without keys, every search already checks
-   9 job sites and company careers pages. Each key below adds another source. Each is
-   optional and stays off until you add its key.
+2. **Free web search key (recommended).**
+   Without a key, every search already checks 9 job sites and company careers pages. Adding
+   one free key turns on a **web search**: for each of your job titles, the tool also searches
+   the whole web, including company careers pages, and finds jobs that are on no job site. It
+   also finds new companies to check. It is optional and stays off until you add the key.
 
-| Service | What it adds | Where to get the free key | Secret name(s) to add |
+| Service | What it adds | Where to get the free key | Secret name to add |
 |---|---|---|---|
-| **Tavily** (web search) | Searches the whole web for each of your job titles, including company careers pages. Also finds new companies to check | https://app.tavily.com: on the log-in page that opens, click **Sign up** (or continue with a Google, GitHub, LinkedIn or Microsoft account). After signing in, copy your API key from your Tavily account page (it starts with `tvly-`) | `TAVILY_API_KEY` |
-| **USAJOBS** | Official US federal government jobs | https://developer.usajobs.gov/apirequest/: a request form. It asks for your name, email, phone number, a company or agency (you can type your own name or school), and how you will use the jobs (for example: "personal job search"). The key is sent by email | `USAJOBS_API_KEY` and `USAJOBS_EMAIL` (the email you used on the form) |
-| **ReliefWeb** | Nonprofit, humanitarian and international development jobs (run by the United Nations) | https://apidoc.reliefweb.int/#appname: click **this short form**. ReliefWeb reviews each request and replies by email, so expect to wait | `RELIEFWEB_APPNAME` (the appname they approve) |
+| **Tavily** (web search) | Searches the whole web for each of your job titles, including company careers pages | https://app.tavily.com: on the log-in page that opens, click **Sign up** (or continue with a Google, GitHub, LinkedIn or Microsoft account). After signing in, copy your API key from your Tavily account page (it starts with `tvly-`) | `TAVILY_API_KEY` |
 
-   **Recommended first:** Tavily. It finds jobs that are on no job site, and its free plan
-   does not ask for a credit card, according to published comparisons. USAJOBS and ReliefWeb
-   add specialized jobs but take longer to set up. Tavily's free plan is 1,000 web searches a
-   month (check the current plan on its pricing page); this tool uses at most 8 per search,
-   about 35 a month with weekly searches.
+   **Free plan:** 1,000 web searches a month, and no credit card, according to published
+   comparisons (check Tavily's pricing page for the current plan). This tool uses 2 web searches
+   per job title, for up to 4 titles: at most 8 per search, about 35 a month with weekly
+   searches.
 
-   **How to add a key:**
+   **How to add the key:**
 
-   1. Get the free key from the service's website (column 3). USAJOBS and ReliefWeb email
-      it to you; ReliefWeb may take a few days to approve.
+   1. Sign up at https://app.tavily.com and copy your API key (see the table).
    2. Open **your copy** of this project on github.com.
    3. Click **Settings** (top row of tabs, far right).
    4. On the left, click **Secrets and variables**, then **Actions**.
    5. Click the green **New repository secret** button.
-   6. In **Name**, type the secret name exactly as shown in the table (capital letters and
-      underscores included). In **Secret**, paste the key. Click **Add secret**.
-   7. Repeat steps 5 and 6 for each secret name. USAJOBS needs 2 secrets.
-   8. Start a search. In the full report, the table "Where jobs were looked for" shows **Yes**
-      next to each service that worked. "Off: needs a free key" means the secret is missing or
-      its name is misspelled. "No: error" means the key was not accepted; check it and add it
-      again.
+   6. In **Name**, type `TAVILY_API_KEY` exactly (capital letters and underscores included).
+      In **Secret**, paste the key. Click **Add secret**.
+   7. Start a search. In the full report, the table "Where jobs were looked for" shows
+      **Web search (Tavily): Yes** when it worked. "Off: needs a free key" means the secret is
+      missing or its name is misspelled. "No: error" means the key was not accepted; check it
+      and add it again.
 
-   Keys are private: only you can see your secrets, and they are never shown in results. To
-   remove a key, open the same page and click the trash icon next to it.
+   The key is private: only you can see it, and it is never shown in results. To remove it,
+   open the same page and click the trash icon next to it.
 
-   **Boards that do not offer keys:** LinkedIn, Indeed, Handshake, Idealist and the other
-   popular boards on your results page. Use the one-click search links there.
+   **Boards that do not offer keys:** LinkedIn, Indeed, Handshake, Idealist and the other popular
+   boards on your results page offer no key for automated searching. Use the one-click search
+   links on the results page for those.
 
 ## When you change your settings later
 
@@ -172,12 +170,13 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 ## What it does not do
 
 1. It never applies to jobs or contacts employers.
-2. It does not read LinkedIn, Indeed, Glassdoor, ZipRecruiter or Built In (their terms do
-   not allow automated access). Links from those sites can't be checked automatically.
-3. It does not run general web searches. It uses Himalayas, The Muse, Remote OK, Jobicy,
-   We Work Remotely, Working Nomads, Jobspresso, Remotive, Hacker News "Who is hiring?", the job pages of companies you add
-   (settings section 7) or that it found earlier, USAJOBS and ReliefWeb if you add
-   their free keys, and a web search for your job titles if you add a Tavily key.
+2. It does not search LinkedIn, Indeed, Handshake, Idealist and the other popular boards on
+   the results page (no public data feed, sign-in required, or their terms do not allow it).
+   The results page has one-click search links for them instead.
+3. It searches Himalayas, The Muse, Remote OK, Jobicy, We Work Remotely, Working Nomads,
+   Jobspresso, Remotive, Hacker News "Who is hiring?", and the careers pages of companies you
+   add (settings section 7) or that it found earlier. It searches the wider web only if you
+   add the free Tavily key.
 4. Results come from text rules. When a posting is unclear, the job is marked "Needs
    Verification" rather than guessed, so read each posting yourself before applying.
 

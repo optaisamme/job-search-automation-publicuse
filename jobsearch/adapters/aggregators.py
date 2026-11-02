@@ -1,5 +1,5 @@
 """Discovery sources with documented public/free APIs. Their content is third-party
-(authoritative=False) except USAJOBS, which is the official federal posting system.
+(authoritative=False).
 Results must be confirmed on the employer/ATS posting before they can qualify."""
 from __future__ import annotations
 
@@ -246,40 +246,6 @@ class JobspressoAdapter(Adapter):
         return out
 
 
-class ReliefWebAdapter(Adapter):
-    # https://apidoc.reliefweb.int — UN OCHA's humanitarian and nonprofit job board. Free, but requests must
-    # carry an approved "appname" (request one at https://apidoc.reliefweb.int/parameters#appname).
-    name = "reliefweb"
-    env_keys = ("RELIEFWEB_APPNAME",)
-
-    def search(self, status: SourceStatus) -> list[RawPosting]:
-        out, seen = [], set()
-        app = os.environ["RELIEFWEB_APPNAME"].strip()
-        for q in self.ctx["queries"][:6]:
-            params = [("appname", app), ("profile", "full"), ("limit", 50), ("sort[]", "date.created:desc"),
-                      ("query[value]", q), ("query[fields][]", "title")]
-            r = self.client.get("https://api.reliefweb.int/v2/jobs?" + urllib.parse.urlencode(params))
-            if r.status >= 400:
-                status.errors.append(f"query {q!r}: HTTP {r.status}")
-                continue
-            for item in (r.json() or {}).get("data") or []:
-                f = item.get("fields") or {}
-                url = f.get("url") or f.get("url_alias") or ""
-                if not url or url in seen:
-                    continue
-                seen.add(url)
-                orgs = [x.get("name", "") for x in f.get("source") or [] if isinstance(x, dict)]
-                countries = [x.get("name", "") for x in f.get("country") or [] if isinstance(x, dict)]
-                date = f.get("date") or {}
-                out.append(RawPosting(
-                    source="reliefweb", source_url=url, employer=orgs[0] if orgs else "", title=f.get("title", ""),
-                    description_text=html_to_text(f.get("body-html") or f.get("body")),
-                    location_text="; ".join(countries), apply_url=url,
-                    extra={"third_party_published": date.get("created"), "close_date": date.get("closing")},
-                ))
-        return out
-
-
 class HackerNewsHiringAdapter(Adapter):
     # Hacker News "Ask HN: Who is hiring?" monthly thread, read through the free public HN Search API
     # (https://hn.algolia.com/api). Each top-level comment is one employer's post, usually starting
@@ -321,60 +287,4 @@ class HackerNewsHiringAdapter(Adapter):
                 workplace_type="remote" if _re.search(r"\bremote\b", first, _re.I) and not _re.search(r"\b(onsite|on-site|hybrid)\b", first, _re.I) else None,
                 extra={"third_party_published": c.get("created_at")},
             ))
-        return out
-
-
-class UsaJobsAdapter(Adapter):
-    # https://developer.usajobs.gov — free API key; official federal postings (authoritative).
-    name = "usajobs"
-    kind = "official"
-    authoritative = True
-    env_keys = ("USAJOBS_API_KEY", "USAJOBS_EMAIL")
-
-    def search(self, status: SourceStatus) -> list[RawPosting]:
-        h = {"Host": "data.usajobs.gov", "Authorization-Key": os.environ["USAJOBS_API_KEY"]}
-        out, seen = [], set()
-        for q in self.ctx["queries"][:5]:
-            from ..criteria import CRITERIA
-            params = {"Keyword": q, "ResultsPerPage": 100}
-            if CRITERIA.get("remote_only", True):
-                params["RemoteIndicator"] = "True"
-            url = "https://data.usajobs.gov/api/search?" + urllib.parse.urlencode(params)
-            r = self.client.get(url, headers={**h, "User-Agent": os.environ["USAJOBS_EMAIL"]})
-            if r.status >= 400:
-                status.errors.append(f"query {q!r}: HTTP {r.status}")
-                continue
-            items = (r.json().get("SearchResult") or {}).get("SearchResultItems") or []
-            for it in items:
-                d = it.get("MatchedObjectDescriptor") or {}
-                pid = d.get("PositionID") or d.get("PositionURI")
-                if pid in seen:
-                    continue
-                seen.add(pid)
-                det = (d.get("UserArea") or {}).get("Details") or {}
-                text = "\n".join(filter(None, [
-                    det.get("JobSummary"), "Duties:", "\n".join(det.get("MajorDuties") or []),
-                    "Qualifications:", d.get("QualificationSummary"), det.get("Education"), det.get("Requirements"),
-                    "Remote: " + str(det.get("RemoteIndicator")), "Telework: " + str(det.get("TeleworkEligible")),
-                ]))
-                bands = []
-                for rem in d.get("PositionRemuneration") or []:
-                    code = (rem.get("RateIntervalCode") or "").upper()
-                    try:
-                        bands.append({"min": float(rem["MinimumRange"]), "max": float(rem["MaximumRange"]),
-                                      "interval": "year" if code in ("PA", "PER YEAR") else code.lower(),
-                                      "context": f"USAJOBS remuneration {rem.get('MinimumRange')}-{rem.get('MaximumRange')} {rem.get('Description') or code}"})
-                    except (KeyError, ValueError):
-                        pass
-                locs = [l.get("LocationName", "") for l in d.get("PositionLocation") or []]
-                apply = (d.get("ApplyURI") or [None])[0]
-                out.append(RawPosting(
-                    source="usajobs", source_url=d.get("PositionURI", ""), employer=d.get("OrganizationName", ""),
-                    title=d.get("PositionTitle", ""), description_text=text, location_text="; ".join(locs),
-                    authoritative=True, ats="usajobs", ats_job_id=d.get("PositionID"), requisition_id=d.get("PositionID"),
-                    canonical_url=d.get("PositionURI"), apply_url=apply, structured_salaries=bands,
-                    workplace_type="remote" if det.get("RemoteIndicator") in (True, "True", "true") else None,
-                    published_date=d.get("PublicationStartDate"),
-                    extra={"close_date": d.get("ApplicationCloseDate")},
-                ))
         return out

@@ -494,6 +494,7 @@ def test_manual_board_links_use_job_titles():
     md = "\n".join(section(["Data Analyst", "Program Manager"], True))
     assert "https://www.linkedin.com/jobs/search/?keywords=Data+Analyst&f_WT=2" in md
     assert "https://www.idealist.org/en/jobs?q=Program+Manager" in md
+    assert "https://reliefweb.int/jobs?search=Program+Manager" in md
     assert "Search: Data Analyst" in md and "Tech Jobs for Good" in md
     assert "https://diversityjobs.com/candidate/job_search/quick/results?keyword=Data+Analyst&location=remote" in md
     assert "https://www.greenjobsboard.us/jobs?search=Data+Analyst" in md and "HigherEdJobs" in md
@@ -501,24 +502,10 @@ def test_manual_board_links_use_job_titles():
     assert "Add a job title" in "\n".join(section([], True))
 
 
-def test_reliefweb_parse(monkeypatch):
-    from jobsearch.adapters.aggregators import ReliefWebAdapter
-    from jobsearch.adapters.base import SourceStatus
-    monkeypatch.setenv("RELIEFWEB_APPNAME", "app")
-    c = FakeClient()
-    url = ("https://api.reliefweb.int/v2/jobs?appname=app&profile=full&limit=50&sort%5B%5D=date.created%3Adesc"
-           "&query%5Bvalue%5D=Program+Manager&query%5Bfields%5D%5B%5D=title")
-    c.set(url, {"data": [{"id": "1", "fields": {"title": "Program Manager", "url": "https://reliefweb.int/job/1/pm",
-                "body": "Remote, United States", "source": [{"name": "Example Relief"}], "country": [{"name": "United States of America"}],
-                "date": {"created": "2026-11-01", "closing": "2026-12-01"}}}]})
-    got = ReliefWebAdapter(c, {"queries": ["Program Manager"]}).search(SourceStatus("reliefweb"))
-    assert len(got) == 1 and got[0].employer == "Example Relief" and got[0].extra["close_date"] == "2026-12-01"
-
-
 def test_manual_boards_grouped_and_use_state():
     from jobsearch.manual_boards import section, BOARDS
     md = "\n".join(section(["Program Manager"], False, "New Mexico"))
-    assert len(BOARDS) == 30 and "### Students, early career, hourly and government" in md
+    assert len(BOARDS) == 32 and "### Students, early career, hourly and government" in md
     assert "find-jobs-results.aspx?keyword=Program+Manager&location=New+Mexico" in md
     assert "https://www.indeed.com/jobs?q=Program+Manager&l=New+Mexico" in md
     assert "https://wellfound.com/role/r/program-manager" in md

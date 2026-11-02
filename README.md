@@ -43,10 +43,12 @@ Open the **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)** folder.
    c. **Jobs whose link could not be checked**, with a link to find the employer's own posting.
    d. **Possible matches:** jobs that failed none of your rules but did not say enough to be
       sure (for example, no salary listed), with what to check.
-   e. **Popular job boards to search yourself:** one-click searches for your job titles on 30
+   e. **Popular job boards to search yourself:** one-click searches for your job titles on 32
       boards, grouped by type: large job sites (LinkedIn, Indeed, Google Jobs and more);
-      students, hourly and government (Handshake, CareerOneStop, Snagajob, Upwork, AmeriCorps);
-      nonprofit and international (Idealist, Chronicle of Philanthropy, Devex and more);
+      students, hourly and government (Handshake, CareerOneStop, USAJOBS, Snagajob, Upwork,
+      AmeriCorps);
+      nonprofit and international (Idealist, ReliefWeb, Chronicle of Philanthropy, Devex and
+      more);
       diversity (DiversityJobs, PowerToFly and more); and tech and startups.
 2. **One report per search**, numbered and dated, for example
    `REPORT_001_2026-11-06_13-47_UTC.md`. The newest is listed first. Each report also lists
@@ -75,8 +77,7 @@ Only files whose names start with **EDIT_ME**. Do not change any other file.
 
 Both settings files start **empty**: nothing is searched or filtered until you fill them in.
 
-**Also optional:** free keys for more job sources. These are added in **Settings**, not in a
-file. See [Other optional edits: free keys for more job sources](#other-optional-edits-free-keys-for-more-job-sources).
+**Also optional:** a free web search key. It is added in **Settings**, not in a file. See [Other optional edits: a free web search key](#other-optional-edits-a-free-web-search-key).
 
 **Automatic weekly searches are OFF to start.** A search only runs when you start one
 yourself. If you want a search to run by itself every week, open file 3 above
@@ -106,44 +107,38 @@ yourself. If you want a search to run by itself every week, open file 3 above
 
 ---
 
-## Other optional edits: free keys for more job sources
+## Other optional edits: a free web search key
 
-Without any keys, every search already checks 9 job sites and company careers pages. You can
-add a free key for any of the services below to search more jobs. Each one is optional, and
-each stays off until you add its key. You add keys in your copy's **Settings**, not in a file.
+Without a key, every search already checks 9 job sites and company careers pages. Adding
+one free key turns on a **web search**: for each of your job titles, the tool also searches
+the whole web, including company careers pages, and finds jobs that are on no job site. It
+also finds new companies to check. It is optional and stays off until you add the key.
 
-| Service | What it adds | Where to get the free key | Secret name(s) to add |
+| Service | What it adds | Where to get the free key | Secret name to add |
 |---|---|---|---|
-| **Tavily** (web search) | Searches the whole web for each of your job titles, including company careers pages. Also finds new companies to check | https://app.tavily.com: on the log-in page that opens, click **Sign up** (or continue with a Google, GitHub, LinkedIn or Microsoft account). After signing in, copy your API key from your Tavily account page (it starts with `tvly-`) | `TAVILY_API_KEY` |
-| **USAJOBS** | Official US federal government jobs | https://developer.usajobs.gov/apirequest/: a request form. It asks for your name, email, phone number, a company or agency (you can type your own name or school), and how you will use the jobs (for example: "personal job search"). The key is sent by email | `USAJOBS_API_KEY` and `USAJOBS_EMAIL` (the email you used on the form) |
-| **ReliefWeb** | Nonprofit, humanitarian and international development jobs (run by the United Nations) | https://apidoc.reliefweb.int/#appname: click **this short form**. ReliefWeb reviews each request and replies by email, so expect to wait | `RELIEFWEB_APPNAME` (the appname they approve) |
+| **Tavily** (web search) | Searches the whole web for each of your job titles, including company careers pages | https://app.tavily.com: on the log-in page that opens, click **Sign up** (or continue with a Google, GitHub, LinkedIn or Microsoft account). After signing in, copy your API key from your Tavily account page (it starts with `tvly-`) | `TAVILY_API_KEY` |
 
-**Recommended first:** Tavily. It finds jobs that are on no job site, and its free plan
-does not ask for a credit card, according to published comparisons. USAJOBS and ReliefWeb
-add specialized jobs but take longer to set up.
+**Free plan:** 1,000 web searches a month, and no credit card, according to published
+comparisons (check Tavily's pricing page for the current plan). This tool uses 2 web searches
+per job title, for up to 4 titles: at most 8 per search, about 35 a month with weekly
+searches.
 
-**Tavily free plan:** 1,000 web searches a month (check the current plan on Tavily's pricing
-page). Each search uses 2 web searches per job title, for up to 4 titles: at most 8 per
-search, about 35 a month with weekly searches.
+### How to add the key
 
-### How to add a key
-
-1. Get the free key from the service's website (column 3). USAJOBS and ReliefWeb email
-   it to you; ReliefWeb may take a few days to approve.
+1. Sign up at https://app.tavily.com and copy your API key (see the table).
 2. Open **your copy** of this project on github.com.
 3. Click **Settings** (top row of tabs, far right).
 4. On the left, click **Secrets and variables**, then **Actions**.
 5. Click the green **New repository secret** button.
-6. In **Name**, type the secret name exactly as shown in the table (capital letters and
-   underscores included). In **Secret**, paste the key. Click **Add secret**.
-7. Repeat steps 5 and 6 for each secret name. USAJOBS needs 2 secrets.
-8. Start a search. In the full report, the table "Where jobs were looked for" shows **Yes**
-   next to each service that worked. "Off: needs a free key" means the secret is missing or
-   its name is misspelled. "No: error" means the key was not accepted; check it and add it
-   again.
+6. In **Name**, type `TAVILY_API_KEY` exactly (capital letters and underscores included).
+   In **Secret**, paste the key. Click **Add secret**.
+7. Start a search. In the full report, the table "Where jobs were looked for" shows
+   **Web search (Tavily): Yes** when it worked. "Off: needs a free key" means the secret is
+   missing or its name is misspelled. "No: error" means the key was not accepted; check it
+   and add it again.
 
-Keys are private: only you can see your secrets, and they are never shown in results. To
-remove a key, open the same page and click the trash icon next to it.
+The key is private: only you can see it, and it is never shown in results. To remove it,
+open the same page and click the trash icon next to it.
 
 **Boards that do not offer keys:** LinkedIn, Indeed, Handshake, Idealist and the other popular
 boards on your results page offer no key for automated searching. Use the one-click search
@@ -169,14 +164,12 @@ links on the results page for those.
       Nomads, Jobspresso, Remotive and Hacker News "Who is hiring?" (mostly tech jobs).
       Several send their newest jobs whatever your search words are, so each search looks at
       more than 1,000 listings.
-   b. **Free key needed (see SETUP.md Step 6):** USAJOBS (federal jobs) and ReliefWeb
-      (nonprofit, humanitarian and international development jobs).
-   c. **Web search (free key, recommended, see SETUP.md Step 6):** searches the whole web for
+   b. **Web search (free key, recommended, see SETUP.md Step 6):** searches the whole web for
       each of your job titles, finding jobs that are on no job site above. For each title it
       runs 2 searches: one across company careers pages (Greenhouse, Lever, Ashby,
       SmartRecruiters, Workday) and one across the rest of the web. Every result is checked
       like any other job.
-   d. **Company careers pages**, only for companies whose careers page runs on Greenhouse,
+   c. **Company careers pages**, only for companies whose careers page runs on Greenhouse,
       Lever, Ashby or SmartRecruiters. These are not searched as whole sites: the tool reads
       the careers page of one company at a time, and only for these companies:
       1. **Found automatically**, step by step:
@@ -210,7 +203,7 @@ links on the results page for those.
 The tool never applies to jobs or contacts employers. It does not search popular boards
 such as LinkedIn, Indeed, Handshake or Idealist: they have no public data feed, require
 signing in, block automated requests, or their terms do not allow automated searching.
-Instead, the results page has **one-click search links** for 30 of these boards, built from
+Instead, the results page has **one-click search links** for 32 of these boards, built from
 your job titles, so you can open those searches yourself.
 It does not get around sites that block automated checks.
 

@@ -9,7 +9,7 @@ from pathlib import Path
 from .notify import _j
 
 SOURCE_NOTES = {
-    "LinkedIn, Indeed, Handshake, Idealist and 26 more": "Not searched automatically (no public data feed, sign-in "
+    "LinkedIn, Indeed, Handshake, Idealist and 28 more": "Not searched automatically (no public data feed, sign-in "
     "required, blocked, or terms do not allow it). One-click searches for them are on the JOB_SEARCH_RESULTS page.",
 }
 
@@ -17,8 +17,7 @@ SOURCE_NAMES = {
     "websearch": "Web search (Tavily)",
     "web_search_leads": "Web search leads", "ats_watchlist": "Company job pages (section 7, plus companies found automatically)",
     "remotive": "Remotive", "remoteok": "Remote OK", "himalayas": "Himalayas", "themuse": "The Muse",
-    "jobicy": "Jobicy", "weworkremotely": "We Work Remotely", "workingnomads": "Working Nomads", "jobspresso": "Jobspresso", "reliefweb": "ReliefWeb", "hackernews": "Hacker News: Who is hiring?",
-    "usajobs": "USAJOBS",
+    "jobicy": "Jobicy", "weworkremotely": "We Work Remotely", "workingnomads": "Working Nomads", "jobspresso": "Jobspresso", "hackernews": "Hacker News: Who is hiring?",
 }
 
 

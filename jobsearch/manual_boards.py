@@ -51,6 +51,8 @@ GROUPS = [
         ("CareerOneStop Job Finder", "US Department of Labor search, including state job banks",
          lambda t, r, s: f"https://www.careeronestop.org/Toolkit/Jobs/find-jobs-results.aspx?keyword={q(t)}"
                          f"&location={q(s or 'United States')}&radius=25"),
+        ("USAJOBS", "official US federal government jobs",
+         lambda t, r, s: f"https://www.usajobs.gov/search/results/?k={q(t)}" + (f"&l={q(s)}" if (s and not r) else "")),
         ("Snagajob", "hourly and part-time jobs",
          lambda t, r, s: f"https://www.snagajob.com/search?q={q(t)}"),
         ("Upwork", "freelance and contract work",
@@ -63,6 +65,8 @@ GROUPS = [
          lambda t, r, s: f"https://www.idealist.org/en/jobs?q={q(t)}"),
         ("Chronicle of Philanthropy Jobs", "nonprofit and fundraising jobs",
          lambda t, r, s: f"https://jobs.philanthropy.com/searchjobs/?Keywords={q(t)}"),
+        ("ReliefWeb", "humanitarian and international development jobs (run by the United Nations)",
+         lambda t, r, s: f"https://reliefweb.int/jobs?search={q(t)}"),
         ("Devex", "international development jobs",
          lambda t, r, s: f"https://www.devex.com/jobs/search?query={q(t)}"),
         ("Green Jobs Board", "climate and environmental jobs",
