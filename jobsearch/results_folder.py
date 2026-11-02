@@ -172,7 +172,7 @@ def write(root: Path) -> dict:
                   "`[\"Program Manager\", \"Program Director\", \"Program Lead\"]`.",
                   "3. Leave `description_must_mention_one_of` and \"Description must mention\" empty to start; "
                   "add them later if you get too many jobs.",
-                  "4. Add the free Adzuna and USAJOBS keys (SETUP.md). They search far more jobs than the other sites.",
+                  "4. Add the free Tavily web search key (SETUP.md Step 6). It finds jobs that are on no job site.",
                   "5. Add employers you like in settings section 7, \"Companies to watch.\"", ""]
         else:
             R += ["Nothing new in this search."

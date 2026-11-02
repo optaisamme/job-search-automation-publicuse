@@ -12,9 +12,9 @@ from dataclasses import asdict
 from pathlib import Path
 
 from .adapters.aggregators import (RemotiveAdapter, RemoteOKAdapter, HimalayasAdapter, TheMuseAdapter, JobicyAdapter,
-                                   WeWorkRemotelyAdapter, WorkingNomadsAdapter, JobspressoAdapter, JoobleAdapter,
+                                   WeWorkRemotelyAdapter, WorkingNomadsAdapter, JobspressoAdapter,
                                    ReliefWebAdapter, HackerNewsHiringAdapter,
-                                   AdzunaAdapter, UsaJobsAdapter)
+                                   UsaJobsAdapter)
 from .adapters.ats import AtsWatchlistAdapter, FETCHERS
 from .adapters.base import SourceStatus
 from .adapters.leads import LeadsAdapter
@@ -35,7 +35,7 @@ ADAPTERS = {  # order matters: web search and leads first so newly discovered bo
     "websearch": WebSearchAdapter, "web_search_leads": LeadsAdapter, "ats_watchlist": AtsWatchlistAdapter, "remotive": RemotiveAdapter,
     "remoteok": RemoteOKAdapter, "himalayas": HimalayasAdapter, "themuse": TheMuseAdapter, "jobicy": JobicyAdapter,
     "weworkremotely": WeWorkRemotelyAdapter, "workingnomads": WorkingNomadsAdapter, "jobspresso": JobspressoAdapter, "hackernews": HackerNewsHiringAdapter,
-    "jooble": JoobleAdapter, "reliefweb": ReliefWebAdapter, "adzuna": AdzunaAdapter, "usajobs": UsaJobsAdapter,
+    "reliefweb": ReliefWebAdapter, "usajobs": UsaJobsAdapter,
 }
 
 

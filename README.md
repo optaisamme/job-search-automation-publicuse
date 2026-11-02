@@ -114,15 +114,13 @@ each stays off until you add its key. You add keys in your copy's **Settings**, 
 
 | Service | What it adds | Where to get the free key | Secret name(s) to add |
 |---|---|---|---|
-| **Tavily** (web search) | Searches the whole web for each of your job titles, including company careers pages. Also finds new companies to check | https://app.tavily.com | `TAVILY_API_KEY` |
-| **Adzuna** | Large job search site that collects jobs from many other job sites; all job types, not only remote. **Its sign-up form asks for an organization name and website:** you can type your own name and the web address of your copy of this project | https://developer.adzuna.com | `ADZUNA_APP_ID` and `ADZUNA_APP_KEY` |
-| **Jooble** | Another large site that collects jobs from many job sites | https://jooble.org/api/about | `JOOBLE_API_KEY` |
-| **USAJOBS** | Official US federal government jobs | https://developer.usajobs.gov | `USAJOBS_API_KEY` and `USAJOBS_EMAIL` (the email you registered with) |
-| **ReliefWeb** | Nonprofit, humanitarian and international development jobs (run by the United Nations) | https://apidoc.reliefweb.int/parameters#appname (ask for an "appname") | `RELIEFWEB_APPNAME` (the appname they approve) |
+| **Tavily** (web search) | Searches the whole web for each of your job titles, including company careers pages. Also finds new companies to check | https://app.tavily.com: on the log-in page that opens, click **Sign up** (or continue with a Google, GitHub, LinkedIn or Microsoft account). After signing in, copy your API key from your Tavily account page (it starts with `tvly-`) | `TAVILY_API_KEY` |
+| **USAJOBS** | Official US federal government jobs | https://developer.usajobs.gov/apirequest/: a request form. It asks for your name, email, phone number, a company or agency (you can type your own name or school), and how you will use the jobs (for example: "personal job search"). The key is sent by email | `USAJOBS_API_KEY` and `USAJOBS_EMAIL` (the email you used on the form) |
+| **ReliefWeb** | Nonprofit, humanitarian and international development jobs (run by the United Nations) | https://apidoc.reliefweb.int/#appname: click **this short form**. ReliefWeb reviews each request and replies by email, so expect to wait | `RELIEFWEB_APPNAME` (the appname they approve) |
 
 **Recommended first:** Tavily. It finds jobs that are on no job site, and its free plan
-does not ask for a credit card, according to published comparisons. Add the others only if
-you want more jobs.
+does not ask for a credit card, according to published comparisons. USAJOBS and ReliefWeb
+add specialized jobs but take longer to set up.
 
 **Tavily free plan:** 1,000 web searches a month (check the current plan on Tavily's pricing
 page). Each search uses 2 web searches per job title, for up to 4 titles: at most 8 per
@@ -130,15 +128,15 @@ search, about 35 a month with weekly searches.
 
 ### How to add a key
 
-1. Get the free key from the service's website (column 3). Some services email it to you;
-   some take a day or two to approve.
+1. Get the free key from the service's website (column 3). USAJOBS and ReliefWeb email
+   it to you; ReliefWeb may take a few days to approve.
 2. Open **your copy** of this project on github.com.
 3. Click **Settings** (top row of tabs, far right).
 4. On the left, click **Secrets and variables**, then **Actions**.
 5. Click the green **New repository secret** button.
 6. In **Name**, type the secret name exactly as shown in the table (capital letters and
    underscores included). In **Secret**, paste the key. Click **Add secret**.
-7. Repeat steps 5 and 6 for each secret name. Adzuna and USAJOBS need 2 secrets each.
+7. Repeat steps 5 and 6 for each secret name. USAJOBS needs 2 secrets.
 8. Start a search. In the full report, the table "Where jobs were looked for" shows **Yes**
    next to each service that worked. "Off: needs a free key" means the secret is missing or
    its name is misspelled. "No: error" means the key was not accepted; check it and add it
@@ -171,8 +169,7 @@ links on the results page for those.
       Nomads, Jobspresso, Remotive and Hacker News "Who is hiring?" (mostly tech jobs).
       Several send their newest jobs whatever your search words are, so each search looks at
       more than 1,000 listings.
-   b. **Free key needed (recommended, see SETUP.md Step 6):** Adzuna and Jooble (large sites
-      that collect jobs from many other job sites), USAJOBS (federal jobs) and ReliefWeb
+   b. **Free key needed (see SETUP.md Step 6):** USAJOBS (federal jobs) and ReliefWeb
       (nonprofit, humanitarian and international development jobs).
    c. **Web search (free key, recommended, see SETUP.md Step 6):** searches the whole web for
       each of your job titles, finding jobs that are on no job site above. For each title it

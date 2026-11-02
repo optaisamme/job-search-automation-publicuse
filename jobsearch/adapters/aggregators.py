@@ -246,45 +246,6 @@ class JobspressoAdapter(Adapter):
         return out
 
 
-class JoobleAdapter(Adapter):
-    # https://jooble.org/api/about — free key (request on that page). Jooble collects jobs from many job sites.
-    # Request format: POST https://jooble.org/api/<key> with {"keywords": ..., "location": ...}.
-    name = "jooble"
-    env_keys = ("JOOBLE_API_KEY",)
-
-    def search(self, status: SourceStatus) -> list[RawPosting]:
-        from ..criteria import CRITERIA
-        out, seen = [], set()
-        url = "https://jooble.org/api/" + os.environ["JOOBLE_API_KEY"].strip()
-        remote = CRITERIA.get("remote_only", True)
-        where = "Remote" if remote else (CRITERIA.get("home_state") or "United States")
-        for q in self.ctx["queries"][:8]:
-            for page in (1, 2):
-                r = self.client.post_json(url, {"keywords": q, "location": where, "page": str(page)})
-                if r.status >= 400:
-                    status.errors.append(f"query {q!r}: HTTP {r.status}")
-                    break
-                jobs = (r.json() or {}).get("jobs") or []
-                for j in jobs:
-                    jid = j.get("id") or j.get("link")
-                    if not jid or jid in seen:
-                        continue
-                    seen.add(jid)
-                    typ = (j.get("type") or "")
-                    out.append(RawPosting(
-                        source="jooble", source_url=j.get("link", ""), employer=j.get("company", ""), title=" ".join(html_to_text(j.get("title")).split()),
-                        description_text=html_to_text(j.get("snippet")) + (f"\nSalary: {j.get('salary')}" if j.get("salary") else ""),
-                        location_text=j.get("location", ""), apply_url=j.get("link"),
-                        workplace_type="remote" if "remote" in (j.get("location") or "").lower() else None,
-                        employment_type=typ or None,
-                        extra={"third_party_salary": j.get("salary"), "third_party_published": j.get("updated"),
-                               "found_on": j.get("source")},
-                    ))
-                if len(jobs) < 20:
-                    break
-        return out
-
-
 class ReliefWebAdapter(Adapter):
     # https://apidoc.reliefweb.int — UN OCHA's humanitarian and nonprofit job board. Free, but requests must
     # carry an approved "appname" (request one at https://apidoc.reliefweb.int/parameters#appname).
@@ -360,33 +321,6 @@ class HackerNewsHiringAdapter(Adapter):
                 workplace_type="remote" if _re.search(r"\bremote\b", first, _re.I) and not _re.search(r"\b(onsite|on-site|hybrid)\b", first, _re.I) else None,
                 extra={"third_party_published": c.get("created_at")},
             ))
-        return out
-
-
-class AdzunaAdapter(Adapter):
-    # https://developer.adzuna.com — free key. Salary may be model-predicted: never used.
-    name = "adzuna"
-    env_keys = ("ADZUNA_APP_ID", "ADZUNA_APP_KEY")
-
-    def search(self, status: SourceStatus) -> list[RawPosting]:
-        out, seen = [], set()
-        for q in self.ctx["queries"][:8]:
-            params = {"app_id": os.environ["ADZUNA_APP_ID"], "app_key": os.environ["ADZUNA_APP_KEY"], "what": q + (" remote" if __import__("jobsearch.criteria", fromlist=["CRITERIA"]).CRITERIA.get("remote_only", True) else ""),
-                      "results_per_page": 50, "content-type": "application/json", "max_days_old": 30}
-            r = self.client.get("https://api.adzuna.com/v1/api/jobs/us/search/1?" + urllib.parse.urlencode(params))
-            if r.status >= 400:
-                status.errors.append(f"query {q!r}: HTTP {r.status}")
-                continue
-            for j in r.json().get("results", []):
-                if j.get("id") in seen:
-                    continue
-                seen.add(j.get("id"))
-                out.append(RawPosting(
-                    source="adzuna", source_url=j.get("redirect_url", ""), employer=(j.get("company") or {}).get("display_name", ""),
-                    title=j.get("title", ""), description_text=html_to_text(j.get("description")),
-                    location_text=(j.get("location") or {}).get("display_name", ""),
-                    extra={"third_party_salary": [j.get("salary_min"), j.get("salary_max")], "salary_is_predicted": j.get("salary_is_predicted")},
-                ))
         return out
 
 

@@ -88,9 +88,6 @@ jobs:
           # Optional free API keys (Settings > Secrets and variables > Actions). Leave unset to skip.
           USAJOBS_API_KEY: ${{ secrets.USAJOBS_API_KEY }}
           USAJOBS_EMAIL: ${{ secrets.USAJOBS_EMAIL }}
-          ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
-          ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
-          JOOBLE_API_KEY: ${{ secrets.JOOBLE_API_KEY }}
           RELIEFWEB_APPNAME: ${{ secrets.RELIEFWEB_APPNAME }}
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
         run: python -m jobsearch run

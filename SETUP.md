@@ -127,29 +127,27 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 
 | Service | What it adds | Where to get the free key | Secret name(s) to add |
 |---|---|---|---|
-| **Tavily** (web search) | Searches the whole web for each of your job titles, including company careers pages. Also finds new companies to check | https://app.tavily.com | `TAVILY_API_KEY` |
-| **Adzuna** | Large job search site that collects jobs from many other job sites; all job types, not only remote. **Its sign-up form asks for an organization name and website:** you can type your own name and the web address of your copy of this project | https://developer.adzuna.com | `ADZUNA_APP_ID` and `ADZUNA_APP_KEY` |
-| **Jooble** | Another large site that collects jobs from many job sites | https://jooble.org/api/about | `JOOBLE_API_KEY` |
-| **USAJOBS** | Official US federal government jobs | https://developer.usajobs.gov | `USAJOBS_API_KEY` and `USAJOBS_EMAIL` (the email you registered with) |
-| **ReliefWeb** | Nonprofit, humanitarian and international development jobs (run by the United Nations) | https://apidoc.reliefweb.int/parameters#appname (ask for an "appname") | `RELIEFWEB_APPNAME` (the appname they approve) |
+| **Tavily** (web search) | Searches the whole web for each of your job titles, including company careers pages. Also finds new companies to check | https://app.tavily.com: on the log-in page that opens, click **Sign up** (or continue with a Google, GitHub, LinkedIn or Microsoft account). After signing in, copy your API key from your Tavily account page (it starts with `tvly-`) | `TAVILY_API_KEY` |
+| **USAJOBS** | Official US federal government jobs | https://developer.usajobs.gov/apirequest/: a request form. It asks for your name, email, phone number, a company or agency (you can type your own name or school), and how you will use the jobs (for example: "personal job search"). The key is sent by email | `USAJOBS_API_KEY` and `USAJOBS_EMAIL` (the email you used on the form) |
+| **ReliefWeb** | Nonprofit, humanitarian and international development jobs (run by the United Nations) | https://apidoc.reliefweb.int/#appname: click **this short form**. ReliefWeb reviews each request and replies by email, so expect to wait | `RELIEFWEB_APPNAME` (the appname they approve) |
 
    **Recommended first:** Tavily. It finds jobs that are on no job site, and its free plan
-   does not ask for a credit card, according to published comparisons. Add the others only if
-   you want more jobs. Tavily's free plan is 1,000 web searches a month (check the current
-   plan on its pricing page); this tool uses at most 8 per search, about 35 a month with
-   weekly searches.
+   does not ask for a credit card, according to published comparisons. USAJOBS and ReliefWeb
+   add specialized jobs but take longer to set up. Tavily's free plan is 1,000 web searches a
+   month (check the current plan on its pricing page); this tool uses at most 8 per search,
+   about 35 a month with weekly searches.
 
    **How to add a key:**
 
-   1. Get the free key from the service's website (column 3). Some services email it to you;
-      some take a day or two to approve.
+   1. Get the free key from the service's website (column 3). USAJOBS and ReliefWeb email
+      it to you; ReliefWeb may take a few days to approve.
    2. Open **your copy** of this project on github.com.
    3. Click **Settings** (top row of tabs, far right).
    4. On the left, click **Secrets and variables**, then **Actions**.
    5. Click the green **New repository secret** button.
    6. In **Name**, type the secret name exactly as shown in the table (capital letters and
       underscores included). In **Secret**, paste the key. Click **Add secret**.
-   7. Repeat steps 5 and 6 for each secret name. Adzuna and USAJOBS need 2 secrets each.
+   7. Repeat steps 5 and 6 for each secret name. USAJOBS needs 2 secrets.
    8. Start a search. In the full report, the table "Where jobs were looked for" shows **Yes**
       next to each service that worked. "Off: needs a free key" means the secret is missing or
       its name is misspelled. "No: error" means the key was not accepted; check it and add it
@@ -178,7 +176,7 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
    not allow automated access). Links from those sites can't be checked automatically.
 3. It does not run general web searches. It uses Himalayas, The Muse, Remote OK, Jobicy,
    We Work Remotely, Working Nomads, Jobspresso, Remotive, Hacker News "Who is hiring?", the job pages of companies you add
-   (settings section 7) or that it found earlier, Adzuna, Jooble, USAJOBS and ReliefWeb if you add
+   (settings section 7) or that it found earlier, USAJOBS and ReliefWeb if you add
    their free keys, and a web search for your job titles if you add a Tavily key.
 4. Results come from text rules. When a posting is unclear, the job is marked "Needs
    Verification" rather than guessed, so read each posting yourself before applying.
