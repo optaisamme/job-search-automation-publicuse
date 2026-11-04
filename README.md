@@ -153,6 +153,7 @@ links on the results page for those.
 | `data/` | Jobs the tool has already seen. Updated automatically |
 | `jobsearch/`, `scripts/`, `tests/` | The program itself |
 | `SETUP.md`, `HOW_TO_RUN_A_SEARCH_NOW.md` | Guides (read them; no need to change them) |
+| `CLAUDE.md` | Instructions for Claude, used only if you work on your copy with Claude Code |
 
 ---
 
