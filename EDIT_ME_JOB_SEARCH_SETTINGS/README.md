@@ -5,7 +5,7 @@ Do not edit any other file.
 
 | Step | File | Required? | What it controls |
 |---|---|---|---|
-| 1 | [`EDIT_ME_1_job_search_settings.toml`](EDIT_ME_1_job_search_settings.toml) | **Yes** (job titles) | Which jobs are found and which are rejected: job titles, your state, salary, certifications, your own rules |
+| 1 | [`EDIT_ME_1_job_search_settings.toml`](EDIT_ME_1_job_search_settings.toml) | **Yes** (job titles) | Which jobs are found and which are rejected: job titles, remote only or not (on to start), your state, salary, certifications, your own rules, companies to watch |
 | 2 | [`EDIT_ME_2_my_experience.toml`](EDIT_ME_2_my_experience.toml) | No | Your skills, used to explain how well each job fits you. Never rejects a job |
 | 3 | [`../.github/workflows/EDIT_ME_3_weekly_schedule.yml`](../.github/workflows/EDIT_ME_3_weekly_schedule.yml) | No | Automatic weekly searches (start **OFF**; change `"off"` to `"on"` to turn them on), and their day and time (default: Fridays) |
 
@@ -32,8 +32,16 @@ Save. That is enough to start. Everything else is optional and **off** until you
 ## Where to see your results
 
 Open the **[JOB_SEARCH_RESULTS](../JOB_SEARCH_RESULTS)** folder. Its main page shows your latest
-results (matching jobs, near misses, jobs whose link could not be checked), followed by one
-numbered, dated report per search. New results are also posted under the **Issues** tab.
+results, followed by one numbered, dated report per search:
+
+1. Jobs that match all your rules, with **Apply** links.
+2. Near misses: jobs that failed exactly one rule, and which rule.
+3. Jobs whose link could not be checked, with a **Find employer posting** link.
+4. Possible matches: jobs that failed no rule but did not say enough to be sure.
+5. Popular job boards to search yourself: one-click searches for your job titles.
+6. Companies checked every search.
+
+New results are also posted under the **Issues** tab.
 
 ## What happens after you save
 

@@ -1,9 +1,10 @@
 # Setup Guide (no coding needed)
 
-This tool searches public job listings every week, checks each job against your rules
-(location, salary, required experience and certifications), checks that the application
-link works, and posts the results to you. It runs for free on GitHub's computers, so your
-own computer does not need to be on. Everything is edited on the GitHub website.
+This tool searches public job listings when you start a search, checks each job against your
+rules (location, salary, required experience and certifications), checks that the application
+link works, and saves the results in your copy. Automatic weekly searches are off until you
+turn them on (Step 6). It runs on GitHub's computers, so your own computer does not need to be
+on. Everything is edited on the GitHub website.
 
 ## What you need
 
@@ -131,10 +132,8 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 |---|---|---|---|
 | **Tavily** (web search) | Searches the whole web for each of your job titles, including company careers pages | https://app.tavily.com: on the log-in page that opens, click **Sign up** (or continue with a Google, GitHub, LinkedIn or Microsoft account). After signing in, copy your API key from your Tavily account page (it starts with `tvly-`) | `TAVILY_API_KEY` |
 
-   **Free plan:** 1,000 web searches a month, and no credit card, according to published
-   comparisons (check Tavily's pricing page for the current plan). This tool uses 2 web searches
-   per job title, for up to 4 titles: at most 8 per search, about 35 a month with weekly
-   searches.
+   **Free plan:** 1,000 web searches a month. This tool uses 2 web searches per job title, for
+   up to 4 titles: at most 8 per search, about 35 a month with weekly searches.
 
    **How to add the key:**
 

@@ -1,8 +1,9 @@
 # Job Search Automation
 
-Every week, this tool looks through public job listings, keeps the jobs that fit **your**
-rules (job titles, state, salary, and more), checks that each application link works, and
-shows you the results. You set it up once on the GitHub website. No coding needed.
+Each time you start a search, this tool looks through public job listings, keeps the jobs that
+fit **your** rules (job titles, state, salary, and more), checks that each application link
+works, and shows you the results. You set it up once on the GitHub website. No coding needed.
+Searches run only when you start one, unless you turn on automatic weekly searches.
 
 ## Why I built this
 
@@ -118,10 +119,8 @@ also finds new companies to check. It is optional and stays off until you add th
 |---|---|---|---|
 | **Tavily** (web search) | Searches the whole web for each of your job titles, including company careers pages | https://app.tavily.com: on the log-in page that opens, click **Sign up** (or continue with a Google, GitHub, LinkedIn or Microsoft account). After signing in, copy your API key from your Tavily account page (it starts with `tvly-`) | `TAVILY_API_KEY` |
 
-**Free plan:** 1,000 web searches a month, and no credit card, according to published
-comparisons (check Tavily's pricing page for the current plan). This tool uses 2 web searches
-per job title, for up to 4 titles: at most 8 per search, about 35 a month with weekly
-searches.
+**Free plan:** 1,000 web searches a month. This tool uses 2 web searches per job title, for
+up to 4 titles: at most 8 per search, about 35 a month with weekly searches.
 
 ### How to add the key
 
@@ -182,7 +181,10 @@ links on the results page for those.
          5. With a web search key, companies are also remembered when the web search finds a
             matching job on their careers page; their whole careers page is read in the same search.
          6. Companies on other systems (for example Workday), and links a job site blocks (for
-            example Himalayas), are not remembered. The results page lists every remembered
+            example Himalayas), are not remembered.
+         7. A remembered company is removed after more than 5 searches in a row with no job
+            matching your titles. It comes back if a matching job shows up again. Companies you
+            add in section 7 are never removed. The results page lists every remembered
             company under "Companies checked every search."
       2. **Companies you add** in settings section 7, "Companies to watch." Every search reads
          every job open on each company's careers page and keeps the ones with your job titles.

@@ -19,6 +19,15 @@ sys.path.insert(0, str(ROOT))
 from jobsearch.store import Store  # noqa: E402
 
 
+
+def fenced(text: str) -> str:
+    """Wrap untrusted job text in a code block that the text itself cannot close: the fence is longer
+    than any run of backticks inside it, so links and @mentions in job text are not activated."""
+    import re
+    longest = max((len(m) for m in re.findall(r"`+", text)), default=0)
+    fence = "`" * max(3, longest + 1)
+    return f"{fence}text\n{text}\n{fence}"
+
 def main() -> int:
     out = json.loads((ROOT / "out/outbox.json").read_text())
     draft = out.get("draft")
@@ -28,7 +37,7 @@ def main() -> int:
         return 0
     repo = os.environ["GITHUB_REPOSITORY"]
     token = os.environ["GITHUB_TOKEN"]
-    payload = {"title": f"{draft['subject']} ({date.today().isoformat()})", "body": "```text\n" + draft["body"] + "\n```"}
+    payload = {"title": f"{draft['subject']} ({date.today().isoformat()})", "body": fenced(draft["body"])}
     req = urllib.request.Request(
         f"https://api.github.com/repos/{repo}/issues", data=json.dumps(payload).encode(), method="POST",
         headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json",

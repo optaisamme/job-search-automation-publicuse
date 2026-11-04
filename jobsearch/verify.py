@@ -20,7 +20,7 @@ from .models import RawPosting, Verification
 from .text import html_to_text
 from .adapters import ats as atsmod
 from .adapters.base import is_job_board, is_ats, host_of, is_no_fetch
-from .adapters.leads import parse_jsonld_jobposting, posting_from_jsonld
+from .adapters.jsonld import parse_jsonld_jobposting, posting_from_jsonld
 
 CLOSED_RE = re.compile(
     r"no\s+longer\s+(accepting\s+applications|available|open|active|being\s+accepted)"
@@ -68,10 +68,26 @@ def employer_matches(employer: str, page_text: str, url: str) -> bool | None:
     return any(t in hay for t in toks)
 
 
-def render(url: str, timeout: int = 75) -> dict | None:
+# Only these settings are passed to the browser helper. Secrets (API keys, tokens) are never passed,
+# because the helper opens untrusted job pages.
+RENDER_ENV_KEYS = ("PATH", "HOME", "LANG", "TMPDIR", "NODE_PATH", "PLAYWRIGHT_BROWSERS_PATH", "PW_EXECUTABLE",
+                   "HTTPS_PROXY", "HTTP_PROXY", "NO_PROXY", "https_proxy", "http_proxy", "no_proxy",
+                   "NODE_EXTRA_CA_CERTS", "SSL_CERT_FILE")
+
+
+def render_env(user_agent: str | None = None) -> dict:
+    import os
+    env = {k: os.environ[k] for k in RENDER_ENV_KEYS if k in os.environ}
+    if user_agent:
+        env["JOBSEARCH_UA"] = user_agent   # identify as this tool, like every other request
+    return env
+
+
+def render(url: str, timeout: int = 75, user_agent: str | None = None) -> dict | None:
     script = Path(__file__).with_name("render.mjs")
     try:
-        cp = subprocess.run(["node", str(script), url], capture_output=True, text=True, timeout=timeout)
+        cp = subprocess.run(["node", str(script), url], capture_output=True, text=True, timeout=timeout,
+                            env=render_env(user_agent))
         return json.loads(cp.stdout.strip().splitlines()[-1]) if cp.stdout.strip() else None
     except (subprocess.SubprocessError, json.JSONDecodeError, FileNotFoundError, IndexError):
         return None
@@ -197,7 +213,7 @@ def _check_page(client, p: RawPosting, url: str, use_renderer: bool, checked: st
     has_apply = bool(APPLY_RE.search(text))
     rendered = False
     if use_renderer and (len(text) < 400 or not title_matches(p.title, combined)) and not CLOSED_RE.search(text):
-        rd = render(r.final_url)
+        rd = render(r.final_url, user_agent=getattr(client, "ua", None))
         if rd and not rd.get("error"):
             rendered = True
             combined = f"{rd.get('title','')}\n{rd.get('text','')}"

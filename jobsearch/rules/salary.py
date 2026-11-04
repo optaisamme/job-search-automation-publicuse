@@ -43,25 +43,25 @@ def evaluate_amounts(lo: float | None, hi: float | None) -> tuple[str, str]:
     if lo is not None and hi is not None and lo > hi:
         lo, hi = hi, lo
     if lo is not None and hi is not None and lo == hi:
-        return (PASS, f"single salary ${lo:,.0f} >= ${SINGLE_MIN:,}") if lo >= SINGLE_MIN else (FAIL, f"single salary ${lo:,.0f} < ${SINGLE_MIN:,}")
+        return (PASS, f"salary ${lo:,.0f} is at or above your minimum of ${SINGLE_MIN:,}") if lo >= SINGLE_MIN else (FAIL, f"salary ${lo:,.0f} is below your minimum of ${SINGLE_MIN:,}")
     if lo is not None and hi is not None:
         if lo >= RANGE_LOWER_MIN and hi > RANGE_UPPER_GT:
-            return PASS, f"range ${lo:,.0f}-${hi:,.0f}: lower >= ${RANGE_LOWER_MIN:,} and upper > ${RANGE_UPPER_GT:,}"
+            return PASS, f"range ${lo:,.0f}-${hi:,.0f} starts at or above ${RANGE_LOWER_MIN:,} and ends above ${RANGE_UPPER_GT:,}"
         why = []
         if lo < RANGE_LOWER_MIN:
-            why.append(f"lower ${lo:,.0f} < ${RANGE_LOWER_MIN:,}")
+            why.append(f"starts at ${lo:,.0f}, below ${RANGE_LOWER_MIN:,}")
         if hi <= RANGE_UPPER_GT:
-            why.append(f"upper ${hi:,.0f} not > ${RANGE_UPPER_GT:,}")
+            why.append(f"ends at ${hi:,.0f}, not above ${RANGE_UPPER_GT:,}")
         return FAIL, f"range ${lo:,.0f}-${hi:,.0f}: " + "; ".join(why)
     if lo is not None:  # minimum only ("starting at")
         if lo >= SINGLE_MIN:
-            return PASS, f"minimum ${lo:,.0f} >= ${SINGLE_MIN:,}"
+            return PASS, f"lowest pay ${lo:,.0f} is at or above your minimum of ${SINGLE_MIN:,}"
         if lo < RANGE_LOWER_MIN:
-            return FAIL, f"minimum ${lo:,.0f} < ${RANGE_LOWER_MIN:,}"
+            return FAIL, f"lowest pay ${lo:,.0f} is below ${RANGE_LOWER_MIN:,}"
         return UNCLEAR, f"minimum ${lo:,.0f} stated without upper bound"
     if hi is not None:  # maximum only ("up to")
         if hi <= RANGE_UPPER_GT:
-            return FAIL, f"maximum ${hi:,.0f} not > ${RANGE_UPPER_GT:,}"
+            return FAIL, f"highest pay ${hi:,.0f} is not above ${RANGE_UPPER_GT:,}"
         return UNCLEAR, f"only a maximum (${hi:,.0f}) stated; lower bound unknown"
     return UNCLEAR, "no salary"
 

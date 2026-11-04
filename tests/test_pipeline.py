@@ -272,33 +272,15 @@ def test_report_sections(root):
     md = open(info["report"]).read()
     for h in ("## Jobs that match all your rules", "## Jobs that need checking", "## Jobs that did not match", "## Where jobs were looked for", "TEST DATA"):
         assert h in md
-    assert "upper $100,000 not > $100,000" in md
+    assert "ends at $100,000, not above $100,000" in md
 
 
 def test_all_blocked_run_is_not_baseline(root):
     c = FakeClient()  # every URL 404 / nothing returned
     (root / "data/boards.json").write_text("{}")
-    info = run(root, c, sources=("ats_watchlist", "web_search_leads"))
+    info = run(root, c, sources=("ats_watchlist",))
     assert not info["is_baseline"]
     assert not Store(root / "data/jobs.sqlite").baseline_done()
-
-
-def test_closed_lead_marked_closed_not_rejected(root):
-    c = FakeClient()
-    (root / "data/leads.json").write_text(json.dumps([{"url": "https://job-boards.greenhouse.io/acme/jobs/404", "title": "Salesforce Administrator", "employer": "Acme Nonprofit"}]))
-    c.set("https://boards-api.greenhouse.io/v1/boards/acme/jobs?content=true", {"jobs": []})
-    run(root, c, sources=("web_search_leads", "ats_watchlist"))
-    j = jobs(root)[0]
-    assert j["status"] == "Closed" and j["closed_at"]
-
-
-def test_job_board_lead_without_text_is_not_rejected(root):
-    c = FakeClient()
-    (root / "data/leads.json").write_text(json.dumps([{"url": "https://www.linkedin.com/jobs/view/123", "title": "Salesforce Administrator", "employer": "Acme Nonprofit"}]))
-    run(root, c, sources=("web_search_leads",))
-    j = jobs(root)[0]
-    assert j["status"] == "Needs Verification"
-    assert "linkedin.com/jobs/view/123" not in " ".join(c.calls)  # job board never fetched
 
 
 def test_dedupe_ignores_location_label_differences(root):
@@ -326,7 +308,7 @@ def test_one_criterion_near_miss_shared_once(root):
     out = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
     body = out["draft"]["body"]
     assert "NEAR MISSES" in body and "Senior Salesforce Administrator — Acme Nonprofit" in body
-    assert "  • salary:" in body and "Salesforce Business Systems Analyst" not in body  # two failures: not a near miss
+    assert "  • Salary:" in body and "Salesforce Business Systems Analyst" not in body  # two failures: not a near miss
     st = Store(root / "data/jobs.sqlite")
     for nid in out["notification_ids"]:
         st.mark_notification(nid, "delivered", channel="chat", ref="t")
@@ -595,3 +577,51 @@ def test_agency_boards_never_saved(root):
                                     {"ats": "lever", "board": "betaorg", "employer": "Beta"}])
     saved = json.loads((root / "data/boards.json").read_text())
     assert [b["board"] for b in saved["lever"]] == ["betaorg"]
+
+
+def test_browser_helper_gets_no_secrets(monkeypatch):
+    from jobsearch.verify import render_env
+    monkeypatch.setenv("TAVILY_API_KEY", "tvly-secret")
+    monkeypatch.setenv("GITHUB_TOKEN", "ghs-secret")
+    env = render_env("job-search-automation/1.0")
+    assert "TAVILY_API_KEY" not in env and "GITHUB_TOKEN" not in env
+    assert env["JOBSEARCH_UA"] == "job-search-automation/1.0" and "PATH" in env
+
+
+def test_issue_body_cannot_be_broken_out_of():
+    import importlib.util, pathlib
+    spec = importlib.util.spec_from_file_location("pub", pathlib.Path(__file__).parents[1] / "scripts/publish_github_issue.py")
+    pub = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(pub)
+    body = pub.fenced("Data Analyst ```\n@someone ![x](https://example.com/x.png)")
+    first = body.split("\n", 1)[0]
+    assert first == "````text" and body.endswith("\n````")
+
+
+def test_found_company_dropped_after_more_than_5_searches_without_match(root):
+    (root / "data/boards.json").write_text(json.dumps({"greenhouse": [
+        {"board": "acme", "employer": "Acme Nonprofit", "searches_without_match": 5},
+        {"board": "quiet", "employer": "Quiet Co", "searches_without_match": 4}]}))
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    setup_board(c, [gh_job(2, "Office Manager", board="quiet")], board="quiet", employer="Quiet Co")
+    info = run(root, c)
+    saved = {b["board"]: b["searches_without_match"] for b in json.loads((root / "data/boards.json").read_text())["greenhouse"]}
+    assert saved == {"acme": 0, "quiet": 5}          # match resets; no match counts up
+    run(root, c)
+    saved = [b["board"] for b in json.loads((root / "data/boards.json").read_text())["greenhouse"]]
+    assert saved == ["acme"]                           # 6th search in a row without a match: dropped
+
+
+def test_section7_company_never_dropped(root):
+    (root / "data/boards.json").write_text("{}")
+    s = root / "config/settings.toml"
+    s.write_text(s.read_text() + '\n[companies_to_watch]\njob_page_links = ["https://job-boards.greenhouse.io/quiet"]\n')
+    c = FakeClient()
+    setup_board(c, [gh_job(2, "Office Manager", board="quiet")], board="quiet", employer="Quiet Co")
+    for _ in range(7):
+        run(root, c)
+    assert json.loads((root / "data/boards.json").read_text()) == {}
+    from jobsearch import pipeline as pl
+    prof, _ = pl.load_config(root)
+    assert [b["board"] for b in pl.watched_boards(prof)[0]] == ["quiet"]

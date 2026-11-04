@@ -1,7 +1,7 @@
 """Official public ATS job-board APIs (documented, unauthenticated):
   Greenhouse Job Board API, Lever Postings API, Ashby Posting API, SmartRecruiters Posting API.
 Boards to scan come from the watchlist (data/boards.json), which grows only from
-real URLs discovered in leads — ATS identifiers are never guessed."""
+real job links found during a search — ATS identifiers are never guessed."""
 from __future__ import annotations
 
 import re
@@ -222,9 +222,9 @@ class AtsWatchlistAdapter(Adapter):
 
     def search(self, status: SourceStatus) -> list[RawPosting]:
         boards: dict = {k: list(v) for k, v in self.ctx.get("boards", {}).items()}
-        agencies = {"jobgether", "hirehangar"} | {x.lower() for x in self.ctx.get("intermediary_boards", [])}
-        for b in self.ctx.get("boards_added", []):  # boards discovered from leads earlier in this run
-            if b["board"].lower() in agencies:
+        from ..agencies import is_agency
+        for b in self.ctx.get("boards_added", []):  # boards found by the web search earlier in this run
+            if is_agency(b["board"]):
                 continue   # recruiting agencies are never read as company careers pages
             lst = boards.setdefault(b["ats"], [])
             if not any(x["board"] == b["board"] for x in lst):

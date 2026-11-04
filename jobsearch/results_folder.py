@@ -118,17 +118,21 @@ def _companies(root: Path) -> list[str]:
     except Exception:  # noqa: BLE001
         added = []
     found = pipeline.load_boards(root)
-    rows = [(b.get("employer") or b["board"], names.get(ats, ats), "found automatically")
-            for ats, lst in found.items() for b in lst]
-    rows += [(b["board"], names.get(b["ats"], b["ats"]), "you added it (section 7)") for b in added]
+    from .pipeline import MAX_SEARCHES_WITHOUT_MATCH as M
+    rows = [(b.get("employer") or b["board"], names.get(ats, ats), "found automatically",
+             f"{int(b.get('searches_without_match', 0))} of {M}") for ats, lst in found.items() for b in lst]
+    rows += [(b["board"], names.get(b["ats"], b["ats"]), "you added it (section 7)", "never removed") for b in added]
     L = ["## Companies checked every search", "",
          "The tool reads every open job on these companies' careers pages each search. Companies are found "
          "automatically when a matching job's apply link leads to a careers page on Greenhouse, Lever, Ashby "
-         "or SmartRecruiters, or you can add them in settings section 7.", ""]
+         "or SmartRecruiters, or you can add them in settings section 7.", "",
+         f"A company found automatically is removed after more than {M} searches in a row with no job matching "
+         "your titles. It is added again if a matching job shows up later. Companies you added are never removed.", ""]
     if not rows:
         return L + ["None yet.", ""]
-    L += ["| Company | Careers page runs on | How it was added |", "|---|---|---|"]
-    L += [f"| {_cell(n)} | {a} | {h} |" for n, a, h in sorted(rows, key=lambda x: x[0].lower())]
+    L += ["| Company | Careers page runs on | How it was added | Searches in a row without a matching job |",
+          "|---|---|---|---|"]
+    L += [f"| {_cell(n)} | {a} | {h} | {c} |" for n, a, h, c in sorted(rows, key=lambda x: x[0].lower())]
     return L + [""]
 
 

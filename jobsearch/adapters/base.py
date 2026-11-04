@@ -45,6 +45,9 @@ NO_FETCH_HOSTS = (
     "linkedin.com", "indeed.com", "glassdoor.com", "ziprecruiter.com", "builtin.com", "builtinchicago.org",
     "builtinboston.com", "builtinla.com", "builtinnyc.com", "builtinsf.com", "builtincolorado.com",
     "builtinaustin.com", "builtinseattle.com", "flexjobs.com", "virtualvocations.com",
+    # terms forbid automated access, or the site blocks it, or it requires signing in
+    "idealist.org", "diversityjobs.com", "techjobsforgood.com", "greenjobsboard.us", "remote100k.com",
+    "conservationjobboard.com", "higheredjobs.com", "joinhandshake.com",
 )
 
 

@@ -451,7 +451,7 @@ def test_custom_rule_rejects_in_full_classification():
                        "Salary: $120,000 per year", authoritative=True)
         ev = evaluate_posting(p, {})
         status, reasons = decide(ev["rules"], Verification("verified"), True)
-        assert status == "Rejected" and any("rule: Coding" in r for r in reasons)
+        assert status == "Rejected" and any('Your rule "Coding"' in r for r in reasons)
     finally:
         criteria.configure(None)
 

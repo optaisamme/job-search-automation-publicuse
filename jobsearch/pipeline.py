@@ -16,9 +16,9 @@ from .adapters.aggregators import (RemotiveAdapter, RemoteOKAdapter, HimalayasAd
                                    HackerNewsHiringAdapter)
 from .adapters.ats import AtsWatchlistAdapter, FETCHERS
 from .adapters.base import SourceStatus
-from .adapters.leads import LeadsAdapter
 from .adapters.websearch import WebSearchAdapter
-from .classify import evaluate_posting, decide
+from .agencies import is_agency
+from .classify import evaluate_posting, decide, plain_reason
 from .http import HttpClient
 from .models import RawPosting, Verification, QUALIFIED, REJECTED, NEEDS_VERIFICATION
 from .notify import build_payload
@@ -30,8 +30,8 @@ from . import verify as verifymod
 
 log = logging.getLogger("jobsearch.pipeline")
 
-ADAPTERS = {  # order matters: web search and leads first so newly discovered boards are scanned in the same run
-    "websearch": WebSearchAdapter, "web_search_leads": LeadsAdapter, "ats_watchlist": AtsWatchlistAdapter, "remotive": RemotiveAdapter,
+ADAPTERS = {  # order matters: web search first so newly discovered boards are scanned in the same run
+    "websearch": WebSearchAdapter, "ats_watchlist": AtsWatchlistAdapter, "remotive": RemotiveAdapter,
     "remoteok": RemoteOKAdapter, "himalayas": HimalayasAdapter, "themuse": TheMuseAdapter, "jobicy": JobicyAdapter,
     "weworkremotely": WeWorkRemotelyAdapter, "workingnomads": WorkingNomadsAdapter, "jobspresso": JobspressoAdapter, "hackernews": HackerNewsHiringAdapter,
 }
@@ -113,17 +113,38 @@ def with_watched(boards: dict, watched: list[dict]) -> dict:
     return out
 
 
-AGENCY_BOARDS = {"jobgether", "hirehangar"}   # recruiting agencies that post for unnamed employers
+MAX_SEARCHES_WITHOUT_MATCH = 5   # a company found by the search is dropped after more than this many
 
 
-def save_boards(root: Path, boards: dict, added: list[dict]):
-    changed = False
+def age_boards(boards: dict, found: set[tuple[str, str]]) -> list[dict]:
+    """Companies the search found by itself (data/boards.json) are dropped after more than
+    MAX_SEARCHES_WITHOUT_MATCH searches in a row in which their careers page had no job matching
+    your titles. Companies typed in settings section 7 are not in this file and are never dropped.
+    Returns the dropped companies."""
+    dropped = []
+    for ats, lst in boards.items():
+        keep = []
+        for b in lst:
+            if (ats, b["board"].lower()) in found:
+                b["searches_without_match"] = 0
+            else:
+                b["searches_without_match"] = int(b.get("searches_without_match", 0)) + 1
+            if b["searches_without_match"] > MAX_SEARCHES_WITHOUT_MATCH:
+                dropped.append({"ats": ats, **b})
+            else:
+                keep.append(b)
+        lst[:] = keep
+    return dropped
+
+
+def save_boards(root: Path, boards: dict, added: list[dict], aged: bool = False):
+    changed = aged
     for b in added:
-        if (b.get("board") or "").lower() in AGENCY_BOARDS:
+        if is_agency(b.get("board")):
             continue
         lst = boards.setdefault(b["ats"], [])
         if not any(x["board"] == b["board"] for x in lst):
-            lst.append({"board": b["board"], "employer": b.get("employer"), "added": now_iso()})
+            lst.append({"board": b["board"], "employer": b.get("employer"), "added": now_iso(), "searches_without_match": 0})
             changed = True
     if changed:
         (root / "data").mkdir(exist_ok=True)
@@ -178,9 +199,7 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
     run_id = store.start_run("dry_run" if dry_run else ("fixtures" if fixtures else "live"))
     was_baseline_done = store.baseline_done()
 
-    ctx = {"queries": prof["search"]["queries"], "boards": with_watched(boards, watched_boards(prof)[0]), "title_matcher": matcher,
-           "leads_path": str(root / "data/leads.json"),
-           "intermediary_boards": prof.get("sources", {}).get("intermediary_boards", [])}
+    ctx = {"queries": prof["search"]["queries"], "boards": with_watched(boards, watched_boards(prof)[0]), "title_matcher": matcher}
     statuses: list[SourceStatus] = []
     raw: list[RawPosting] = []
     for name in (sources or list(ADAPTERS)):
@@ -198,7 +217,7 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
         if m:
             matched.append((p, m))
             for st in statuses:
-                if st.name == p.source or (st.name == "ats_watchlist" and p.source in FETCHERS) or (st.name == "web_search_leads" and p.source in ("lead", "employer_page")):
+                if st.name == p.source or (st.name == "ats_watchlist" and p.source in FETCHERS):
                     st.matched += 1
                     break
 
@@ -215,16 +234,16 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
             errors.append(f"resolve {p.source_url}: {e}")
         if p.extra.get("new_board"):
             new_boards.append(p.extra["new_board"])
-        if (p.ats_board or "").lower() in {b.lower() for b in prof.get("sources", {}).get("intermediary_boards", [])}:
+        if is_agency(p.ats_board):
             p.authoritative = False
             p.extra["intermediary"] = True
         m2 = matcher.match(p.title, p.description_text) or m
         if p.extra.get("closed"):
             ev = evaluate_posting(p, exp)
             ver = Verification("closed", final_url=p.source_url, detail=p.extra.get("lead_note", "closed"), checked_at=now_iso())
-            rec = _record(p, m2, ev, ver, "Closed", [f"closed: {ver.detail}"])
+            rec = _record(p, m2, ev, ver, "Closed", [f"No longer open: {ver.detail}"])
             jid, _ = store.upsert(rec, run_id)
-            store.mark_closed(jid, f"closed: {ver.detail}")
+            store.mark_closed(jid, f"No longer open: {ver.detail}")
             m_lookup = re.search(r"employer lookup for job (\d+)", str(p.extra.get("found_via") or ""))
             if m_lookup:
                 old_id = int(m_lookup.group(1))
@@ -261,7 +280,7 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
             if ver.status == "verified" and not ev["authoritative"] and ver.apply_route != "third_party" and ver.page_text:
                 ev = evaluate_posting(p, exp, text_override=ver.page_text, authoritative_override=True)
         if ver is not None and ver.status == "closed":
-            status, reasons = "Closed", [f"closed: {ver.detail}"]
+            status, reasons = "Closed", [f"No longer open: {ver.detail}"]
         else:
             status, reasons = decide(ev["rules"], ver, ev["authoritative"])
         rec = _record(p, m2, ev, ver, status, reasons)
@@ -291,7 +310,7 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
 
         # ---- near misses: exactly one criterion failed or unresolved, all others passed
         if status in (REJECTED, NEEDS_VERIFICATION):
-            issues = [f"{r.rule}: {r.reason}" for r in ev["rules"] if r.outcome != "pass"]
+            issues = [plain_reason(r) for r in ev["rules"] if r.outcome != "pass"]
             if ver is None or ver.status != "verified":
                 issues.append(verifymod.plain_link_reason(ver))
             if len(issues) == 1:
@@ -351,11 +370,18 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
     store.commit()
     src_dicts = [asdict(s) for s in statuses]
     store.finish_run(run_id, success, is_baseline, counts, src_dicts, errors[:100])
+    dropped_boards: list[dict] = []
     if not dry_run:
-        save_boards(root, boards, new_boards)
+        aged = False
+        if any(s.name == "ats_watchlist" for s in statuses):   # count only searches that read careers pages
+            found = {(p.ats, (p.ats_board or "").lower()) for p, _ in matched if p.ats and p.ats_board}
+            found |= {(b["ats"], b["board"].lower()) for b in new_boards}
+            dropped_boards = age_boards(boards, found)
+            aged = True
+        save_boards(root, boards, new_boards, aged=aged)
     run_info = {"run_id": run_id, "started_at": now_iso(), "mode": "dry_run" if dry_run else ("fixtures" if fixtures else "live"),
                 "is_baseline": is_baseline, "sources": src_dicts, "errors": errors, "counts": counts, "fixtures": fixtures,
-                "new_boards": new_boards}
+                "new_boards": new_boards, "dropped_boards": dropped_boards}
     rdir = report_dir or (root / ("out/practice-run" if dry_run else "out"))
     rp = reportmod.build(store, run_info, rdir, "Initial Job Search Report (baseline)" if is_baseline else "Job Search Report")
     run_info["report"] = str(rp)

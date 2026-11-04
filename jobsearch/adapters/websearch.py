@@ -19,20 +19,22 @@ import re
 from ..models import RawPosting
 from .base import Adapter, SourceStatus
 from .ats import parse_board_link
+from ..agencies import is_agency
 
 CAREERS_DOMAINS = ["job-boards.greenhouse.io", "boards.greenhouse.io", "jobs.lever.co", "jobs.ashbyhq.com",
                    "jobs.smartrecruiters.com", "myworkdayjobs.com"]
-# Sites this tool does not open (terms or sign-in), plus sites it already reads directly.
+# Sites this tool does not open (terms, blocks or sign-in), plus job sites it already reads directly.
 EXCLUDE_DOMAINS = ["linkedin.com", "indeed.com", "glassdoor.com", "ziprecruiter.com", "builtin.com", "idealist.org",
                    "monster.com", "careerbuilder.com", "simplyhired.com", "handshake.com", "joinhandshake.com",
-                   "wellfound.com", "dice.com", "himalayas.app", "remoteok.com", "remotive.com", "themuse.com",
-                   "jobicy.com", "weworkremotely.com", "workingnomads.com", "jobspresso.co", "adzuna.com",
-                   "jooble.org", "usajobs.gov", "reliefweb.int", "news.ycombinator.com", "hiring.cafe",
+                   "wellfound.com", "dice.com", "diversityjobs.com", "techjobsforgood.com", "greenjobsboard.us",
+                   "remote100k.com", "conservationjobboard.com", "higheredjobs.com", "hiring.cafe",
+                   "himalayas.app", "remoteok.com", "remotive.com", "themuse.com", "jobicy.com", "weworkremotely.com",
+                   "workingnomads.com", "jobspresso.co", "news.ycombinator.com",
                    "facebook.com", "instagram.com", "x.com", "twitter.com", "reddit.com", "youtube.com",
                    # sites that repost other sites' jobs, or list many jobs on one page
-                   "jobgether.com", "virtualvocations.com", "flexjobs.com", "talent.com", "lensa.com", "careerjet.com",
-                   "jobleads.com", "salary.com", "theladders.com", "roberthalf.com", "edtech.com", "recruit.net",
-                   "jobright.ai", "simplyhired.co", "learn4good.com", "remote.co", "jobs.now"]
+                   "adzuna.com", "jooble.org", "jobgether.com", "virtualvocations.com", "flexjobs.com", "talent.com",
+                   "lensa.com", "careerjet.com", "jobleads.com", "salary.com", "theladders.com", "roberthalf.com",
+                   "edtech.com", "recruit.net", "jobright.ai", "simplyhired.co", "learn4good.com", "remote.co", "jobs.now"]
 
 # A page title like "Remote Program Manager Jobs in Maryland" or "Search Jobs" is a list of jobs, not one job.
 LIST_PAGE = re.compile(r"(?i)(\bjobs\b(?! at\b)|\bsearch\b|\bresults for\b|\bopenings\b|^\s*careers?\s*$)")
@@ -140,8 +142,7 @@ class WebSearchAdapter(Adapter):
                                    description_text=x.get("content", ""), apply_url=url,
                                    extra={"found_via": f"web search: {query}"})
                     hit = parse_board_link(url)
-                    agencies = {b.lower() for b in self.ctx.get("intermediary_boards", [])}
-                    if hit and hit[1].lower() not in agencies and matcher and matcher.match(title, p.description_text):
+                    if hit and not is_agency(hit[1]) and matcher and matcher.match(title, p.description_text):
                         # a matching job on a supported careers page: read that company's whole page this search too
                         self.ctx.setdefault("boards_added", []).append({"ats": hit[0], "board": hit[1], "employer": employer or None})
                     out.append(p)

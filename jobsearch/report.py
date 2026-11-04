@@ -15,7 +15,7 @@ SOURCE_NOTES = {
 
 SOURCE_NAMES = {
     "websearch": "Web search (Tavily)",
-    "web_search_leads": "Web search leads", "ats_watchlist": "Company job pages (section 7, plus companies found automatically)",
+    "ats_watchlist": "Company job pages (section 7, plus companies found automatically)",
     "remotive": "Remotive", "remoteok": "Remote OK", "himalayas": "Himalayas", "themuse": "The Muse",
     "jobicy": "Jobicy", "weworkremotely": "We Work Remotely", "workingnomads": "Working Nomads", "jobspresso": "Jobspresso", "hackernews": "Hacker News: Who is hiring?",
 }
@@ -43,6 +43,9 @@ def _ev(r, n=2):
     return " | ".join(f"\"{e['excerpt']}\"" + (f" ({e['url']})" if e.get("url") else "") for e in (r.get("evidence") or [])[:n])
 
 
+OUTCOME = {"pass": "OK", "fail": "does not match", "unclear": "not clear"}
+
+
 def _job_md(row, detail=True) -> str:
     ver = _j(row, "verification", {}) or {}
     fit = _j(row, "fit", {}) or {}
@@ -50,38 +53,50 @@ def _job_md(row, detail=True) -> str:
     out = []
     out.append(f"### {row['title']} — {row['employer']}")
     out.append(f"Job title group: {row['family']}" + (f" (track {row['track']})" if row["track"] else "") + "  ")
-    out.append(f"Status: **{row['status']}** — " + "; ".join(reasons))
-    out.append(f"Canonical URL: {row['canonical_url'] or 'n/a'}")
+    status_txt = {"Qualified": "Matches all your rules", "Needs Verification": "Needs checking",
+                  "Rejected": "Did not match", "Closed": "No longer open"}.get(row["status"], row["status"])
+    out.append(f"Result: **{status_txt}**. " + "; ".join(reasons))
     route = ver.get("apply_route")
-    route_txt = {"third_party": "THIRD-PARTY APPLICATION", "employer_ats": "employer ATS", "employer_site": "employer site"}.get(route, route or "n/a")
-    out.append(f"Application: {ver.get('apply_url') or 'not verified'} [{route_txt}] — verification: {ver.get('status','n/a')} {ver.get('detail','')} at {ver.get('checked_at') or row['last_verified'] or 'n/a'}")
-    if ver.get("redirect_chain"):
-        out.append(f"Redirects: {' -> '.join(ver['redirect_chain'][:4])} (final: {ver.get('final_url')})")
+    route_txt = {"third_party": "on a third-party job site, not the employer's own site",
+                 "employer_ats": "on the employer's own hiring system",
+                 "employer_site": "on the employer's own website"}.get(route, "")
+    link = ver.get("apply_url") or row["canonical_url"]
+    from .verify import FEED_LISTED
+    if ver.get("status") == "verified" and (ver.get("detail") or "").startswith(FEED_LISTED):
+        out.append(f"Apply: {link} (on a third-party job site; link not checked: {ver['detail']})")
+    elif ver.get("status") == "verified":
+        out.append(f"Apply: {link} ({route_txt or 'link works'}; checked {(ver.get('checked_at') or '')[:16].replace('T', ' ')} UTC)")
+    else:
+        from .verify import plain_link_reason
+        from .models import Verification
+        v = Verification(**{k: x for k, x in ver.items() if k in Verification.__dataclass_fields__}) if ver else None
+        out.append(f"Link: {link or 'none found'}. {plain_link_reason(v)}")
     srcs = _j(row, "source_urls", []) or []
-    out.append(f"Sources: {', '.join(srcs[:4])}")
-    out.append(f"Posting date: {row['published_date'] or 'not provided'}; first seen: {row['first_seen']}; last seen: {row['last_seen']}")
+    out.append(f"Found on: {', '.join(srcs[:4])}")
+    posted = (row["published_date"] or "")[:10] or "date not given"
+    out.append(f"Posted: {posted}; first found by this tool: {(row['first_seen'] or '')[:10]}; last seen: {(row['last_seen'] or '')[:10]}")
     if detail:
         for name in ("salary", "location", "certifications"):
             r = _rule(row, name)
             if r:
-                out.append(f"{name.title()}: {r['outcome']} — {r['reason']}" + (f"  \n  Evidence: {_ev(r)}" if r.get("evidence") else ""))
+                out.append(f"{name.title()}: {OUTCOME.get(r['outcome'], r['outcome'])} ({r['reason']})" + (f"  \n  From the posting: {_ev(r)}" if r.get("evidence") else ""))
         for r in (_j(row, "rules", []) or []):
             if str(r.get("rule", "")).startswith("rule: "):  # user-defined requirement rules
-                out.append(f"{r['rule'][6:]}: {r['outcome']} — {r['reason']}" + (f"  \n  Evidence: {_ev(r)}" if r.get("evidence") else ""))
+                out.append(f"Your rule \"{r['rule'][6:]}\": {OUTCOME.get(r['outcome'], r['outcome'])} ({r['reason']})" + (f"  \n  From the posting: {_ev(r)}" if r.get("evidence") else ""))
         loc = _rule(row, "location").get("data", {})
         if loc.get("travel"):
             out.append(f"Travel: {'; '.join(loc['travel'])}")
         if fit:
             if fit.get("strong"):
-                out.append("Fit — documented matches: " + "; ".join(f"{s['skill']} (job: \"{s['job_excerpt']}\")" for s in fit["strong"][:5]))
+                out.append("Fit with your experience: " + "; ".join(f"{s['skill']} (job: \"{s['job_excerpt']}\")" for s in fit["strong"][:5]))
             if fit.get("transferable"):
-                out.append("Fit — transferable: " + "; ".join(s["skill"] for s in fit["transferable"]))
+                out.append("Related experience: " + "; ".join(s["skill"] for s in fit["transferable"]))
             if fit.get("gaps"):
-                out.append("Fit — not documented in profile: " + "; ".join(g["skill"] + (" (required)" if g.get("required") else "") for g in fit["gaps"]))
+                out.append("Not in your experience file: " + "; ".join(g["skill"] + (" (required)" if g.get("required") else "") for g in fit["gaps"]))
             if fit.get("mandatory_unsupported"):
-                out.append("Fit — required items not supported by profile: " + " | ".join(fit["mandatory_unsupported"]))
+                out.append("Required items not in your experience file: " + " | ".join(fit["mandatory_unsupported"]))
         if row["repost_note"]:
-            out.append(f"Repost check: {row['repost_note']}")
+            out.append(f"Posted again: {row['repost_note']}")
     return "  \n".join(out)
 
 
@@ -115,11 +130,13 @@ def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report"
     md += ["", "## Where jobs were looked for", "",
            "| Job site | Worked? | Jobs looked at | Matched your job titles |", "|---|---|---|---|"]
     for s in run_info.get("sources", []):
-        if s["name"] == "web_search_leads" and not s["fetched"]:
-            continue   # not used unless leads are added by hand
         md.append(f"| {SOURCE_NAMES.get(s['name'], s['name'])} | {_state(s)} | {s['fetched']} | {s['matched']} |")
     for k, v in SOURCE_NOTES.items():
         md.append(f"| {k} | {v} | 0 | 0 |")
+    dropped = run_info.get("dropped_boards") or []
+    if dropped:
+        md += ["", "Companies no longer checked (no job matching your titles in more than 5 searches in a row): "
+               + ", ".join(sorted(b.get("employer") or b["board"] for b in dropped)) + "."]
     md += ["", "Good to know:",
            "1. Only the job sites marked Yes above were searched. No tool finds every job.",
            "2. \"First found\" is when this tool first saw a job, not when the employer posted it.",

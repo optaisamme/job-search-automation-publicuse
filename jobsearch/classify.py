@@ -23,13 +23,23 @@ def evaluate_posting(p: RawPosting, exp_profile: dict, text_override: str | None
     return {"rules": [r_salary, r_loc, r_cert] + r_custom, "fit": fit, "authoritative": auth}
 
 
+RULE_LABELS = {"salary": "Salary", "location": "Location", "certifications": "Certifications"}
+
+
+def plain_reason(r) -> str:
+    """'Salary: …', 'Location: …', or 'Your rule "Coding": …' instead of internal rule names."""
+    name = r.rule
+    label = f'Your rule "{name[6:]}"' if name.startswith("rule: ") else RULE_LABELS.get(name, name.capitalize())
+    return f"{label}: {r.reason}"
+
+
 def decide(rules: list[RuleResult], verification: Verification | None, authoritative: bool) -> tuple[str, list[str]]:
     reasons: list[str] = []
     fails = [r for r in rules if r.outcome == FAIL]
     if fails:
-        return REJECTED, [f"{r.rule}: {r.reason}" for r in fails]
+        return REJECTED, [plain_reason(r) for r in fails]
     unclear = [r for r in rules if r.outcome == UNCLEAR]
-    reasons += [f"{r.rule}: {r.reason}" for r in unclear]
+    reasons += [plain_reason(r) for r in unclear]
     if verification is None or verification.status != "verified":
         st = verification.status if verification else "not verified"
         from .verify import plain_link_reason
@@ -38,4 +48,4 @@ def decide(rules: list[RuleResult], verification: Verification | None, authorita
     # may qualify. They are labeled "THIRD-PARTY" everywhere they are shown (never employer-direct).
     if reasons:
         return NEEDS_VERIFICATION, reasons
-    return QUALIFIED, [f"{r.rule}: {r.reason}" for r in rules]
+    return QUALIFIED, [plain_reason(r) for r in rules]

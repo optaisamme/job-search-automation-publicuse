@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import urllib.parse
 
-AGENCIES = {"jobgether", "hire hangar", "hirehangar"}  # recruiting agencies that hide the real employer
+from .agencies import is_agency
 
 
 def needs_employer_posting(db) -> list[dict]:
@@ -18,7 +18,7 @@ def needs_employer_posting(db) -> list[dict]:
         ver = json.loads(r["verification"] or "{}") or {}
         link_problem = ver.get("status") in ("blocked", "unverified", "js_required", "error") or "third-party" in reasons
         employer = (r["employer"] or "").strip()
-        if not link_problem or not employer or not r["title"] or employer.lower() in AGENCIES:
+        if not link_problem or not employer or not r["title"] or is_agency(employer):
             continue
         q = f'"{employer}" "{r["title"]}" careers'
         out.append({

@@ -229,7 +229,10 @@ keywords = []
 #    5. If you added a web search key (SETUP.md Step 6), the web search also
 #       finds matching jobs on careers pages directly, and those companies are
 #       remembered the same way.
-#    6. The list of remembered companies grows a little with each search.
+#    6. A remembered company is removed after more than 5 searches in a row
+#       with no job matching your titles. It comes back if a matching job
+#       shows up again. Companies you type in this section are never removed.
+#    7. The list of remembered companies changes a little with each search.
 #       Your results page lists them under "Companies checked every search."
 #    It does not happen when: the apply link leads to a careers page on any
 #    other system (for example Workday), the job site blocks the link (for
