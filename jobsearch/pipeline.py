@@ -18,6 +18,7 @@ from .adapters.ats import AtsWatchlistAdapter, FETCHERS
 from .adapters.base import SourceStatus
 from .adapters.websearch import WebSearchAdapter
 from .agencies import is_agency
+from .skills_match import SKILLS_FAMILY
 from .classify import evaluate_posting, decide, plain_reason
 from .http import HttpClient
 from .models import RawPosting, Verification, QUALIFIED, REJECTED, NEEDS_VERIFICATION
@@ -221,11 +222,15 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
             matched.append((p, m))
             for st in statuses:
                 if st.name == p.source or (st.name == "ats_watchlist" and p.source in FETCHERS):
-                    st.matched += 1
+                    if m.get("family") == SKILLS_FAMILY:
+                        st.skills_matched += 1
+                    else:
+                        st.matched += 1
                     break
 
     errors: list[str] = [f"{s.name}: {s.detail}" for s in statuses if s.state in ("error",)] + [f"{s.name}: {e}" for s in statuses for e in s.errors]
-    counts = {"discovered": len(raw), "title_matched": len(matched), "qualified": 0, "needs_verification": 0, "rejected": 0,
+    counts = {"discovered": len(raw), "title_matched": sum(1 for _, m in matched if m.get("family") != SKILLS_FAMILY),
+              "skills_matched": sum(1 for _, m in matched if m.get("family") == SKILLS_FAMILY), "qualified": 0, "needs_verification": 0, "rejected": 0,
               "closed": 0, "new_jobs": 0, "notifications_queued": 0}
     seen_ids: set[int] = set()
     new_boards: list[dict] = list(ctx.get("boards_added", []))

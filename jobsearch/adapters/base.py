@@ -65,7 +65,8 @@ class SourceStatus:
     state: str = "not_run"  # ok | blocked | needs_credentials | error | not_run | disabled
     detail: str = ""
     fetched: int = 0
-    matched: int = 0
+    matched: int = 0          # matched your job titles
+    skills_matched: int = 0   # matched by skills-based matching (other titles)
     errors: list[str] = field(default_factory=list)
     searches: list[dict] = field(default_factory=list)   # web search: each search's words and settings
 

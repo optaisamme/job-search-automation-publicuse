@@ -171,7 +171,8 @@ def write(root: Path) -> dict:
         c = _j(last["counts"], {})
         name = report_name(last["id"], last["finished_at"])
         R = [f"# REPORT {last['id']}: search run {last['finished_at'][:16].replace('T', ' ')} UTC", "",
-             f"Checked {c.get('discovered', 0)} job listings; {c.get('title_matched', 0)} matched your job titles.", "",
+             f"Checked {c.get('discovered', 0)} job listings; {c.get('title_matched', 0)} matched your job titles"
+             + (f" and {c['skills_matched']} matched your skills" if c.get("skills_matched") else "") + ".", "",
              "## New in this search", ""]
         draft = outbox.get("issue_draft")   # new matching jobs only; near misses are in their own table below
         if draft:
@@ -179,7 +180,7 @@ def write(root: Path) -> dict:
             R += ["", "```text", draft["body"], "```", ""]
         elif outbox.get("near_miss_ids"):
             R += ["No new jobs match all your rules. New near misses are in the near-miss table below.", ""]
-        elif c.get("title_matched", 0) == 0:
+        elif c.get("title_matched", 0) == 0 and not c.get("skills_matched"):
             R += ["Nothing new in this search.", "",
                   "**None of the listings matched your job titles.** To find more:", "",
                   "1. Use shorter, common titles. For example, \"Data Analyst\" also finds \"Senior Data Analyst\" "

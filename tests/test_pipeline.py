@@ -804,6 +804,8 @@ def test_skills_match_is_kept_marked_and_listed_separately(root):
     assert j["family"] == "Skills match (other titles)", j["family"]
     md = open(info["report"]).read()
     assert "Development Operations Coordinator" in md and "(skills match)" in md
+    row = next(l for l in md.splitlines() if l.startswith("| Company careers pages |"))
+    assert "| Matched your skills |" in md and row.rstrip().endswith("| 1 |")   # one skills match from this source
 
 
 def _enable_skills_matching(root):

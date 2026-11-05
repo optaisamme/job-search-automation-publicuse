@@ -28,6 +28,11 @@ def _worked(s: dict) -> str:
             "not_run": "Not run"}.get(st, "No: error")
 
 
+def _skills(s: dict) -> str:
+    """Skills-based matches; searches before 2026-11-05 did not record them."""
+    return str(s["skills_matched"]) if "skills_matched" in s else "not recorded"
+
+
 def _cell(x) -> str:
     return str(x if x is not None else "").replace("|", "/").replace("\n", " ")
 
@@ -37,17 +42,17 @@ def section(sources: list[dict]) -> list[str]:
     companies = (by.get("ats_watchlist") or {}).get("companies")
     L = ["## Where this search looked", "",
          "Every job site and source used in the last search, and how many listings each gave.", "",
-         "| Job site | What it searches | Searched this time? | Listings looked at | Matched your job titles |",
-         "|---|---|---|---|---|"]
+         "| Job site | What it searches | Searched this time? | Listings looked at | Matched your job titles | Matched your skills |",
+         "|---|---|---|---|---|---|"]
     known = [n for n, _, _ in SITES]
     for name, shown, what in SITES:
         s = by.get(name)
         if s is None:
             continue
-        L.append(f"| {shown} | {what} | {_worked(s)} | {s.get('fetched', 0)} | {s.get('matched', 0)} |")
+        L.append(f"| {shown} | {what} | {_worked(s)} | {s.get('fetched', 0)} | {s.get('matched', 0)} | {_skills(s)} |")
     for name, s in by.items():   # any source not described above (removed sources are not shown)
         if name not in known and name not in REMOVED:
-            L.append(f"| {_cell(name)} |  | {_worked(s)} | {s.get('fetched', 0)} | {s.get('matched', 0)} |")
+            L.append(f"| {_cell(name)} |  | {_worked(s)} | {s.get('fetched', 0)} | {s.get('matched', 0)} | {_skills(s)} |")
     if companies is not None:
         L += ["", f"**Company careers pages read ({len(companies)}):** "
               + (", ".join(_cell(c) for c in sorted(companies, key=str.lower)) if companies else "none yet") + "."]
