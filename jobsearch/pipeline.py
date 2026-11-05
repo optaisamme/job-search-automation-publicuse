@@ -369,6 +369,12 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
     is_baseline = success and not was_baseline_done
     store.commit()
     src_dicts = [asdict(s) for s in statuses]
+    # record which company careers pages this search read (shown in each report)
+    scanned = {(e.get("employer") or e["board"]) for lst in ctx["boards"].values() for e in lst}
+    scanned |= {(b.get("employer") or b["board"]) for b in ctx.get("boards_added", []) if not is_agency(b["board"])}
+    for d in src_dicts:
+        if d["name"] == "ats_watchlist":
+            d["companies"] = sorted(scanned, key=str.lower)
     store.finish_run(run_id, success, is_baseline, counts, src_dicts, errors[:100])
     dropped_boards: list[dict] = []
     if not dry_run:

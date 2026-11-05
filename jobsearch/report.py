@@ -13,25 +13,6 @@ SOURCE_NOTES = {
     "required, blocked, or terms do not allow it). One-click searches for them are on the JOB_SEARCH_RESULTS page.",
 }
 
-SOURCE_NAMES = {
-    "websearch": "Web search (Tavily)",
-    "ats_watchlist": "Company job pages (section 7, plus companies found automatically)",
-    "remotive": "Remotive", "remoteok": "Remote OK", "himalayas": "Himalayas", "themuse": "The Muse",
-    "jobicy": "Jobicy", "weworkremotely": "We Work Remotely", "workingnomads": "Working Nomads", "jobspresso": "Jobspresso", "hackernews": "Hacker News: Who is hiring?",
-}
-
-
-def _state(s: dict) -> str:
-    st = s.get("state")
-    if st == "ok":
-        return "Yes"
-    if st == "needs_credentials":
-        return "Off: needs a free key (see SETUP.md)"
-    if st == "blocked":
-        return "No: the site blocked the request"
-    return "No: error (see below)"
-
-
 def _rule(row, name):
     for r in _j(row, "rules", []) or []:
         if r["rule"] == name:
@@ -127,12 +108,10 @@ def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report"
         md.append(f"{i}. {r['title']}, {r['employer']}: {reasons} ({r['canonical_url'] or (_j(r,'source_urls',[]) or [''])[0]})")
     if not rej:
         md.append("None.")
-    md += ["", "## Where jobs were looked for", "",
-           "| Job site | Worked? | Jobs looked at | Matched your job titles |", "|---|---|---|---|"]
-    for s in run_info.get("sources", []):
-        md.append(f"| {SOURCE_NAMES.get(s['name'], s['name'])} | {_state(s)} | {s['fetched']} | {s['matched']} |")
+    from .sources_summary import section as where_section
+    md += [""] + where_section(run_info.get("sources", []))
     for k, v in SOURCE_NOTES.items():
-        md.append(f"| {k} | {v} | 0 | 0 |")
+        md.append(f"**{k}:** {v}")
     dropped = run_info.get("dropped_boards") or []
     if dropped:
         md += ["", "Companies no longer checked (no job matching your titles in more than 5 searches in a row): "

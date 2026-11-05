@@ -270,7 +270,7 @@ def test_report_sections(root):
     setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Senior Salesforce Administrator", desc=bad)])
     info = run(root, c)
     md = open(info["report"]).read()
-    for h in ("## Jobs that match all your rules", "## Jobs that need checking", "## Jobs that did not match", "## Where jobs were looked for", "TEST DATA"):
+    for h in ("## Jobs that match all your rules", "## Jobs that need checking", "## Jobs that did not match", "## Where this search looked", "TEST DATA"):
         assert h in md
     assert "ends at $100,000, not above $100,000" in md
 
@@ -704,3 +704,23 @@ def test_results_tables_have_first_found_and_newest_first(root):
     head_n, n = table("## Near misses")
     assert "First found" in head_q and "First found" in head_n
     assert q == ["2026-10-05", "2026-10-01"] and n == ["2026-10-09", "2026-10-02"]
+
+
+def test_report_lists_sites_and_web_search_criteria(root, monkeypatch):
+    from jobsearch import results_folder
+    monkeypatch.setenv("TAVILY_API_KEY", "tvly-test")
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    c.set("https://api.tavily.com/search", {"results": [
+        {"url": "https://job-boards.greenhouse.io/acme/jobs/1", "title": "Job Application for Salesforce Administrator at Acme Nonprofit",
+         "content": "Remote within the United States."}]})
+    info = run(root, c, sources=("websearch", "ats_watchlist", "remoteok"))
+    md = open(info["report"]).read()
+    for text in ("## Where this search looked", "| Web search (Tavily) |", "| Company careers pages |", "| Remote OK |",
+                 "### Web search (Tavily) criteria", '"Salesforce Administrator" remote', "company careers pages",
+                 "the wider web", "last 30 days", "Company careers pages read (1):** Acme Nonprofit"):
+        assert text in md, text
+    index = results_folder.write(root)["text"]
+    assert "## Where this search looked" in index and '"Salesforce Administrator" remote' in index
+    report = sorted((root / "JOB_SEARCH_RESULTS").glob("REPORT_*.md"))[-1].read_text()
+    assert '"Salesforce Administrator" remote' in report      # each numbered report has its own criteria

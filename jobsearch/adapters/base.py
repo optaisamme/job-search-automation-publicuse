@@ -67,6 +67,7 @@ class SourceStatus:
     fetched: int = 0
     matched: int = 0
     errors: list[str] = field(default_factory=list)
+    searches: list[dict] = field(default_factory=list)   # web search: each search's words and settings
 
 
 class Adapter:

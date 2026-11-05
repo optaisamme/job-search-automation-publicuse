@@ -121,15 +121,21 @@ class WebSearchAdapter(Adapter):
                 (f'"{t}" job opening apply {where}'.strip(), None, EXCLUDE_DOMAINS, 10, "week"),
             ]
             for query, inc, exc, n, rng in plan:
+                log = {"words": query, "where": "company careers pages" if inc else "the wider web",
+                       "period": {"week": "last 7 days", "month": "last 30 days"}.get(rng, rng), "max_results": n}
+                status.searches.append(log)
                 try:
                     results = provider.search(query, include_domains=inc, exclude_domains=exc, max_results=n, time_range=rng)
                     searches += 1
+                    log["results"] = len(results)
                 except RuntimeError as e:
+                    log["results"] = f"failed: {e}"
                     status.errors.append(str(e))
                     status.detail = f"{searches} searches; stopped: {e}"
                     if not out:
                         status.state = "error"   # report shows "No: error" instead of "Yes"
                     return out
+                kept_before = len(out)
                 for x in results:
                     url = x["url"]
                     if not url or url in seen or _excluded(url):
@@ -146,5 +152,6 @@ class WebSearchAdapter(Adapter):
                         # a matching job on a supported careers page: read that company's whole page this search too
                         self.ctx.setdefault("boards_added", []).append({"ats": hit[0], "board": hit[1], "employer": employer or None})
                     out.append(p)
+                log["kept"] = len(out) - kept_before
         status.detail = f"{searches} searches ({searches} of the free monthly allowance used)"
         return out

@@ -205,6 +205,9 @@ def write(root: Path) -> dict:
     I += current
     I += [""] + _manual_boards(root)
     I += _companies(root)
+    if last:
+        from .sources_summary import section as where_section
+        I += where_section(_j(last["sources"], []))
     I += ["", "## All reports (newest first)", "",
           "Each search adds one numbered report with its date and time (UTC).", ""]
     I += [f"{i}. [{p.name}]({p.name})" for i, p in enumerate(reports, 1)] or ["None yet."]
