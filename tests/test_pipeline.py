@@ -759,3 +759,15 @@ def test_matching_jobs_are_one_short_row_per_job(root):
     rows = [l for l in sec.splitlines() if l.startswith("| Salesforce Administrator")]
     assert len(rows) == 1 and "$95,000-$115,000" in rows[0] and "| [Open](" in rows[0]
     assert "From the posting" not in sec and "Result:" not in sec
+
+
+def test_did_not_match_list_is_a_table(root):
+    c = FakeClient()
+    bad = GOOD_DESC.replace("$95,000 - $115,000", "$60,000 - $70,000")
+    setup_board(c, [gh_job(1, "Salesforce Administrator", desc=bad)])
+    info = run(root, c)
+    md = open(info["report"]).read()
+    sec = md[md.index("## Jobs that did not match"):]
+    sec = sec[:sec.find("\n## ", 3)]
+    assert "| Job | Company | Why it did not match | Link | First found |" in sec
+    assert any(l.startswith("| Salesforce Administrator |") and "$60,000" in l for l in sec.splitlines())

@@ -43,6 +43,14 @@ def _short(text: str, n: int = 100) -> str:
     return text if len(text) <= n else text[: n - 1].rstrip(" ,;(") + "…"
 
 
+def _plain_reason(x: str) -> str:
+    """Current plain wording for a saved reason (older searches saved 'salary: …' style text)."""
+    for a, b in OLD_PREFIX.items():
+        if x.startswith(a):
+            x = b + x[len(a):]
+    return _short(x)
+
+
 def _check_table(rows) -> list[str]:
     """Jobs that need checking: one short row each, easy to skim."""
     from .models import Verification
@@ -54,14 +62,8 @@ def _check_table(rows) -> list[str]:
         ver = _j(r, "verification", {}) or {}
         v = Verification(**{k: x for k, x in ver.items() if k in Verification.__dataclass_fields__}) if ver else None
         link_reason = plain_link_reason(v) if ver.get("status") != "verified" else None
-        reasons = []
-        for x in (_j(r, "reasons", []) or []):
-            if x == link_reason or x.lower().startswith(LINK_WORDS):
-                continue   # the Link column already says this
-            for a, b in OLD_PREFIX.items():
-                if x.startswith(a):
-                    x = b + x[len(a):]
-            reasons.append(_short(x))
+        reasons = [_plain_reason(x) for x in (_j(r, "reasons", []) or [])
+                   if x != link_reason and not x.lower().startswith(LINK_WORDS)]   # the Link column says this
         if link_reason:
             reasons.append("Check the job is still open")
         cell = lambda x: str(x or "").replace("|", "/").replace("\n", " ")
@@ -129,6 +131,25 @@ def _match_table(rows) -> list[str]:
     return L + [""]
 
 
+
+def _reject_table(rows, limit: int = 40) -> list[str]:
+    """Jobs that did not match: one short row each, newest first."""
+    if not rows:
+        return ["None.", ""]
+    cell = lambda x: str(x or "").replace("|", "/").replace("\n", " ")
+    rows = sorted(rows, key=lambda r: r["first_seen"] or "", reverse=True)
+    L = ["| Job | Company | Why it did not match | Link | First found |", "|---|---|---|---|---|"]
+    for r in rows[:limit]:
+        title = r["title"] + (" (NPSP)" if "npsp" in r.keys() and r["npsp"] else "")
+        why = "; ".join(_plain_reason(x) for x in (_j(r, "reasons", []) or []))
+        link = r["canonical_url"] or ((_j(r, "source_urls", []) or [""])[0])
+        L.append(f"| {cell(title)} | {cell(r['employer'] or 'employer not given')} | {cell(why)} | "
+                 f"[Open]({link}) | {(r['first_seen'] or '')[:10]} |")
+    if len(rows) > limit:
+        L += ["", f"{len(rows) - limit} more are not shown."]
+    return L + [""]
+
+
 def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report") -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
     rows = store.jobs("closed_at IS NULL")
@@ -150,12 +171,8 @@ def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report"
     md += ["## Hourly or contract jobs", "",
            "Pay is listed per hour or per contract, so the yearly salary rule was not applied. Check the pay yourself.", ""]
     md += _check_table(held)
-    md += ["## Jobs that did not match, and why (up to 40)", ""]
-    for i, r in enumerate(rej[:40], 1):
-        reasons = "; ".join(_j(r, "reasons", []) or [])
-        md.append(f"{i}. {r['title']}, {r['employer'] or 'employer not given'}: {reasons} ({r['canonical_url'] or (_j(r,'source_urls',[]) or [''])[0]})")
-    if not rej:
-        md.append("None.")
+    md += ["## Jobs that did not match, and why (newest 40)", ""]
+    md += _reject_table(rej)
     from .sources_summary import section as where_section
     md += [""] + where_section(run_info.get("sources", []))
     for k, v in SOURCE_NOTES.items():
