@@ -19,6 +19,9 @@ SITES = [  # (source name in the run record, name shown, what it searches)
 ]
 
 
+REMOVED = {"adzuna", "usajobs", "jooble", "reliefweb"}   # sources this tool no longer uses
+
+
 def _worked(s: dict) -> str:
     st = s.get("state")
     return {"ok": "Yes", "needs_credentials": "Off: no key", "blocked": "No: the site blocked the request",
@@ -42,12 +45,14 @@ def section(sources: list[dict]) -> list[str]:
         if s is None:
             continue
         L.append(f"| {shown} | {what} | {_worked(s)} | {s.get('fetched', 0)} | {s.get('matched', 0)} |")
-    for name, s in by.items():   # any source not described above
-        if name not in known:
+    for name, s in by.items():   # any source not described above (removed sources are not shown)
+        if name not in known and name not in REMOVED:
             L.append(f"| {_cell(name)} |  | {_worked(s)} | {s.get('fetched', 0)} | {s.get('matched', 0)} |")
     if companies is not None:
         L += ["", f"**Company careers pages read ({len(companies)}):** "
               + (", ".join(_cell(c) for c in sorted(companies, key=str.lower)) if companies else "none yet") + "."]
+    elif "ats_watchlist" in by:
+        L += ["", "**Company careers pages read:** not recorded for this search (searches from 2026-11-05 on list them)."]
     L += ["", "### Web search (Tavily) criteria", ""]
     ws = by.get("websearch")
     if not ws:
