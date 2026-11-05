@@ -66,6 +66,10 @@ reject_when = "mentioned"
    f. Section 7: companies to watch. Paste links to employers' job pages on Greenhouse,
       Lever, Ashby or SmartRecruiters. **Recommended:** the more companies you add, the more
       jobs each search finds. The file explains how to find the link.
+   g. Section 8: skills-based matching (starts off). Also finds jobs with other titles when
+      the listing has your required keywords (for example `["Salesforce", "NPSP"]`) and at
+      least 3 of the skills in your experience file (Step 3). Change `on = "no"` to
+      `on = "yes"` and type your keywords.
 5. Click **Commit changes** (green button), then **Commit changes** again.
 6. The first step of every run ("Check settings files") lists exactly what is ON and
    OFF. If no job titles are set, the run stops there and says so.
@@ -133,7 +137,8 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 | **Tavily** (web search) | Searches the whole web for each of your job titles, including company careers pages | https://app.tavily.com: on the log-in page that opens, click **Sign up** (or continue with a Google, GitHub, LinkedIn or Microsoft account). After signing in, copy your API key from your Tavily account page (it starts with `tvly-`) | `TAVILY_API_KEY` |
 
    **Free plan:** 1,000 web searches a month. This tool uses 2 web searches per job title, for
-   up to 4 titles: at most 8 per search, about 35 a month with weekly searches.
+   up to 4 titles, plus 2 for skills-based matching when it is on: at most 10 per search,
+   about 45 a month with weekly searches.
 
    **How to add the key:**
 

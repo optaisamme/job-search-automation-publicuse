@@ -73,8 +73,8 @@ Only files whose names start with **EDIT_ME**. Do not change any other file.
 
 | File | Do I have to? | What it changes |
 |---|---|---|
-| [`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml`](EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml) | **Yes:** type at least one job title | Which jobs are found and which are left out: job titles, remote only or not, your state, salary, certifications, your own rules, companies to watch |
-| [`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml`](EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml) | No | Your skills, used to show how well each job fits you. It never removes a job |
+| [`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml`](EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml) | **Yes:** type at least one job title | Which jobs are found and which are left out: job titles, remote only or not, your state, salary, certifications, your own rules, companies to watch, skills-based matching |
+| [`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml`](EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml) | No | Your skills, used to show how well each job fits you. It never removes a job. With skills-based matching on (file 1, section 8), it also finds jobs with other titles |
 | [`.github/workflows/EDIT_ME_3_weekly_schedule.yml`](.github/workflows/EDIT_ME_3_weekly_schedule.yml) | No | **Automatic weekly searches. They start OFF.** To turn them on, change `AUTOMATIC_WEEKLY_SEARCH: "off"` to `"on"`. Also sets the day and time (default: Fridays) |
 
 Both settings files start **empty**: nothing is searched or filtered until you fill them in.
@@ -121,7 +121,8 @@ also finds new companies to check. It is optional and stays off until you add th
 | **Tavily** (web search) | Searches the whole web for each of your job titles, including company careers pages | https://app.tavily.com: on the log-in page that opens, click **Sign up** (or continue with a Google, GitHub, LinkedIn or Microsoft account). After signing in, copy your API key from your Tavily account page (it starts with `tvly-`) | `TAVILY_API_KEY` |
 
 **Free plan:** 1,000 web searches a month. This tool uses 2 web searches per job title, for
-up to 4 titles: at most 8 per search, about 35 a month with weekly searches.
+up to 4 titles, plus 2 for skills-based matching when it is on: at most 10 per search, about 45 a
+month with weekly searches.
 
 ### How to add the key
 
@@ -191,7 +192,9 @@ links on the results page for those.
          every job open on each company's careers page and keeps the ones with your job titles.
          Companies on other systems (for example Workday or iCIMS) cannot be added. If you leave
          section 7 empty, everything else above still runs.
-3. **Keeps jobs with your job titles.**
+3. **Keeps jobs with your job titles.** With skills-based matching on (settings section 8), it
+   also keeps jobs with other titles whose listing has your required keywords and enough of
+   your skills (from your experience file). Those are marked "(skills match)".
 4. **Applies your rules**: remote only (on unless you turn it off), your state, salary,
    certifications, your own rules. When a
    posting is unclear, the job is marked **Needs Verification** instead of guessed.

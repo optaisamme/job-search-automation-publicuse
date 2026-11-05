@@ -9,7 +9,9 @@ def _c(p: str) -> re.Pattern:
 
 
 class TitleMatcher:
-    def __init__(self, profile: dict):
+    def __init__(self, profile: dict, skills: list[dict] | None = None):
+        from .skills_match import SkillsMatcher
+        self.skills = SkillsMatcher(profile.get("skills_matching"), skills)
         self.families = []
         for t in profile.get("titles", []):
             # all of the title's words, in any order: "Data Analyst" also finds "Analyst, Data" and "Senior Data Analyst"
@@ -33,12 +35,18 @@ class TitleMatcher:
         if not t or any(p.search(t) for p in self.exclude):
             return None
         low_text = (text or "").lower()
+        title_matched = False
         for f in self.families:
             if not any(p.search(t) for p in f["include"]):
                 continue
+            title_matched = True
             if self.must_mention and not any(w in (t.lower() + " " + low_text) for w in self.must_mention):
                 continue
             if f["require_any"] and not any(w in low_text for w in f["require_any"]):
                 continue
             return {"track": f["track"], "family": f["family"]}
-        return None
+        if title_matched:
+            return None   # one of your titles, but a title condition failed: not a skills match either
+        if self.must_mention and not any(w in (t.lower() + " " + low_text) for w in self.must_mention):
+            return None
+        return self.skills.match(t, text)   # other titles: skills-based matching (when on)

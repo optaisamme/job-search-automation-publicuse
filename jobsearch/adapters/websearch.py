@@ -115,10 +115,14 @@ class WebSearchAdapter(Adapter):
         where = "remote" if remote else (CRITERIA.get("home_state") or "")
         titles = list(dict.fromkeys(self.ctx.get("queries", [])))[: self.MAX_TITLES]
         out, seen, searches = [], set(), 0
-        for t in titles:
+        terms = [f'"{t}"' for t in titles]
+        kw = self.ctx.get("skill_keywords") or []
+        if kw:   # skills-based matching: also search for the required keywords
+            terms.append((" OR " if self.ctx.get("skill_rule") == "any" else " ").join(f'"{k}"' for k in kw))
+        for term in terms:
             plan = [
-                (f'"{t}" {where}'.strip(), CAREERS_DOMAINS, None, 20, "month"),
-                (f'"{t}" job opening apply {where}'.strip(), None, EXCLUDE_DOMAINS, 10, "week"),
+                (f'{term} {where}'.strip(), CAREERS_DOMAINS, None, 20, "month"),
+                (f'{term} job opening apply {where}'.strip(), None, EXCLUDE_DOMAINS, 10, "week"),
             ]
             for query, inc, exc, n, rng in plan:
                 log = {"words": query, "where": "company careers pages" if inc else "the wider web",

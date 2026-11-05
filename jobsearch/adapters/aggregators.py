@@ -11,13 +11,21 @@ from ..text import html_to_text
 from .base import Adapter, SourceStatus
 
 
+def search_words(ctx: dict) -> list[str]:
+    """Your first 6 search words, plus the skills-matching keywords when that is on."""
+    words = list(dict.fromkeys(ctx.get("queries", [])))[:6]
+    if ctx.get("skill_words") and ctx["skill_words"] not in words:
+        words.append(ctx["skill_words"])
+    return words
+
+
 class RemotiveAdapter(Adapter):
     # https://remotive.com/api-documentation — please link back to Remotive; low request volume.
     name = "remotive"
 
     def search(self, status: SourceStatus) -> list[RawPosting]:
         out, seen = [], set()
-        for q in self.ctx["queries"][:6]:
+        for q in search_words(self.ctx):
             r = self.client.get("https://remotive.com/api/remote-jobs?" + urllib.parse.urlencode({"search": q, "limit": 100}))
             if r.status >= 400:
                 status.errors.append(f"query {q!r}: HTTP {r.status}")
@@ -87,7 +95,7 @@ class HimalayasAdapter(Adapter):
                     seen.add(gid)
                     out.append(self._posting(j))
 
-        for q in self.ctx["queries"][:6]:
+        for q in search_words(self.ctx):
             for page in range(1, self.SEARCH_PAGES + 1):
                 r = self.client.get("https://himalayas.app/jobs/api/search?" + urllib.parse.urlencode({"q": q, "country": "US", "page": page}))
                 if r.status >= 400:

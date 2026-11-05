@@ -141,6 +141,15 @@ def main(argv=None) -> int:
         for t in prof["titles"]:
             print(f"Job title {t['family']}: {', '.join(t.get('plain_titles') or [])}")
         watched, bad = pipeline.watched_boards(prof)
+        from .titles import TitleMatcher
+        sm = TitleMatcher(prof, exp.get("skills", [])).skills
+        print(f"Skills-based matching (section 8): {sm.summary()}")
+        if sm.on and sm.rule not in ("all", "any"):
+            print('SETTINGS PROBLEM: in EDIT_ME_1 section 8, required_keywords_rule must be "all" or "any". Fix it and save.')
+            return 1
+        if sm.active and sm.minimum and not sm.skills:
+            print("Note: skills-based matching is on, but your experience file (EDIT_ME_2) has no skills yet, "
+                  "so it will not find any jobs until you add some.")
         print(f"Companies to watch (section 7): {', '.join(b['board'] for b in watched) or 'none added (optional: only for companies whose careers page runs on Greenhouse, Lever, Ashby or SmartRecruiters; all job sites are still searched)'}")
         if bad:
             for link in bad:

@@ -7,6 +7,8 @@
 #      - skills you have that transfer,
 #      - skills the job asks for that are NOT in this file ("not documented").
 #    It NEVER rejects a job. It can stay empty.
+#    If you turn on skills-based matching (file 1, section 8), these skills
+#    are also used to find jobs with other titles that fit you.
 #
 #  HOW TO EDIT IT (on the GitHub website)
 #    1. Click the pencil icon (top right of this file).

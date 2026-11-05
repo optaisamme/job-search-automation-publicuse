@@ -35,6 +35,14 @@ OLD_PREFIX = {"salary: ": "Salary: ", "location: ": "Location: ", "cloud: ": "Sa
 LINK_WORDS = ("application route:", "application link", "link not checked", "closed:", "no longer open:")
 
 
+def _label(r) -> str:
+    """Job title plus short marks: (NPSP) and (skills match)."""
+    from .skills_match import SKILLS_FAMILY
+    keys = r.keys()
+    return (r["title"] + (" (NPSP)" if "npsp" in keys and r["npsp"] else "")
+            + (" (skills match)" if "family" in keys and r["family"] == SKILLS_FAMILY else ""))
+
+
 def _short(text: str, n: int = 100) -> str:
     import re
     for a, b in SHORTER:
@@ -67,7 +75,7 @@ def _check_table(rows) -> list[str]:
         if link_reason:
             reasons.append("Check the job is still open")
         cell = lambda x: str(x or "").replace("|", "/").replace("\n", " ")
-        L.append(f"| {cell(r['title'])} | {cell(r['employer'])} | {cell('; '.join(reasons))} | "
+        L.append(f"| {cell(_label(r))} | {cell(r['employer'])} | {cell('; '.join(reasons))} | "
                  f"{_link_cell(r, ver)} | {(r['first_seen'] or '')[:10]} |")
     return L + [""]
 
@@ -125,8 +133,7 @@ def _match_table(rows) -> list[str]:
             loc = "remote, US"
         else:
             loc = _short(loc, 60) if loc else cell(r["location_text"])
-        title = r["title"] + (" (NPSP)" if "npsp" in r.keys() and r["npsp"] else "")
-        L.append(f"| {cell(title)} | {cell(r['employer'])} | {_salary_cell(r)} | {cell(loc)} | {cell(_fit_cell(r))} | "
+        L.append(f"| {cell(_label(r))} | {cell(r['employer'])} | {_salary_cell(r)} | {cell(loc)} | {cell(_fit_cell(r))} | "
                  f"{_link_cell(r, ver)} | {(r['first_seen'] or '')[:10]} |")
     return L + [""]
 
@@ -140,7 +147,7 @@ def _reject_table(rows, limit: int = 40) -> list[str]:
     rows = sorted(rows, key=lambda r: r["first_seen"] or "", reverse=True)
     L = ["| Job | Company | Why it did not match | Link | First found |", "|---|---|---|---|---|"]
     for r in rows[:limit]:
-        title = r["title"] + (" (NPSP)" if "npsp" in r.keys() and r["npsp"] else "")
+        title = _label(r)
         why = "; ".join(_plain_reason(x) for x in (_j(r, "reasons", []) or []))
         link = r["canonical_url"] or ((_j(r, "source_urls", []) or [""])[0])
         L.append(f"| {cell(title)} | {cell(r['employer'] or 'employer not given')} | {cell(why)} | "
@@ -165,7 +172,13 @@ def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report"
     md += [f"Totals: match all your rules {len(q)} | need checking {len(nv)} | hourly or contract {len(held)} | "
            f"did not match {len(rej)} | no longer open {len(closed)}",
            "", "## Jobs that match all your rules", ""]
-    md += _match_table(q)
+    from .skills_match import SKILLS_FAMILY
+    md += _match_table([r for r in q if r["family"] != SKILLS_FAMILY])
+    q_skills = [r for r in q if r["family"] == SKILLS_FAMILY]
+    if q_skills:
+        md += ["### Matches by skills (other titles)", "",
+               "Their title is not one of yours, but the listing has your required keywords and enough of your skills.", ""]
+        md += _match_table(q_skills)
     md += ["## Jobs that need checking", ""]
     md += _check_table(nv)
     md += ["## Hourly or contract jobs", "",

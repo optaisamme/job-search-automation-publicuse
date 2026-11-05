@@ -48,24 +48,34 @@ def _current_sections(db) -> list[str]:
         "SELECT j.*, n.payload AS npayload FROM notifications n JOIN jobs j ON j.id=n.job_id "
         "WHERE n.kind='near_miss' AND j.closed_at IS NULL AND j.status!='Qualified' ORDER BY j.first_seen DESC, n.id DESC").fetchall()
     look = needs_employer_posting(db)
-    L = [f"## Jobs that match all your rules ({len(qualified)})", ""]
-    if qualified:
-        L += ["| Job | Company | Salary | Location | Apply | First found |", "|---|---|---|---|---|---|"]
-        for r in qualified:
+    from .report import _label, _salary_cell
+    from .skills_match import SKILLS_FAMILY
+
+    def match_rows(rows):
+        out = ["| Job | Company | Salary | Location | Apply | First found |", "|---|---|---|---|---|---|"]
+        for r in rows:
             ver = _j(r["verification"], {}) or {}
             link = ver.get("apply_url") or r["apply_url"] or r["canonical_url"] or ""
             route = (" (third-party site, link not checked)" if (ver.get("detail") or "").startswith("Listed in the Himalayas job feed")
                      else " (third-party site)" if ver.get("apply_route") == "third_party" else "")
-            L.append(f"| {_cell(r['title'])} | {_cell(r['employer'])} | {_cell(_reason(_j(r['rules'], []), 'salary'))} | "
-                     f"{_cell(r['location_text'])} | [Apply]({link}){route} | {(r['first_seen'] or '')[:10]} |")
-    else:
-        L.append("None right now.")
+            out.append(f"| {_cell(_label(r))} | {_cell(r['employer'])} | {_cell(_salary_cell(r))} | "
+                       f"{_cell(r['location_text'])} | [Apply]({link}){route} | {(r['first_seen'] or '')[:10]} |")
+        return out
+
+    by_title = [r for r in qualified if r["family"] != SKILLS_FAMILY]
+    by_skills = [r for r in qualified if r["family"] == SKILLS_FAMILY]
+    L = [f"## Jobs that match all your rules ({len(qualified)})", ""]
+    L += match_rows(by_title) if by_title else ["None right now." if not by_skills else "None with your job titles right now."]
+    if by_skills:
+        L += ["", f"### Matches by skills (other titles) ({len(by_skills)})", "",
+              "Their title is not one of yours, but the listing has your required keywords and enough of your skills.", ""]
+        L += match_rows(by_skills)
     L += ["", f"## Near misses: failed exactly one of your rules ({len(near)})", ""]
     if near:
         L += ["| Job | Company | Why it did not match | Link | First found |", "|---|---|---|---|---|"]
         for r in near:
             p = _j(r["npayload"], {})
-            L.append(f"| {_cell(r['title'])} | {_cell(r['employer'])} | {_cell('; '.join(_j(r['reasons'], []) or p.get('reasons', [])))} | "
+            L.append(f"| {_cell(_label(r))} | {_cell(r['employer'])} | {_cell('; '.join(_j(r['reasons'], []) or p.get('reasons', [])))} | "
                      f"[Link]({p.get('link') or r['canonical_url'] or ''}) | {(r['first_seen'] or '')[:10]} |")
     else:
         L.append("None right now.")
@@ -90,7 +100,7 @@ def _current_sections(db) -> list[str]:
         for r in check:
             ver = _j(r["verification"], {}) or {}
             link = ver.get("apply_url") or r["apply_url"] or r["canonical_url"] or ""
-            L.append(f"| {_cell(r['title'])} | {_cell(r['employer'])} | {_cell('; '.join(_j(r['reasons'], [])))} | [Link]({link}) |")
+            L.append(f"| {_cell(_label(r))} | {_cell(r['employer'])} | {_cell('; '.join(_j(r['reasons'], [])))} | [Link]({link}) |")
     else:
         L.append("None right now.")
     return L

@@ -604,7 +604,7 @@ def test_found_company_dropped_after_more_than_5_searches_without_match(root):
         {"board": "quiet", "employer": "Quiet Co", "searches_without_match": 4}]}))
     c = FakeClient()
     setup_board(c, [gh_job(1, "Salesforce Administrator")])
-    setup_board(c, [gh_job(2, "Office Manager", board="quiet")], board="quiet", employer="Quiet Co")
+    setup_board(c, [gh_job(2, "Office Manager", desc="<p>Run the front office. On site.</p>", board="quiet")], board="quiet", employer="Quiet Co")
     info = run(root, c)
     saved = {b["board"]: b["searches_without_match"] for b in json.loads((root / "data/boards.json").read_text())["greenhouse"]}
     assert saved == {"acme": 0, "quiet": 5}          # match resets; no match counts up
@@ -618,7 +618,7 @@ def test_section7_company_never_dropped(root):
     s = root / "config/settings.toml"
     s.write_text(s.read_text() + '\n[companies_to_watch]\njob_page_links = ["https://job-boards.greenhouse.io/quiet"]\n')
     c = FakeClient()
-    setup_board(c, [gh_job(2, "Office Manager", board="quiet")], board="quiet", employer="Quiet Co")
+    setup_board(c, [gh_job(2, "Office Manager", desc="<p>Run the front office. On site.</p>", board="quiet")], board="quiet", employer="Quiet Co")
     for _ in range(7):
         run(root, c)
     assert json.loads((root / "data/boards.json").read_text()) == {}
@@ -771,3 +771,55 @@ def test_did_not_match_list_is_a_table(root):
     sec = sec[:sec.find("\n## ", 3)]
     assert "| Job | Company | Why it did not match | Link | First found |" in sec
     assert any(l.startswith("| Salesforce Administrator |") and "$60,000" in l for l in sec.splitlines())
+
+
+def test_skills_matcher_rules():
+    from jobsearch.skills_match import SkillsMatcher, SKILLS_FAMILY
+    skills = [{"name": "NPSP", "keywords": ["npsp"]}, {"name": "Reports", "keywords": ["dashboard", "report"]},
+              {"name": "Data quality", "keywords": ["data quality", "dedup"]}, {"name": "Training", "keywords": ["train"]}]
+    text = "We run Salesforce with NPSP. Build dashboards, keep data quality high, train staff."
+    m = SkillsMatcher({"on": "yes", "required_keywords": ["Salesforce", "NPSP"], "minimum_skills_matched": 3}, skills)
+    hit = m.match("Development Operations Coordinator", text)
+    assert hit and hit["family"] == SKILLS_FAMILY and len(hit["skills"]) >= 3
+    assert m.match("Development Operations Coordinator", text.replace("NPSP", "")) is None      # "all": both keywords needed
+    any_rule = SkillsMatcher({"on": "yes", "required_keywords": ["Salesforce", "NPSP"], "required_keywords_rule": "any",
+                              "minimum_skills_matched": 2}, skills)
+    assert any_rule.match("Coordinator", "Salesforce reports and dashboards; we train users") is not None
+    assert SkillsMatcher({"on": "no", "required_keywords": ["Salesforce"]}, skills).match("X", text) is None   # off
+    assert m.match("Coordinator", "Salesforce NPSP only") is None                                     # too few skills
+
+
+def test_skills_match_is_kept_marked_and_listed_separately(root):
+    import tomllib
+    skills_text = "<p>We use Salesforce with NPSP. Build reports and dashboards, keep data quality high, run imports, and train staff.</p>"
+    desc = GOOD_DESC.replace("<p>About the role</p>", "<p>About the role</p>" + skills_text)
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Development Operations Coordinator", desc=desc),
+                    gh_job(2, "Account Executive", desc=desc)])
+    _enable_skills_matching(root)
+    info = run(root, c)
+    js = {j["title"]: j for j in jobs(root)}
+    assert "Account Executive" not in js or js["Account Executive"]["status"] != "Qualified"
+    j = js["Development Operations Coordinator"]
+    assert j["family"] == "Skills match (other titles)", j["family"]
+    md = open(info["report"]).read()
+    assert "Development Operations Coordinator" in md and "(skills match)" in md
+
+
+def _enable_skills_matching(root):
+    s = root / "config/settings.toml"
+    s.write_text(s.read_text() + '\n[skills_matching]\non = "yes"\nrequired_keywords = ["Salesforce", "NPSP"]\n'
+                 'required_keywords_rule = "all"\nminimum_skills_matched = 3\n'
+                 '\n[filters]\nexclude_titles_containing = ["Account Executive"]\n')   # titles to skip still apply
+    e = root / "config/experience_profile.toml"
+    e.write_text(e.read_text() + "\n"
+                 '[[skills]]\nname = "NPSP"\nkind = "demonstrated"\nkeywords = ["npsp"]\nevidence = "x"\n\n'
+                 '[[skills]]\nname = "Reports"\nkind = "demonstrated"\nkeywords = ["report", "dashboard"]\nevidence = "x"\n\n'
+                 '[[skills]]\nname = "Data quality"\nkind = "demonstrated"\nkeywords = ["data quality"]\nevidence = "x"\n\n'
+                 '[[skills]]\nname = "Training"\nkind = "demonstrated"\nkeywords = ["train"]\nevidence = "x"\n')
+
+
+def test_skills_matching_off_by_default_in_template():
+    import tomllib, pathlib
+    s = tomllib.load(open(pathlib.Path(__file__).parents[1] / "EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml", "rb"))
+    assert s["skills_matching"]["on"] == "no" and s["skills_matching"]["required_keywords"] == []

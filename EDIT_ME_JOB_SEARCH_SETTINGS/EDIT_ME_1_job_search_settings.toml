@@ -257,3 +257,38 @@ keywords = []
 #  To stop watching a company, delete its link and save.
 [companies_to_watch]
 job_page_links = []
+
+
+# ---------------------------------------------------------------------
+#  8. SKILLS-BASED MATCHING  (optional: starts OFF)
+# ---------------------------------------------------------------------
+#  WHAT IT DOES: also finds jobs whose title is NOT one of your job titles
+#  (section 1), when the posting still fits you:
+#    1. your required keywords appear in the job listing, and
+#    2. the posting mentions at least a minimum number of the skills in
+#       your experience file (EDIT_ME_2_my_experience.toml).
+#  These jobs then go through all your other rules, and are marked
+#  "(skills match)" in your results. Your "titles to skip" (section 4)
+#  still apply. It needs skills in file 2 to work.
+#
+#  HOW TO TURN IT ON
+#    1. Change  on = "no"  to  on = "yes".
+#    2. Type the keywords that must appear, the same way as job titles:
+#       each word in quotes, commas between, inside brackets.
+#    3. Choose the rule:  "all" = every keyword must appear (start here)
+#                         "any" = at least one keyword must appear
+#    4. minimum_skills_matched = how many of your skills (file 2) the
+#       posting must mention. 3 is a good start.
+#  The keywords are also used as extra search words on job sites that
+#  search by keyword, and in the web search (2 more web searches).
+#
+#  EXAMPLE:
+#     on = "yes"
+#     required_keywords = ["Salesforce", "NPSP"]
+#     required_keywords_rule = "all"
+#     minimum_skills_matched = 3
+[skills_matching]
+on = "no"
+required_keywords = []
+required_keywords_rule = "all"
+minimum_skills_matched = 3

@@ -73,6 +73,7 @@ def load_config(root: Path) -> tuple[dict, dict]:
         flt = settings.get("filters") or {}
         prof["title_rules"] = {"must_mention": list(flt.get("description_must_mention", [])),
                                "exclude_plain": list(flt.get("exclude_titles_containing", []))}
+        prof["skills_matching"] = dict(settings.get("skills_matching") or {})
         prof["watch_links"] = [u for u in ((settings.get("companies_to_watch") or {}).get("job_page_links") or [])
                                if isinstance(u, str) and u.strip()]
         kw = list((settings.get("search") or {}).get("keywords") or [])
@@ -186,7 +187,7 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
     boards = load_boards(root)
     hc = prof["http"]
     client = client or HttpClient(hc["user_agent"], hc["min_interval_seconds"], hc["max_retries"], hc["timeout_seconds"], hc["respect_robots_for_html"])
-    matcher = TitleMatcher(prof)
+    matcher = TitleMatcher(prof, exp.get("skills", []))
 
     work_db = db_path
     tmpdir = None
@@ -199,7 +200,9 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
     run_id = store.start_run("dry_run" if dry_run else ("fixtures" if fixtures else "live"))
     was_baseline_done = store.baseline_done()
 
-    ctx = {"queries": prof["search"]["queries"], "boards": with_watched(boards, watched_boards(prof)[0]), "title_matcher": matcher}
+    ctx = {"skill_words": matcher.skills.search_words(), "skill_keywords": matcher.skills.required if matcher.skills.active else [],
+           "skill_rule": matcher.skills.rule,
+           "queries": prof["search"]["queries"], "boards": with_watched(boards, watched_boards(prof)[0]), "title_matcher": matcher}
     statuses: list[SourceStatus] = []
     raw: list[RawPosting] = []
     for name in (sources or list(ADAPTERS)):
