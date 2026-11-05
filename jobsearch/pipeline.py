@@ -221,7 +221,7 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
                     st.matched += 1
                     break
 
-    errors: list[str] = [f"{s.name}: {s.detail}" for s in statuses if s.state in ("error",)] + [e for s in statuses for e in s.errors]
+    errors: list[str] = [f"{s.name}: {s.detail}" for s in statuses if s.state in ("error",)] + [f"{s.name}: {e}" for s in statuses for e in s.errors]
     counts = {"discovered": len(raw), "title_matched": len(matched), "qualified": 0, "needs_verification": 0, "rejected": 0,
               "closed": 0, "new_jobs": 0, "notifications_queued": 0}
     seen_ids: set[int] = set()

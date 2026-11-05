@@ -724,3 +724,11 @@ def test_report_lists_sites_and_web_search_criteria(root, monkeypatch):
     assert "## Where this search looked" in index and '"Salesforce Administrator" remote' in index
     report = sorted((root / "JOB_SEARCH_RESULTS").glob("REPORT_*.md"))[-1].read_text()
     assert '"Salesforce Administrator" remote' in report      # each numbered report has its own criteria
+
+
+def test_problems_are_plain_sentences():
+    from jobsearch.plain_errors import plain_error
+    msg = plain_error("web_search_leads: https://www.careerbuilder.com/job-details/x: AccessBlocked: HTTP 403 at https://www.careerbuilder.com/job-details/x")
+    assert "careerbuilder.com refused automated access (error 403)" in msg and "AccessBlocked" not in msg
+    assert msg.endswith("Page: https://www.careerbuilder.com/job-details/x")
+    assert plain_error("remoteok: query 'Data Analyst': HTTP 404") == 'Remote OK, while searching for "Data Analyst": the page was not found (error 404).'

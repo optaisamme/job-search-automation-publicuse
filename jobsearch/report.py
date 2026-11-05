@@ -124,7 +124,9 @@ def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report"
            "4. The fit notes compare the posting with your experience file. A skill not listed there shows as \"not documented\"."]
     errs = run_info.get("errors") or []
     if errs:
-        md += ["", "## Problems during this search", ""] + [f"1. {e}" for e in errs[:30]]
+        from .plain_errors import plain_error
+        md += ["", "## Problems during this search", "",
+               "These did not stop the search. Where a page is listed, you can open it yourself.", ""] + [f"{i}. {plain_error(e)}" for i, e in enumerate(errs[:30], 1)]
     text = "\n".join(md) + "\n"
     p = out_dir / "full_report.md"   # included in JOB_SEARCH_RESULTS/REPORT_*.md by results_folder.py
     p.write_text(text)
