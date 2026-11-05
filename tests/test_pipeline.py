@@ -746,3 +746,16 @@ def test_needs_checking_list_is_one_short_row_per_job(root):
     rows = [l for l in sec.splitlines() if l.startswith("| Salesforce Administrator")]
     assert len(rows) == 1 and "no salary listed" in rows[0] and "| [Open](" in rows[0]
     assert "From the posting" not in sec and "Fit with your experience" not in sec
+
+
+def test_matching_jobs_are_one_short_row_per_job(root):
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    info = run(root, c)
+    md = open(info["report"]).read()
+    heading = "## Jobs that match all your rules" if "## Jobs that match all your rules" in md else "## Qualified matches"
+    sec = md[md.index(heading):]
+    sec = sec[:sec.find("\n## ", 3)]
+    rows = [l for l in sec.splitlines() if l.startswith("| Salesforce Administrator")]
+    assert len(rows) == 1 and "$95,000-$115,000" in rows[0] and "| [Open](" in rows[0]
+    assert "From the posting" not in sec and "Result:" not in sec

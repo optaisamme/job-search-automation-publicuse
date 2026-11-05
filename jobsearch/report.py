@@ -20,68 +20,6 @@ def _rule(row, name):
     return {}
 
 
-def _ev(r, n=2):
-    return " | ".join(f"\"{e['excerpt']}\"" + (f" ({e['url']})" if e.get("url") else "") for e in (r.get("evidence") or [])[:n])
-
-
-OUTCOME = {"pass": "OK", "fail": "does not match", "unclear": "not clear"}
-
-
-def _job_md(row, detail=True) -> str:
-    ver = _j(row, "verification", {}) or {}
-    fit = _j(row, "fit", {}) or {}
-    reasons = _j(row, "reasons", []) or []
-    out = []
-    out.append(f"### {row['title']} — {row['employer']}")
-    out.append(f"Job title group: {row['family']}" + (f" (track {row['track']})" if row["track"] else "") + "  ")
-    status_txt = {"Qualified": "Matches all your rules", "Needs Verification": "Needs checking",
-                  "Rejected": "Did not match", "Closed": "No longer open"}.get(row["status"], row["status"])
-    out.append(f"Result: **{status_txt}**. " + "; ".join(reasons))
-    route = ver.get("apply_route")
-    route_txt = {"third_party": "on a third-party job site, not the employer's own site",
-                 "employer_ats": "on the employer's own hiring system",
-                 "employer_site": "on the employer's own website"}.get(route, "")
-    link = ver.get("apply_url") or row["canonical_url"]
-    from .verify import FEED_LISTED
-    if ver.get("status") == "verified" and (ver.get("detail") or "").startswith(FEED_LISTED):
-        out.append(f"Apply: {link} (on a third-party job site; link not checked: {ver['detail']})")
-    elif ver.get("status") == "verified":
-        out.append(f"Apply: {link} ({route_txt or 'link works'}; checked {(ver.get('checked_at') or '')[:16].replace('T', ' ')} UTC)")
-    else:
-        from .verify import plain_link_reason
-        from .models import Verification
-        v = Verification(**{k: x for k, x in ver.items() if k in Verification.__dataclass_fields__}) if ver else None
-        out.append(f"Link: {link or 'none found'}. {plain_link_reason(v)}")
-    srcs = _j(row, "source_urls", []) or []
-    out.append(f"Found on: {', '.join(srcs[:4])}")
-    posted = (row["published_date"] or "")[:10] or "date not given"
-    out.append(f"Posted: {posted}; first found by this tool: {(row['first_seen'] or '')[:10]}; last seen: {(row['last_seen'] or '')[:10]}")
-    if detail:
-        for name in ("salary", "location", "certifications"):
-            r = _rule(row, name)
-            if r:
-                out.append(f"{name.title()}: {OUTCOME.get(r['outcome'], r['outcome'])} ({r['reason']})" + (f"  \n  From the posting: {_ev(r)}" if r.get("evidence") else ""))
-        for r in (_j(row, "rules", []) or []):
-            if str(r.get("rule", "")).startswith("rule: "):  # user-defined requirement rules
-                out.append(f"Your rule \"{r['rule'][6:]}\": {OUTCOME.get(r['outcome'], r['outcome'])} ({r['reason']})" + (f"  \n  From the posting: {_ev(r)}" if r.get("evidence") else ""))
-        loc = _rule(row, "location").get("data", {})
-        if loc.get("travel"):
-            out.append(f"Travel: {'; '.join(loc['travel'])}")
-        if fit:
-            if fit.get("strong"):
-                out.append("Fit with your experience: " + "; ".join(f"{s['skill']} (job: \"{s['job_excerpt']}\")" for s in fit["strong"][:5]))
-            if fit.get("transferable"):
-                out.append("Related experience: " + "; ".join(s["skill"] for s in fit["transferable"]))
-            if fit.get("gaps"):
-                out.append("Not in your experience file: " + "; ".join(g["skill"] + (" (required)" if g.get("required") else "") for g in fit["gaps"]))
-            if fit.get("mandatory_unsupported"):
-                out.append("Required items not in your experience file: " + " | ".join(fit["mandatory_unsupported"]))
-        if row["repost_note"]:
-            out.append(f"Posted again: {row['repost_note']}")
-    return "  \n".join(out)
-
-
-
 LINK_NOTE = {"blocked": "site blocks automated checks", "unverified": "not checked", "js_required": "page needs a browser",
              "error": "could not be opened", "generic": "goes to a general careers page",
              "mismatch": "goes to a different job", "closed": "looks closed"}
@@ -108,7 +46,7 @@ def _short(text: str, n: int = 100) -> str:
 def _check_table(rows) -> list[str]:
     """Jobs that need checking: one short row each, easy to skim."""
     from .models import Verification
-    from .verify import FEED_LISTED, plain_link_reason
+    from .verify import plain_link_reason
     if not rows:
         return ["None.", ""]
     L = ["| Job | Company | What to check | Link | First found |", "|---|---|---|---|---|"]
@@ -126,15 +64,68 @@ def _check_table(rows) -> list[str]:
             reasons.append(_short(x))
         if link_reason:
             reasons.append("Check the job is still open")
-        link = ver.get("apply_url") or r["canonical_url"] or ((_j(r, "source_urls", []) or [""])[0])
-        if ver.get("status") == "verified":
-            note = ("Himalayas listing, not opened" if (ver.get("detail") or "").startswith(FEED_LISTED)
-                    else "job site" if ver.get("apply_route") == "third_party" else "employer's site")
-        else:
-            note = LINK_NOTE.get(ver.get("status"), "not checked")
         cell = lambda x: str(x or "").replace("|", "/").replace("\n", " ")
         L.append(f"| {cell(r['title'])} | {cell(r['employer'])} | {cell('; '.join(reasons))} | "
-                 f"[Open]({link}) ({note}) | {(r['first_seen'] or '')[:10]} |")
+                 f"{_link_cell(r, ver)} | {(r['first_seen'] or '')[:10]} |")
+    return L + [""]
+
+
+
+SHORT_LOCATION = {
+    "Remote within the United States; no state restriction stated": "remote, anywhere in the US",
+    "Explicitly remote anywhere in the United States with no conflicting state restriction": "remote, anywhere in the US",
+}
+
+
+def _link_cell(r, ver: dict) -> str:
+    from .verify import FEED_LISTED
+    link = ver.get("apply_url") or r["canonical_url"] or ((_j(r, "source_urls", []) or [""])[0])
+    if ver.get("status") == "verified":
+        note = ("Himalayas listing, not opened" if (ver.get("detail") or "").startswith(FEED_LISTED)
+                else "job site" if ver.get("apply_route") == "third_party" else "employer's site")
+    else:
+        note = LINK_NOTE.get(ver.get("status"), "not checked")
+    return f"[Open]({link}) ({note})"
+
+
+def _salary_cell(r) -> str:
+    import re
+    reason = (_rule(r, "salary") or {}).get("reason", "")
+    m = re.search(r"\$[\d,]+(?:\.\d+)?(?:\s*[-–]\s*\$[\d,]+(?:\.\d+)?)?", reason)
+    return m.group(0).replace(" ", "") if m else "not listed"
+
+
+def _fit_cell(r) -> str:
+    fit = _j(r, "fit", {}) or {}
+    if not fit:
+        return ""
+    parts = [f"{len(fit.get('strong') or [])} skills match"]
+    import re
+    missing = [re.sub(r"\s*\(.*?\)", "", g["skill"]) for g in (fit.get("gaps") or []) if g.get("required")][:3]
+    if missing:
+        parts.append("missing (required): " + ", ".join(missing))
+    return "; ".join(parts)
+
+
+def _match_table(rows) -> list[str]:
+    """Jobs that match all rules: one short row each, easy to skim."""
+    if not rows:
+        return ["None.", ""]
+    cell = lambda x: str(x or "").replace("|", "/").replace("\n", " ")
+    L = ["| Job | Company | Salary | Location | Fit with your experience | Link | First found |",
+         "|---|---|---|---|---|---|---|"]
+    for r in rows:
+        ver = _j(r, "verification", {}) or {}
+        loc = (_rule(r, "location") or {}).get("reason", "")
+        if loc in SHORT_LOCATION:
+            loc = SHORT_LOCATION[loc]
+        elif loc.startswith("Remote within the United States"):
+            loc = "remote, US"
+        else:
+            loc = _short(loc, 60) if loc else cell(r["location_text"])
+        title = r["title"] + (" (NPSP)" if "npsp" in r.keys() and r["npsp"] else "")
+        L.append(f"| {cell(title)} | {cell(r['employer'])} | {_salary_cell(r)} | {cell(loc)} | {cell(_fit_cell(r))} | "
+                 f"{_link_cell(r, ver)} | {(r['first_seen'] or '')[:10]} |")
     return L + [""]
 
 
@@ -153,12 +144,12 @@ def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report"
     md += [f"Totals: match all your rules {len(q)} | need checking {len(nv)} | hourly or contract {len(held)} | "
            f"did not match {len(rej)} | no longer open {len(closed)}",
            "", "## Jobs that match all your rules", ""]
-    md += [_job_md(r) + "\n" for r in q] or ["None.", ""]
+    md += _match_table(q)
     md += ["## Jobs that need checking", ""]
     md += _check_table(nv)
     md += ["## Hourly or contract jobs", "",
            "Pay is listed per hour or per contract, so the yearly salary rule was not applied. Check the pay yourself.", ""]
-    md += [_job_md(r, detail=False) + "\n" for r in held] or ["None.", ""]
+    md += _check_table(held)
     md += ["## Jobs that did not match, and why (up to 40)", ""]
     for i, r in enumerate(rej[:40], 1):
         reasons = "; ".join(_j(r, "reasons", []) or [])
