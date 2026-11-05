@@ -153,7 +153,7 @@ def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report"
     md += ["## Jobs that did not match, and why (up to 40)", ""]
     for i, r in enumerate(rej[:40], 1):
         reasons = "; ".join(_j(r, "reasons", []) or [])
-        md.append(f"{i}. {r['title']}, {r['employer']}: {reasons} ({r['canonical_url'] or (_j(r,'source_urls',[]) or [''])[0]})")
+        md.append(f"{i}. {r['title']}, {r['employer'] or 'employer not given'}: {reasons} ({r['canonical_url'] or (_j(r,'source_urls',[]) or [''])[0]})")
     if not rej:
         md.append("None.")
     from .sources_summary import section as where_section
