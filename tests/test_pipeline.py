@@ -732,3 +732,17 @@ def test_problems_are_plain_sentences():
     assert "careerbuilder.com refused automated access (error 403)" in msg and "AccessBlocked" not in msg
     assert msg.endswith("Page: https://www.careerbuilder.com/job-details/x")
     assert plain_error("remoteok: query 'Data Analyst': HTTP 404") == 'Remote OK, while searching for "Data Analyst": the page was not found (error 404).'
+
+
+def test_needs_checking_list_is_one_short_row_per_job(root):
+    c = FakeClient()
+    no_salary = GOOD_DESC.replace("<p>The base salary range for this role is $95,000 - $115,000.</p>", "")
+    setup_board(c, [gh_job(1, "Salesforce Administrator", desc=no_salary)])
+    info = run(root, c)
+    md = open(info["report"]).read()
+    heading = "## Jobs that need checking" if "## Jobs that need checking" in md else "## Needs Verification"
+    sec = md[md.index(heading):]
+    sec = sec[:sec.find("\n## ", 3)]
+    rows = [l for l in sec.splitlines() if l.startswith("| Salesforce Administrator")]
+    assert len(rows) == 1 and "no salary listed" in rows[0] and "| [Open](" in rows[0]
+    assert "From the posting" not in sec and "Fit with your experience" not in sec

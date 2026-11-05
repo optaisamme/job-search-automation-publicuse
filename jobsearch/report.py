@@ -81,6 +81,63 @@ def _job_md(row, detail=True) -> str:
     return "  \n".join(out)
 
 
+
+LINK_NOTE = {"blocked": "site blocks automated checks", "unverified": "not checked", "js_required": "page needs a browser",
+             "error": "could not be opened", "generic": "goes to a general careers page",
+             "mismatch": "goes to a different job", "closed": "looks closed"}
+SHORTER = [("No employer-advertised salary found", "no salary listed"),
+           (" (per third-party listing; employer posting not confirmed)", " (job site's copy)"),
+           ("Remote, but country/state eligibility not stated", "remote, but which states can apply is not stated"),
+           ("Remote, but New Mexico / state eligibility not explicitly stated", "remote, but which states can apply is not stated"),
+           ("Salary seen only on a third-party source; not confirmed on employer posting", "salary only on a job site's copy"),
+           ("posting content not confirmed on employer/ATS source", "Posting only seen on a job site"),
+           ("Required vs preferred unclear for", "unclear whether required:")]
+OLD_PREFIX = {"salary: ": "Salary: ", "location: ": "Location: ", "cloud: ": "Salesforce Cloud: ",
+              "certifications: ": "Certifications: "}   # wording saved by searches before 2026-11-04
+LINK_WORDS = ("application route:", "application link", "link not checked", "closed:", "no longer open:")
+
+
+def _short(text: str, n: int = 100) -> str:
+    import re
+    for a, b in SHORTER:
+        text = text.replace(a, b)
+    text = re.sub(r"\s+", " ", text).strip()
+    return text if len(text) <= n else text[: n - 1].rstrip(" ,;(") + "…"
+
+
+def _check_table(rows) -> list[str]:
+    """Jobs that need checking: one short row each, easy to skim."""
+    from .models import Verification
+    from .verify import FEED_LISTED, plain_link_reason
+    if not rows:
+        return ["None.", ""]
+    L = ["| Job | Company | What to check | Link | First found |", "|---|---|---|---|---|"]
+    for r in rows:
+        ver = _j(r, "verification", {}) or {}
+        v = Verification(**{k: x for k, x in ver.items() if k in Verification.__dataclass_fields__}) if ver else None
+        link_reason = plain_link_reason(v) if ver.get("status") != "verified" else None
+        reasons = []
+        for x in (_j(r, "reasons", []) or []):
+            if x == link_reason or x.lower().startswith(LINK_WORDS):
+                continue   # the Link column already says this
+            for a, b in OLD_PREFIX.items():
+                if x.startswith(a):
+                    x = b + x[len(a):]
+            reasons.append(_short(x))
+        if link_reason:
+            reasons.append("Check the job is still open")
+        link = ver.get("apply_url") or r["canonical_url"] or ((_j(r, "source_urls", []) or [""])[0])
+        if ver.get("status") == "verified":
+            note = ("Himalayas listing, not opened" if (ver.get("detail") or "").startswith(FEED_LISTED)
+                    else "job site" if ver.get("apply_route") == "third_party" else "employer's site")
+        else:
+            note = LINK_NOTE.get(ver.get("status"), "not checked")
+        cell = lambda x: str(x or "").replace("|", "/").replace("\n", " ")
+        L.append(f"| {cell(r['title'])} | {cell(r['employer'])} | {cell('; '.join(reasons))} | "
+                 f"[Open]({link}) ({note}) | {(r['first_seen'] or '')[:10]} |")
+    return L + [""]
+
+
 def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report") -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
     rows = store.jobs("closed_at IS NULL")
@@ -98,7 +155,7 @@ def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report"
            "", "## Jobs that match all your rules", ""]
     md += [_job_md(r) + "\n" for r in q] or ["None.", ""]
     md += ["## Jobs that need checking", ""]
-    md += [_job_md(r) + "\n" for r in nv] or ["None.", ""]
+    md += _check_table(nv)
     md += ["## Hourly or contract jobs", "",
            "Pay is listed per hour or per contract, so the yearly salary rule was not applied. Check the pay yourself.", ""]
     md += [_job_md(r, detail=False) + "\n" for r in held] or ["None.", ""]
