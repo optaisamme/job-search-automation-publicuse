@@ -104,8 +104,8 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 2. **One numbered report per search**, for example `REPORT_001_2026-11-06_13-47_UTC.md`
    (search number, date, time in UTC). The newest is listed first. Each report also lists
    every job checked in that search and why it did or did not match.
-3. **Issues tab:** a search that finds something new also adds a post titled
-   **"Job search results: …"**. For email copies, click **Watch** (top right), then **All Activity**.
+3. **Issues tab:** a search that finds a new job matching all your rules also adds a post
+   titled **"Job search results: …"**. Near misses are only in the results folder. For email copies, click **Watch** (top right), then **All Activity**.
 4. **Actions tab:** green check = the search worked; click it to see its results. Red X =
    click it, then the red step, to read what to fix.
 5. The **first search** shows all jobs that already match. After that, each job is shown

@@ -30,10 +30,15 @@ def fenced(text: str) -> str:
 
 def main() -> int:
     out = json.loads((ROOT / "out/outbox.json").read_text())
-    draft = out.get("draft")
-    ids = out.get("notification_ids", [])
+    draft = out.get("issue_draft")            # new matching jobs only
+    ids = out.get("match_ids", [])
+    near_ids = out.get("near_miss_ids", [])
+    store = Store(ROOT / "data/jobs.sqlite")
+    # Near misses are not posted as issues. They are listed in the near-miss table on the results page.
+    for nid in near_ids:
+        store.mark_notification(nid, "delivered", channel="results_page", ref="JOB_SEARCH_RESULTS")
     if not draft:
-        print("No new qualifying jobs or near misses this run; nothing posted.")
+        print("No new matching jobs this run; no issue posted." + (" New near misses are on the results page." if near_ids else ""))
         return 0
     repo = os.environ["GITHUB_REPOSITORY"]
     token = os.environ["GITHUB_TOKEN"]
@@ -42,7 +47,6 @@ def main() -> int:
         f"https://api.github.com/repos/{repo}/issues", data=json.dumps(payload).encode(), method="POST",
         headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json",
                  "User-Agent": "job-search-automation"})
-    store = Store(ROOT / "data/jobs.sqlite")
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
             issue = json.loads(r.read())
@@ -56,7 +60,6 @@ def main() -> int:
     (ROOT / "out/issue_url.txt").write_text(issue.get("html_url") or "")
     print(f"Posted results: {issue.get('html_url')}")
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

@@ -625,3 +625,54 @@ def test_section7_company_never_dropped(root):
     from jobsearch import pipeline as pl
     prof, _ = pl.load_config(root)
     assert [b["board"] for b in pl.watched_boards(prof)[0]] == ["quiet"]
+
+
+def _load_publisher(root, monkeypatch, posted):
+    import importlib.util, pathlib, io
+    spec = importlib.util.spec_from_file_location("pub", pathlib.Path(__file__).parents[1] / "scripts/publish_github_issue.py")
+    pub = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(pub)
+    monkeypatch.setattr(pub, "ROOT", root)
+    monkeypatch.setenv("GITHUB_REPOSITORY", "owner/repo")
+    monkeypatch.setenv("GITHUB_TOKEN", "t")
+
+    class Resp(io.BytesIO):
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+
+    def fake_urlopen(req, timeout=30):
+        posted.append(json.loads(req.data))
+        return Resp(json.dumps({"number": 7, "html_url": "https://github.com/owner/repo/issues/7"}).encode())
+    monkeypatch.setattr(pub.urllib.request, "urlopen", fake_urlopen)
+    return pub
+
+
+def test_near_misses_are_not_posted_as_issues(root, monkeypatch):
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    run(root, c)  # baseline
+    st = Store(root / "data/jobs.sqlite")
+    first = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
+    for nid in first["notification_ids"]:
+        st.mark_notification(nid, "delivered", channel="test", ref="t")
+    bad_salary = GOOD_DESC.replace("$95,000 - $115,000", "$90,000 - $100,000")
+    setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Senior Salesforce Administrator", desc=bad_salary)])
+    run(root, c)
+    out = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
+    assert out["near_miss_ids"] and out["issue_draft"] is None
+    (root / "out").mkdir(exist_ok=True)
+    (root / "out/outbox.json").write_text(json.dumps(out))
+    posted = []
+    pub = _load_publisher(root, monkeypatch, posted)
+    assert pub.main() == 0 and posted == []                     # near miss only: no issue
+    st = Store(root / "data/jobs.sqlite")
+    statuses = {r["status"] for r in st.db.execute("SELECT status FROM notifications WHERE kind='near_miss'")}
+    assert statuses == {"delivered"}                            # shown on the results page instead
+    # a new matching job: the issue lists it, without a near-miss section
+    setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Senior Salesforce Administrator", desc=bad_salary),
+                    gh_job(3, "Salesforce Business Systems Analyst")])
+    run(root, c)
+    out = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
+    (root / "out/outbox.json").write_text(json.dumps(out))
+    assert pub.main() == 0 and len(posted) == 1
+    assert "Salesforce Business Systems Analyst" in posted[0]["body"] and "NEAR MISSES" not in posted[0]["body"]

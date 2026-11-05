@@ -62,11 +62,11 @@ def _current_sections(db) -> list[str]:
         L.append("None right now.")
     L += ["", f"## Near misses: failed exactly one of your rules ({len(near)})", ""]
     if near:
-        L += ["| Job | Company | Why it did not match | Link |", "|---|---|---|---|"]
+        L += ["| Job | Company | Why it did not match | Link | First found |", "|---|---|---|---|---|"]
         for r in near:
             p = _j(r["npayload"], {})
             L.append(f"| {_cell(r['title'])} | {_cell(r['employer'])} | {_cell('; '.join(_j(r['reasons'], []) or p.get('reasons', [])))} | "
-                     f"[Link]({p.get('link') or r['canonical_url'] or ''}) |")
+                     f"[Link]({p.get('link') or r['canonical_url'] or ''}) | {(r['first_seen'] or '')[:10]} |")
     else:
         L.append("None right now.")
     L += ["", f"## Jobs whose link could not be checked automatically ({len(look)})", "",
@@ -163,10 +163,12 @@ def write(root: Path) -> dict:
         R = [f"# REPORT {last['id']}: search run {last['finished_at'][:16].replace('T', ' ')} UTC", "",
              f"Checked {c.get('discovered', 0)} job listings; {c.get('title_matched', 0)} matched your job titles.", "",
              "## New in this search", ""]
-        draft = outbox.get("draft")
+        draft = outbox.get("issue_draft")   # new matching jobs only; near misses are in their own table below
         if draft:
             R.append(f"**{draft['subject']}**" + (f" (also posted: {issue_url})" if issue_url else ""))
             R += ["", "```text", draft["body"], "```", ""]
+        elif outbox.get("near_miss_ids"):
+            R += ["No new jobs match all your rules. New near misses are in the near-miss table below.", ""]
         elif c.get("title_matched", 0) == 0:
             R += ["Nothing new in this search.", "",
                   "**None of the listings matched your job titles.** To find more:", "",

@@ -445,7 +445,9 @@ def prepare_outbox(root: Path, db_path: Path, client: HttpClient | None = None, 
         ids.append(n["id"])
     store.commit()
     from .notify import render_digest
-    out = {"notification_ids": ids + near_ids, "held": held,
-           "draft": render_digest(items, near) if (items or near) else None}
+    out = {"notification_ids": ids + near_ids, "match_ids": ids, "near_miss_ids": near_ids, "held": held,
+           "draft": render_digest(items, near) if (items or near) else None,
+           # GitHub issues list only new matching jobs; near misses are shown on the results page
+           "issue_draft": render_digest(items, []) if items else None}
     store.db.close()
     return out
