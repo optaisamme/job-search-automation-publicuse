@@ -676,3 +676,31 @@ def test_near_misses_are_not_posted_as_issues(root, monkeypatch):
     (root / "out/outbox.json").write_text(json.dumps(out))
     assert pub.main() == 0 and len(posted) == 1
     assert "Salesforce Business Systems Analyst" in posted[0]["body"] and "NEAR MISSES" not in posted[0]["body"]
+
+
+def test_results_tables_have_first_found_and_newest_first(root):
+    from jobsearch import results_folder
+    c = FakeClient()
+    bad_salary = GOOD_DESC.replace("$95,000 - $115,000", "$90,000 - $100,000")
+    setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Salesforce Business Systems Analyst"),
+                    gh_job(3, "Senior Salesforce Administrator", desc=bad_salary),
+                    gh_job(4, "Lead Salesforce Administrator", desc=bad_salary)])
+    run(root, c)
+    st = Store(root / "data/jobs.sqlite")
+    for title, day in [("Salesforce Administrator", "2026-10-01"), ("Salesforce Business Systems Analyst", "2026-10-05"),
+                       ("Senior Salesforce Administrator", "2026-10-02"), ("Lead Salesforce Administrator", "2026-10-09")]:
+        st.db.execute("UPDATE jobs SET first_seen=? WHERE title=?", (day + "T00:00:00+00:00", title))
+    st.db.commit()
+    index = results_folder.write(root)["text"]
+
+    def table(heading):
+        sec = index[index.index(heading):]
+        sec = sec[:sec.find("\n## ", 3)]
+        rows = [l for l in sec.splitlines() if l.startswith("|")]
+        head = [x.strip() for x in rows[0].strip("|").split("|")]
+        return head, [r.strip("|").split("|")[head.index("First found")].strip() for r in rows[2:]]
+
+    head_q, q = table("## Jobs that match all your rules")
+    head_n, n = table("## Near misses")
+    assert "First found" in head_q and "First found" in head_n
+    assert q == ["2026-10-05", "2026-10-01"] and n == ["2026-10-09", "2026-10-02"]

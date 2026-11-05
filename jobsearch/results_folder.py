@@ -46,7 +46,7 @@ def _current_sections(db) -> list[str]:
     qualified = db.execute("SELECT * FROM jobs WHERE status='Qualified' AND closed_at IS NULL ORDER BY first_seen DESC").fetchall()
     near = db.execute(
         "SELECT j.*, n.payload AS npayload FROM notifications n JOIN jobs j ON j.id=n.job_id "
-        "WHERE n.kind='near_miss' AND j.closed_at IS NULL AND j.status!='Qualified' ORDER BY n.id DESC").fetchall()
+        "WHERE n.kind='near_miss' AND j.closed_at IS NULL AND j.status!='Qualified' ORDER BY j.first_seen DESC, n.id DESC").fetchall()
     look = needs_employer_posting(db)
     L = [f"## Jobs that match all your rules ({len(qualified)})", ""]
     if qualified:
