@@ -88,7 +88,7 @@ def section(sources: list[dict], started_at: str | None = None, finished_at: str
         from .adapters.websearch import CAREERS_DOMAINS, EXCLUDE_DOMAINS
         rows = ws.get("searches") or []
         if rows:
-            L += ["| # | Search words | Where | Pages dated within | Most results allowed | Results returned | Matches | Others |",
+            L += ["| # | Search words | Where | Pages dated within | Most links allowed | Links returned | Matches | Others |",
                   "|---|---|---|---|---|---|---|---|"]
             old = False
             for i, r in enumerate(rows, 1):
@@ -100,17 +100,18 @@ def section(sources: list[dict], started_at: str | None = None, finished_at: str
                          f"{r.get('max_results', '')} | {_cell(r.get('results', ''))} | {matches} | {others} |")
             L += ["", "1. **Pages dated within:** Tavily sends back only web pages it dates as published or updated "
                   "in that period. Pages it cannot date are sent back too.",
-                  "2. **Most results allowed:** the most web pages Tavily may send back for that search. It is a "
-                  "limit, not a minimum. This tool sets 20 for company careers pages (20 is the most Tavily allows) "
-                  "and 10 for the wider web. Each search uses 1 of the 1,000 free monthly searches either way.",
-                  "3. **Results returned:** the web pages Tavily sent back.",
-                  "4. **Matches:** jobs from that search that match all your rules.",
-                  "5. **Others:** other job postings from that search: a different job title, a rule not met, "
-                  "or a link that still needs checking.",
-                  "6. The rest were not single job postings (pages listing many jobs, or sites this tool "
-                  "already reads), or were already found by an earlier search in the table."]
+                  "2. **Most links allowed:** each search sends back a list of links, one per web page. This is "
+                  "the most links Tavily may send back: a limit, not a minimum. This tool sets 20 for company "
+                  "careers pages (20 is the most Tavily allows) and 10 for the wider web. Each search uses 1 of "
+                  "the 1,000 free monthly searches either way.",
+                  "3. **Links returned:** how many links Tavily sent back. Some are job postings. The rest are "
+                  "pages listing many jobs, sites this tool already reads, or links an earlier search in the "
+                  "table already found.",
+                  "4. **Matches:** job postings from those links that match all your rules.",
+                  "5. **Others:** the other job postings from those links: a different job title, a rule not met, "
+                  "or a link that still needs checking."]
             if old:
-                L.append("7. Searches before 2026-11-07 did not record Matches and Others.")
+                L.append("6. Searches before 2026-11-07 did not record Matches and Others.")
         else:
             L.append(_cell(ws.get("detail")) or "No searches were recorded.")
         L += ["", "Company careers pages searched: " + ", ".join(CAREERS_DOMAINS) + ".", "",

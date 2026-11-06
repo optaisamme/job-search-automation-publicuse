@@ -641,7 +641,7 @@ def test_report_lists_sites_and_web_search_criteria(root, monkeypatch):
     for text in ("## Where this search looked", "| Web search (Tavily) |", "| Company careers pages |", "| Remote OK |",
                  "### Web search (Tavily) criteria", '"Salesforce Administrator" remote', "company careers pages",
                  "the wider web", "last 30 days", "Company careers pages read (1):** Acme Nonprofit",
-                 "| Pages dated within | Most results allowed | Results returned | Matches | Others |", "20 is the most Tavily allows",
+                 "| Pages dated within | Most links allowed | Links returned | Matches | Others |", "20 is the most Tavily allows",
                  "**Why only part of some sites is read:**", "this search took about 1 minute",
                  "GitHub stops a search after 60 minutes"):
         assert text in md, text
@@ -816,7 +816,7 @@ def test_where_section_shows_limits_time_and_web_search_split():
     assert "| 1 | \"Data Analyst\" remote | company careers pages | last 30 days | 20 | 12 | 2 | 3 |" in md
     assert "| 10 | 10 | not recorded | not recorded |" in md and "did not record Matches and Others" in md
     assert "Up to |" not in md and "Kept as jobs to check" not in md and "Results asked for" not in md
-    assert "| Pages dated within | Most results allowed | Results returned | Matches | Others |" in md and "It is a limit, not a minimum" in md
+    assert "| Pages dated within | Most links allowed | Links returned | Matches | Others |" in md and "a limit, not a minimum" in md
     assert "this search took" not in "\n".join(section(sources))   # no times known: no time shown
 
 
