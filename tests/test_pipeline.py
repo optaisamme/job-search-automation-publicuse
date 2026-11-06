@@ -894,3 +894,11 @@ def test_results_page_near_miss_reason_is_short():
          "(per third-party listing; employer posting not confirmed)")
     assert near_miss_reason(x) == "Salary: $60,000-$70,000 (too low) (job site's copy)"
     assert near_miss_reason("Location: Allowed-state list omits New Mexico (alabama, utah)") == "Location: Allowed-state list omits New Mexico"
+
+
+def test_company_list_explains_how_companies_are_added_and_dropped():
+    from jobsearch.sources_summary import section
+    md = "\n".join(section([{"name": "ats_watchlist", "state": "ok", "fetched": 5, "matched": 1, "companies": ["Acme"]}]))
+    assert "**Company careers pages read (1):** Acme." in md
+    assert "a company is added when a job matching your job titles or skills is found" in md
+    assert "dropped after more than 5 searches in a row with no matching job" in md
