@@ -21,7 +21,9 @@ class TitleMatcher:
                 self.families.append({"track": t["track"], "family": t["family"], "include": pats,
                                       "require_any": [w.lower() for w in t.get("require_any", [])]})
         tr = profile.get("title_rules", {})
-        self.exclude = [_c(r"\b" + re.escape(w) + r"\b") for w in tr.get("exclude_plain", [])]
+        # title words to skip: whole words or phrases, title only (the posting text is never checked)
+        self.exclude = [_c(r"\b" + r"\s+".join(map(re.escape, w.split())) + r"\b")
+                        for w in tr.get("exclude_plain", []) if isinstance(w, str) and w.strip()]
         self.must_mention = [w.lower() for w in tr.get("must_mention", [])]
 
     def match_title(self, title: str) -> bool:

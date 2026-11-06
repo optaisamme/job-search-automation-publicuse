@@ -825,3 +825,18 @@ def test_skills_matching_off_by_default_in_template():
     import tomllib, pathlib
     s = tomllib.load(open(pathlib.Path(__file__).parents[1] / "EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml", "rb"))
     assert s["skills_matching"]["on"] == "no" and s["skills_matching"]["required_keywords"] == []
+
+
+def test_title_words_to_skip_check_the_title_only():
+    from jobsearch.titles import TitleMatcher
+    m = TitleMatcher({"titles": [{"track": "", "family": "G1", "plain_titles": ["Program Manager"], "require_any": []}],
+                      "title_rules": {"exclude_plain": ["Engineer", "Major Gifts", "Intern"]},
+                      "skills_matching": {"on": "yes", "required_keywords": ["Salesforce"], "minimum_skills_matched": 1}},
+                     [{"name": "Reports", "keywords": ["report"]}])
+    body = "You will work closely with our Engineer team and the Major Gifts office."
+    assert m.match("Program Manager", body)                         # words in the posting text are ignored
+    assert m.match("Program Manager, Major Gifts", "") is None       # phrase in the title: skipped
+    assert m.match("Program Manager - Major   Gifts", "") is None    # extra spaces still match
+    assert m.match("Internal Program Manager", "")                   # whole words only
+    assert m.match("Major Gifts Officer", "Salesforce reports") is None   # also skips skills matches
+    assert m.match("Gifts Officer", "Salesforce reports")            # ...but other titles can still be skills matches

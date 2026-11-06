@@ -48,8 +48,8 @@ description_must_mention_one_of = []
    a. Section 2: remote jobs only (`remote_only = "yes"` to start; change to `"no"` to also
       get hybrid and on-site jobs in your state), and your state (rejects jobs that exclude it).
    b. Section 3: salary minimums (`0` = no minimum).
-   c. Section 4: words the description must mention, title words to skip, and the
-      certification check.
+   c. Section 4: words the description must mention, title words to skip (only the job
+      title is checked, never the rest of the posting), and the certification check.
    d. Section 5: requirement rules. Fill in a rule's name and terms, then change
       `on = "no"` to `on = "yes"`:
 

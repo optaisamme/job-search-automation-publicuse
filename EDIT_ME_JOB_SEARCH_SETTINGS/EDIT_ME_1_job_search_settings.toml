@@ -117,8 +117,18 @@ range_end_must_be_above = 0
 # EXAMPLE:  description_must_mention = ["Salesforce"]
 description_must_mention = []
 
-# Skip any job whose title contains one of these words.
-# EXAMPLE:  exclude_titles_containing = ["Developer", "Engineer", "Intern"]
+# ---- TITLE WORDS TO SKIP ----
+# Skip any job whose TITLE contains one of these words or phrases.
+#   - Only the job title is checked. Words in the rest of the posting are
+#     ignored, so "Engineer" skips "Data Engineer" but not an analyst job
+#     that mentions working with engineers.
+#   - Capitalization does not matter.
+#   - Whole words only: "Intern" skips "Marketing Intern" but not
+#     "Internal Communications" or "Internship" (add "Internship" too).
+#   - A phrase like "Major Gifts" skips only titles with those words together.
+#   - Also applies to skills-based matches (section 8).
+# Type each word or phrase in quotes, commas between, inside the brackets.
+# EXAMPLE:  exclude_titles_containing = ["Developer", "Engineer", "Intern", "Internship", "Major Gifts"]
 exclude_titles_containing = []
 
 # Certifications (any field, for example "Food Handler", "CPR", "PMP").
