@@ -164,7 +164,6 @@ def write(root: Path) -> dict:
     last = db.execute("SELECT * FROM runs WHERE finished_at IS NOT NULL ORDER BY id DESC LIMIT 1").fetchone()
     outbox_p = root / "out/outbox.json"
     outbox = _j(outbox_p.read_text(), {}) if outbox_p.exists() else {}
-    issue_url = (root / "out/issue_url.txt").read_text().strip() if (root / "out/issue_url.txt").exists() else ""
     current = _current_sections(db)
 
     report_file = None
@@ -176,10 +175,9 @@ def write(root: Path) -> dict:
              + (f" and {c['skills_matched']} matched your skills" if c.get("skills_matched") else "") + ".", "",
              "## New in this search", ""]
         from .report import new_in_run, new_jobs_table
-        ids, issue, near_new = new_in_run(db, last["id"])
+        ids, near_new = new_in_run(db, last["id"])
         if ids:
-            R.append(f"**{len(ids)} new job{'s' if len(ids) != 1 else ''} that match all your rules**"
-                     + (f" ([also posted as issue #{issue}](../../../issues/{issue}))" if issue.isdigit() else ""))
+            R.append(f"**{len(ids)} new job{'s' if len(ids) != 1 else ''} that match all your rules**")
             R += [""] + new_jobs_table(db, ids)
         elif near_new:
             R += ["No new jobs match all your rules. New near misses are in the near-miss table below.", ""]

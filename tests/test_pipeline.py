@@ -229,19 +229,14 @@ def test_notification_retry_without_duplicates(root):
     out = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
     assert len(out["notification_ids"]) == 1 and out["draft"]["subject"].startswith("Job search results: 1 matching job")
     nid = out["notification_ids"][0]
-    st = Store(root / "data/jobs.sqlite")
-    st.mark_notification(nid, "failed", error="gmail 500")
     out2 = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
-    assert out2["notification_ids"] == [nid]  # retried
-    st.mark_notification(nid, "delivered", channel="gmail_draft", ref="draft-1")
-    st.mark_notification(nid, "delivered", channel="gmail_draft", ref="draft-1")  # idempotent
-    out3 = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
-    assert out3["notification_ids"] == [] and out3["draft"] is None
+    assert out2["notification_ids"] == [] and out2["draft"] is None   # recorded as shown once; never repeated
+    st = Store(root / "data/jobs.sqlite")
     import pytest
     with pytest.raises(ValueError):
         st.mark_notification(nid, "failed")
     run(root, c)
-    assert len(notifs(root)) == 2  # still one baseline + one delivered
+    assert len(notifs(root)) == 2  # still one baseline + one shown
 
 
 def test_presend_reverification_holds_closed_job(root):
@@ -576,16 +571,6 @@ def test_browser_helper_gets_no_secrets(monkeypatch):
     assert env["JOBSEARCH_UA"] == "job-search-automation/1.0" and "PATH" in env
 
 
-def test_issue_body_cannot_be_broken_out_of():
-    import importlib.util, pathlib
-    spec = importlib.util.spec_from_file_location("pub", pathlib.Path(__file__).parents[1] / "scripts/publish_github_issue.py")
-    pub = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(pub)
-    body = pub.fenced("Data Analyst ```\n@someone ![x](https://example.com/x.png)")
-    first = body.split("\n", 1)[0]
-    assert first == "````text" and body.endswith("\n````")
-
-
 def test_found_company_dropped_after_more_than_5_searches_without_match(root):
     (root / "data/boards.json").write_text(json.dumps({"greenhouse": [
         {"board": "acme", "employer": "Acme Nonprofit", "searches_without_match": 5},
@@ -613,57 +598,6 @@ def test_section7_company_never_dropped(root):
     from jobsearch import pipeline as pl
     prof, _ = pl.load_config(root)
     assert [b["board"] for b in pl.watched_boards(prof)[0]] == ["quiet"]
-
-
-def _load_publisher(root, monkeypatch, posted):
-    import importlib.util, pathlib, io
-    spec = importlib.util.spec_from_file_location("pub", pathlib.Path(__file__).parents[1] / "scripts/publish_github_issue.py")
-    pub = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(pub)
-    monkeypatch.setattr(pub, "ROOT", root)
-    monkeypatch.setenv("GITHUB_REPOSITORY", "owner/repo")
-    monkeypatch.setenv("GITHUB_TOKEN", "t")
-
-    class Resp(io.BytesIO):
-        def __enter__(self): return self
-        def __exit__(self, *a): return False
-
-    def fake_urlopen(req, timeout=30):
-        posted.append(json.loads(req.data))
-        return Resp(json.dumps({"number": 7, "html_url": "https://github.com/owner/repo/issues/7"}).encode())
-    monkeypatch.setattr(pub.urllib.request, "urlopen", fake_urlopen)
-    return pub
-
-
-def test_near_misses_are_not_posted_as_issues(root, monkeypatch):
-    c = FakeClient()
-    setup_board(c, [gh_job(1, "Salesforce Administrator")])
-    run(root, c)  # baseline
-    st = Store(root / "data/jobs.sqlite")
-    first = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
-    for nid in first["notification_ids"]:
-        st.mark_notification(nid, "delivered", channel="test", ref="t")
-    bad_salary = GOOD_DESC.replace("$95,000 - $115,000", "$90,000 - $100,000")
-    setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Senior Salesforce Administrator", desc=bad_salary)])
-    run(root, c)
-    out = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
-    assert out["near_miss_ids"] and out["issue_draft"] is None
-    (root / "out").mkdir(exist_ok=True)
-    (root / "out/outbox.json").write_text(json.dumps(out))
-    posted = []
-    pub = _load_publisher(root, monkeypatch, posted)
-    assert pub.main() == 0 and posted == []                     # near miss only: no issue
-    st = Store(root / "data/jobs.sqlite")
-    statuses = {r["status"] for r in st.db.execute("SELECT status FROM notifications WHERE kind='near_miss'")}
-    assert statuses == {"delivered"}                            # shown on the results page instead
-    # a new matching job: the issue lists it, without a near-miss section
-    setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Senior Salesforce Administrator", desc=bad_salary),
-                    gh_job(3, "Salesforce Business Systems Analyst")])
-    run(root, c)
-    out = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
-    (root / "out/outbox.json").write_text(json.dumps(out))
-    assert pub.main() == 0 and len(posted) == 1
-    assert "Salesforce Business Systems Analyst" in posted[0]["body"] and "NEAR MISSES" not in posted[0]["body"]
 
 
 def test_results_tables_have_first_found_and_newest_first(root):
@@ -883,3 +817,29 @@ def test_where_section_shows_limits_time_and_web_search_split():
     assert "| 10 | 10 | not recorded | not recorded (4 kept in all) |" in md
     assert "Up to |" not in md and "Kept as jobs to check" not in md
     assert "this search took" not in "\n".join(section(sources))   # no times known: no time shown
+
+
+def test_results_are_never_posted_as_issues(root):
+    """Results go only to the results page. No workflow or script posts them as GitHub issues."""
+    import pathlib
+    repo = pathlib.Path(__file__).resolve().parents[1]
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    run(root, c)
+    bad_salary = GOOD_DESC.replace("$95,000 - $115,000", "$90,000 - $100,000")
+    setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Senior Salesforce Administrator", desc=bad_salary),
+                    gh_job(3, "Salesforce Business Systems Analyst")])
+    run(root, c)
+    out = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
+    assert out["match_ids"] and out["near_miss_ids"] and "issue_draft" not in out
+    st = Store(root / "data/jobs.sqlite")
+    shown = st.db.execute("SELECT DISTINCT channel FROM notifications WHERE status='delivered'").fetchall()
+    assert {r["channel"] for r in shown} == {"results_page"}
+    assert not (repo / "scripts/publish_github_issue.py").exists()
+    for wf in (repo / ".github/workflows").glob("*.yml"):
+        text = wf.read_text()
+        if "jobsearch run" in text:   # workflows that search for jobs
+            assert "issues: write" not in text and "publish_github_issue" not in text, wf.name
+    for f in list((repo / "jobsearch").rglob("*.py")) + list((repo / "scripts").glob("*.py")):
+        if f.name != "apply_questionnaire.py":   # the questionnaire only replies on its own settings issue
+            assert "/issues" not in f.read_text(), f

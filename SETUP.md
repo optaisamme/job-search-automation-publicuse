@@ -128,8 +128,7 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 2. **One numbered report per search**, for example `REPORT_001_2026-11-06_13-47_UTC.md`
    (search number, date, time in UTC). The newest is listed first. Each report also lists
    every job checked in that search and why it did or did not match.
-3. **Issues tab:** a search that finds a new job matching all your rules also adds a post
-   titled **"Job search results: …"**. Near misses are only in the results folder. For email copies, click **Watch** (top right), then **All Activity**.
+3. Results are only in this folder. Nothing is posted under the **Issues** tab.
 4. **Actions tab:** green check = the search worked; click it to see its results. Red X =
    click it, then the red step, to read what to fix.
 5. The **first search** shows all jobs that already match. After that, each job is shown
@@ -184,9 +183,9 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 
 1. Edit the EDIT_ME file and commit. Changes take effect on the next run (weekly if turned on, or start
    one now with [HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md)).
-2. Jobs still listed online are re-checked: a job that now passes is posted as
+2. Jobs still listed online are re-checked: a job that now passes is shown as
    **NEWLY VERIFIED**; one that now fails moves to **Rejected** in the report. Jobs
-   already posted are never posted again.
+   already shown as new are never shown as new again.
 3. To start over completely, delete `data/jobs.sqlite`; the next run is treated as a first
    run again.
 

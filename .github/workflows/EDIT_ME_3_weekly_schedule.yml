@@ -81,7 +81,6 @@ jobs:
     timeout-minutes: 60
     permissions:
       contents: write   # save results back to this repository (used only in the last step)
-      issues: write     # post results as an issue
     steps:
       - uses: actions/checkout@v5
         with:
@@ -107,11 +106,6 @@ jobs:
 
       - name: Re-check links and prepare results
         run: python -m jobsearch outbox prepare
-
-      - name: Post results as an issue
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python scripts/publish_github_issue.py
 
       - name: Update JOB_SEARCH_RESULTS folder and show results on this page
         if: always()

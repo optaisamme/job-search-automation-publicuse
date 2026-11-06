@@ -257,11 +257,10 @@ def new_jobs_table(db, notification_ids) -> list[str]:
     return L + [""]
 
 
-def new_in_run(db, run_id) -> tuple[list[int], str, int]:
-    """From the saved job database: (new matching-job alert ids, issue number they were posted to, new near misses)
-    for one search. Uses only saved data, so the results page is the same wherever it is rebuilt."""
-    rows = db.execute("SELECT id, kind, status, channel, channel_ref FROM notifications WHERE run_id = ?", (run_id,)).fetchall()
+def new_in_run(db, run_id) -> tuple[list[int], int]:
+    """From the saved job database: (new matching-job alert ids, number of new near misses) for one search.
+    Uses only saved data, so the results page is the same wherever it is rebuilt."""
+    rows = db.execute("SELECT id, kind, status FROM notifications WHERE run_id = ?", (run_id,)).fetchall()
     ids = [r["id"] for r in rows if r["kind"] != "near_miss" and r["status"] not in ("cancelled", "held", "suppressed_baseline")]
-    issue = next((r["channel_ref"] for r in rows if r["kind"] != "near_miss" and r["channel"] == "github_issue" and r["channel_ref"]), "")
     near = sum(1 for r in rows if r["kind"] == "near_miss")
-    return ids, issue, near
+    return ids, near

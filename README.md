@@ -57,11 +57,10 @@ Open the **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)** folder.
 
 Also:
 
-1. **Issues tab:** when a search finds a new job that matches all your rules, it adds a post
-   titled "Job search results: …". Near misses are not posted there; they are in the results
-   folder. To get these by email, click **Watch** (top right), then **All Activity**.
-2. **Actions tab:** shows whether a search worked (green check) or needs a fix (red X).
+1. **Actions tab:** shows whether a search worked (green check) or needs a fix (red X).
    Click a finished search to see its results right on that page.
+2. Results are never posted under the **Issues** tab. The Issues tab is used only for the
+   setup questionnaire.
 
 Times are in UTC. Mountain Time is UTC minus 7 hours in winter and minus 6 in summer.
 
@@ -206,8 +205,8 @@ links on the results page for those.
    own job feed listed it during the search and its closing date has not passed. These
    jobs are marked **"third-party site, link not checked."**
 6. **Compares each job with your experience.**
-7. **Saves the results** in [JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS) and posts new matching
-   jobs under **Issues**.
+7. **Saves the results** in [JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS) only. Nothing is posted
+   under **Issues**.
 
 The tool never applies to jobs or contacts employers. It does not search popular boards
 such as LinkedIn, Indeed, Handshake or Idealist: they have no public data feed, require

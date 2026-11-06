@@ -46,7 +46,7 @@ results, followed by one numbered, dated report per search:
 5. Popular job boards to search yourself: one-click searches for your job titles.
 6. Companies checked every search.
 
-New matching jobs are also posted under the **Issues** tab. Near misses are only in the folder.
+Results are only in this folder. Nothing is posted under the **Issues** tab.
 
 ## What happens after you save
 
@@ -55,12 +55,12 @@ New matching jobs are also posted under the **Issues** tab. Near misses are only
 2. The first step of each run, **Check settings files**, lists exactly what is **ON** and
    **OFF**. If something is typed wrong, or no job title is filled in, the run stops there
    and says what to fix. Click the red X on the Actions tab to read the message.
-3. Results are saved in the **JOB_SEARCH_RESULTS** folder, and new matching jobs are also
-   posted under the **Issues** tab.
+3. Results are saved in the **JOB_SEARCH_RESULTS** folder only. Nothing is posted under the
+   **Issues** tab.
 4. Jobs still listed online are re-checked every run against your current settings:
-   a. A job that now passes because of your change is posted as **NEWLY VERIFIED**.
+   a. A job that now passes because of your change is shown as **NEWLY VERIFIED**.
    b. A job that now fails moves to the "did not match" part of the next report.
-   c. A job already posted to you is never posted again.
+   c. A job already shown as new is never shown as new again.
 5. The very first successful run posts all jobs that already match in one
    "Job search results (first run)" post. Later runs post only new jobs.
 
