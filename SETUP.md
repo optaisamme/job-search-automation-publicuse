@@ -128,10 +128,9 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 2. **One numbered report per search**, for example `REPORT_001_2026-11-06_13-47_UTC.md`
    (search number, date, time in UTC). The newest is listed first. Each report also lists
    every job checked in that search and why it did or did not match.
-3. Results are only in this folder. Nothing is posted under the **Issues** tab.
-4. **Actions tab:** green check = the search worked; click it to see its results. Red X =
+3. **Actions tab:** green check = the search worked; click it to see its results. Red X =
    click it, then the red step, to read what to fix.
-5. The **first search** shows all jobs that already match. After that, each job is shown
+4. The **first search** shows all jobs that already match. After that, each job is shown
    as new only once. A search with nothing new still adds a report to the folder.
 
 ## Step 6: Optional changes
