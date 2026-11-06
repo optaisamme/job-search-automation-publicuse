@@ -1,0 +1,158 @@
+name: Job search setup
+description: Answer these questions to set up or change your job search. No coding or file editing needed.
+title: "Job search setup"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Fill in what you know, then click "Submit new issue" at the bottom.**
+        Your answers are saved to your settings within a minute or two, and a reply here tells you what changed.
+
+        - **Leave a question empty** to keep what you have now (the first time, empty means "off").
+        - **Type `none`** to clear a setting.
+        - For lists, put **one item per line**.
+
+        Only you (the owner of this copy) and people you added as collaborators can change these settings.
+  - type: textarea
+    attributes:
+      label: Job titles to look for
+      description: One per line. "Senior", "Sr." or "Lead" versions are found automatically, and the words can be in any order.
+      placeholder: |
+        Program Manager
+        Program Director
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: "More job titles: a second kind of job"
+      description: Optional. One per line.
+  - type: textarea
+    attributes:
+      label: "More job titles: a third kind of job"
+      description: Optional. One per line.
+  - type: dropdown
+    attributes:
+      label: Remote jobs only?
+      options:
+        - Yes, remote jobs only
+        - No, also hybrid and on-site jobs in my state
+  - type: input
+    attributes:
+      label: Your state
+      description: Full name. Jobs that say they cannot hire in your state are left out.
+      placeholder: New Mexico
+  - type: input
+    attributes:
+      label: Your state's two-letter abbreviation
+      placeholder: NM
+  - type: textarea
+    attributes:
+      label: Cities where you could work on site
+      description: Optional. One per line. Used when "Remote jobs only?" is No.
+  - type: input
+    attributes:
+      label: Lowest single salary you would accept
+      description: Numbers only, per year. Used when a job lists one salary. 0 = no minimum.
+      placeholder: "100000"
+  - type: input
+    attributes:
+      label: Lowest acceptable start of a salary range
+      description: Numbers only. A range like $85,000-$110,000 must start at or above this. 0 = no minimum.
+      placeholder: "90000"
+  - type: input
+    attributes:
+      label: A salary range must end above
+      description: Numbers only. A range must end above this. 0 = no minimum.
+      placeholder: "100000"
+  - type: textarea
+    attributes:
+      label: Words the job description must mention
+      description: Optional. One per line. A job must mention at least one of them.
+  - type: textarea
+    attributes:
+      label: Title words to skip
+      description: Optional. One per line. Only the job TITLE is checked, never the rest of the posting. Whole words; capitalization does not matter.
+      placeholder: |
+        Intern
+        Engineer
+  - type: dropdown
+    attributes:
+      label: Check certification requirements?
+      description: If Yes, jobs that require a certification you do not list below are left out.
+      options:
+        - "No"
+        - "Yes"
+  - type: textarea
+    attributes:
+      label: Certifications you have, or could get before being hired
+      description: Optional. One per line.
+  - type: textarea
+    attributes:
+      label: Companies to watch
+      description: Optional. Links to company job pages on Greenhouse, Lever, Ashby or SmartRecruiters, one per line. Every job there is checked each search.
+      placeholder: https://job-boards.greenhouse.io/examplecompany
+  - type: dropdown
+    attributes:
+      label: Skills-based matching
+      description: Also find jobs with OTHER titles when the listing has your required keywords and enough of your skills (listed further down).
+      options:
+        - "Off"
+        - "On"
+  - type: textarea
+    attributes:
+      label: "Skills-based matching: required keywords"
+      description: One per line. These words must appear in the job listing.
+      placeholder: |
+        Salesforce
+        NPSP
+  - type: dropdown
+    attributes:
+      label: "Skills-based matching: how many keywords must appear?"
+      options:
+        - All keywords must appear
+        - At least one keyword must appear
+  - type: input
+    attributes:
+      label: "Skills-based matching: how many of your skills must the posting mention?"
+      description: A number. 3 is a good start.
+      placeholder: "3"
+  - type: textarea
+    attributes:
+      label: Your skills
+      description: 'One skill per line, as "Skill name: words a job posting might use". Only things you have actually done. This replaces your current skill list.'
+      placeholder: |
+        Reports and dashboards: report, dashboard
+        Data cleanup: data quality, dedup, import
+  - type: input
+    attributes:
+      label: Years of experience in your field
+      description: A number. Jobs asking for more years are flagged (never removed).
+  - type: textarea
+    attributes:
+      label: Certifications you hold
+      description: Optional. One per line.
+  - type: dropdown
+    attributes:
+      label: Automatic weekly searches
+      description: On = a search runs by itself once a week.
+      options:
+        - "Off"
+        - "On"
+  - type: dropdown
+    attributes:
+      label: Day for automatic weekly searches
+      description: The search starts around 13:47 UTC (about 6:47 AM Mountain in winter, 7:47 AM in summer).
+      options:
+        - Monday
+        - Tuesday
+        - Wednesday
+        - Thursday
+        - Friday
+        - Saturday
+        - Sunday
+  - type: dropdown
+    attributes:
+      label: Start a search right after saving?
+      options:
+        - "Yes"
+        - "No"

@@ -24,7 +24,7 @@ grey **Run workflow** button and the green **Run workflow** button.
 | Step | What you do | Where | Time |
 |---|---|---|---|
 | **1. Make your own copy** | Copy this project into your own GitHub account ([picture of where to click](SETUP.md#step-1-make-your-own-copy)) | [SETUP.md](SETUP.md), Step 1 | 2 minutes |
-| **2. Fill in your settings** | Type your job titles and rules into one file | [EDIT_ME_JOB_SEARCH_SETTINGS](EDIT_ME_JOB_SEARCH_SETTINGS) folder, file **EDIT_ME_1** | 10 minutes |
+| **2. Answer the setup questionnaire** | In **your copy**: [open the questionnaire](../../issues/new?template=job_search_setup.yml) (**Issues** tab, **New issue**, **Job search setup**), answer the questions, click **Submit**. Your settings are saved for you | [SETUP.md](SETUP.md), Step 2 | 10 minutes |
 | **3. Run a search** | **Only after steps 1 and 2.** In **your copy**: **Actions** tab, then **Run job search**, then **Run workflow** (twice). Automatic weekly searches start **off** (see below) | [HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md) | 1 minute to start, 10 to 20 minutes to finish |
 | **4. Read your results** | Open the results folder | **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)** folder | Any time |
 
@@ -75,16 +75,19 @@ Only files whose names start with **EDIT_ME**. Do not change any other file.
 |---|---|---|
 | [`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml`](EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml) | **Yes:** type at least one job title | Which jobs are found and which are left out: job titles, remote only or not, your state, salary, certifications, your own rules, companies to watch, skills-based matching |
 | [`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml`](EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml) | No | Your skills, used to show how well each job fits you. It never removes a job. With skills-based matching on (file 1, section 8), it also finds jobs with other titles |
-| [`.github/workflows/EDIT_ME_3_weekly_schedule.yml`](.github/workflows/EDIT_ME_3_weekly_schedule.yml) | No | **Automatic weekly searches. They start OFF.** To turn them on, change `AUTOMATIC_WEEKLY_SEARCH: "off"` to `"on"`. Also sets the day and time (default: Fridays) |
+| [`.github/workflows/EDIT_ME_3_weekly_schedule.yml`](.github/workflows/EDIT_ME_3_weekly_schedule.yml) | No: you no longer need to edit it | Runs the searches. Automatic weekly searches are turned on in the questionnaire or settings section 9 |
 
 Both settings files start **empty**: nothing is searched or filtered until you fill them in.
 
 **Also optional:** a free web search key. It is added in **Settings**, not in a file. See [Other optional edits: a free web search key](#other-optional-edits-a-free-web-search-key).
 
+**Easier than editing files:** the [setup questionnaire](../../issues/new?template=job_search_setup.yml) fills in files 1 and 2 for you
+(Issues tab, New issue, Job search setup). Blank answers keep your current settings; type `none`
+to clear one. Submit it again any time to change something.
+
 **Automatic weekly searches are OFF to start.** A search only runs when you start one
-yourself. If you want a search to run by itself every week, open file 3 above
-(`EDIT_ME_3_weekly_schedule.yml`) and change `AUTOMATIC_WEEKLY_SEARCH: "off"` to
-`AUTOMATIC_WEEKLY_SEARCH: "on"`. The steps are written at the top of that file.
+yourself. To have one run by itself every week, choose **On** and a day in the questionnaire, or
+set section 9 of file 1 (`[automatic_weekly_search]`: `on = "yes"`, `day = "Friday"`).
 
 ### How to change a file
 

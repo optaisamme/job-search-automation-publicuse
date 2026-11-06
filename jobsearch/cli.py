@@ -150,6 +150,14 @@ def main(argv=None) -> int:
         if sm.active and sm.minimum and not sm.skills:
             print("Note: skills-based matching is on, but your experience file (EDIT_ME_2) has no skills yet, "
                   "so it will not find any jobs until you add some.")
+        import tomllib as _t
+        from .pipeline import SETTINGS_DIR
+        try:
+            wk = _t.load(open(root / SETTINGS_DIR / "EDIT_ME_1_job_search_settings.toml", "rb")).get("automatic_weekly_search", {})
+        except (OSError, ValueError):
+            wk = {}
+        wk_on = str(wk.get("on", "no")).strip().lower() in ("yes", "y", "true", "on", "1")
+        print("Automatic weekly searches (section 9): " + (f"ON, every {str(wk.get('day', 'Friday')).capitalize()}" if wk_on else "OFF"))
         print(f"Companies to watch (section 7): {', '.join(b['board'] for b in watched) or 'none added (optional: only for companies whose careers page runs on Greenhouse, Lever, Ashby or SmartRecruiters; all job sites are still searched)'}")
         if bad:
             for link in bad:

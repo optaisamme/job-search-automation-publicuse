@@ -1,7 +1,7 @@
 # How to run a search right now
 
 Automatic weekly searches start **off**, so this is how you get results: start a search
-yourself, any time. (To have searches run by themselves every week, see SETUP.md, Step 6.)
+yourself, any time. (To have searches run by themselves every week, choose On in the setup questionnaire, or see SETUP.md, Step 6.)
 It takes about 10 to 20 minutes and runs on GitHub, so you can close the page while it works.
 
 ## Before you start: do these 2 things first

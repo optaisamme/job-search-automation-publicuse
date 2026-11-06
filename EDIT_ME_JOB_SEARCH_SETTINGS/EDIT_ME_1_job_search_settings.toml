@@ -302,3 +302,16 @@ on = "no"
 required_keywords = []
 required_keywords_rule = "all"
 minimum_skills_matched = 3
+
+
+# ---------------------------------------------------------------------
+#  9. AUTOMATIC WEEKLY SEARCHES  (optional: starts OFF)
+# ---------------------------------------------------------------------
+#  OFF: a search runs only when you start one yourself.
+#  ON:  a search also runs by itself once a week, on the day you choose,
+#       around 13:47 UTC (about 6:47 AM Mountain in winter, 7:47 AM in summer).
+#  You can also set this in the "Job search setup" questionnaire (Issues tab).
+#  day = Monday, Tuesday, Wednesday, Thursday, Friday, Saturday or Sunday.
+[automatic_weekly_search]
+on = "no"
+day = "Friday"

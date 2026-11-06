@@ -25,7 +25,21 @@ on. Everything is edited on the GitHub website.
 Every file you edit has **EDIT_ME** at the start of its name. Do not edit other files.
 The [EDIT_ME_JOB_SEARCH_SETTINGS folder page](EDIT_ME_JOB_SEARCH_SETTINGS) lists them.
 
-## Step 2: Set your search rules (EDIT ME file 1, required)
+## Step 2: Set your search rules (required)
+
+**Easiest: the setup questionnaire.**
+
+1. In **your copy**, click the **Issues** tab, then **New issue**, then **Job search setup**
+   (or use this link while in your copy: [open the questionnaire](../../issues/new?template=job_search_setup.yml)).
+2. Answer the questions. Only "Job titles to look for" is required. Leave a question empty to
+   keep the current setting; type `none` to clear one.
+3. Click **Submit new issue**. Within a minute or two, a reply on the issue lists what was saved,
+   or explains what to fix (edit the issue to fix it; it is checked again).
+4. If there is no **Issues** tab: click **Settings**, then **General**, scroll to **Features**,
+   and tick **Issues**.
+5. Only you, and people you added as collaborators, can change your settings this way.
+
+**Or edit the settings file yourself** (EDIT ME file 1), as described below.
 
 `EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml` starts empty: no titles, no filters. You fill in the blanks: type
 between the quotes `""` or the brackets `[]` on lines that do NOT start with `#`.
@@ -117,15 +131,14 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 
 ## Step 6: Optional changes
 
-1. **Turn on automatic weekly searches (EDIT ME file 3; they start OFF):**
-   a. Open `.github/workflows/EDIT_ME_3_weekly_schedule.yml` and click the pencil icon.
-   b. Change `AUTOMATIC_WEEKLY_SEARCH: "off"` to `AUTOMATIC_WEEKLY_SEARCH: "on"` (keep the quote marks).
-   c. Commit changes. A search now runs by itself every week.
-   d. To change the day or time, edit the line `cron: "47 13 * * 5"` in the same file. The
-      format is `minute hour * * day-of-week`, in UTC time (Mountain Time is UTC minus 7 in
-      winter, minus 6 in summer; day 5 = Friday). Example: `"0 15 * * 1"` = Mondays 15:00 UTC.
-   e. While it is off, GitHub still starts the file at the weekly time, but it stops after a few
-      seconds without searching. The Actions tab shows those as short runs with the search skipped.
+1. **Turn on automatic weekly searches (they start OFF):**
+   a. In the setup questionnaire, choose **On** for "Automatic weekly searches" and pick a day.
+      Or, in settings file 1, section 9, set `on = "yes"` and `day = "Monday"` (any day).
+   b. The search starts around 13:47 UTC on that day (about 6:47 AM Mountain in winter, 7:47 AM
+      in summer).
+   c. Once a day, GitHub starts a quick check to see whether today is your day. On other days,
+      and while weekly searches are off, it stops after a few seconds without searching. The
+      Actions tab shows those as short runs with the search skipped.
 2. **Free web search key (recommended).**
    Without a key, every search already checks 9 job sites and company careers pages. Adding
    one free key turns on a **web search**: for each of your job titles, the tool also searches
