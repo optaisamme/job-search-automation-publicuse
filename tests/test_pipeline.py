@@ -843,3 +843,13 @@ def test_results_are_never_posted_as_issues(root):
     for f in list((repo / "jobsearch").rglob("*.py")) + list((repo / "scripts").glob("*.py")):
         if f.name != "apply_questionnaire.py":   # the questionnaire only replies on its own settings issue
             assert "/issues" not in f.read_text(), f
+
+
+def test_near_misses_section_lists_only_jobs_that_failed_exactly_one_rule():
+    import json as _json
+    from jobsearch.report import _one_rule_failed
+    row = lambda *outs: {"rules": _json.dumps([{"rule": f"r{i}", "outcome": o} for i, o in enumerate(outs)])}
+    assert _one_rule_failed(row("fail", "pass", "pass"))
+    assert not _one_rule_failed(row("fail", "fail", "pass"))      # two rules failed
+    assert not _one_rule_failed(row("fail", "unclear", "pass"))   # another rule could not be checked
+    assert not _one_rule_failed(row("pass", "pass"))

@@ -139,6 +139,12 @@ def _match_table(rows) -> list[str]:
 
 
 
+def _one_rule_failed(row) -> bool:
+    """Exactly one rule failed and every other rule passed."""
+    outcomes = [x.get("outcome") for x in (_j(row, "rules", []) or [])]
+    return outcomes.count("fail") == 1 and all(o in ("pass", "fail") for o in outcomes)
+
+
 def _reject_table(rows, limit: int = 40) -> list[str]:
     """Jobs that did not match: one short row each, newest first."""
     if not rows:
@@ -184,9 +190,8 @@ def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report"
     md += ["## Hourly or contract jobs", "",
            "Pay is listed per hour or per contract, so the yearly salary rule was not applied. Check the pay yourself.", ""]
     md += _check_table(held)
-    md += ["## Near Misses: Jobs that did not match one of your rules", "",
-           "Newest first, 40 at most. The \"Why it did not match\" column lists every rule a job failed.", ""]
-    md += _reject_table(rej)
+    md += ["## Near Misses: Jobs that did not match one of your rules", "", "Newest first, 40 at most.", ""]
+    md += _reject_table([r for r in rej if _one_rule_failed(r)])
     from .sources_summary import section as where_section
     md += [""] + where_section(run_info.get("sources", []), run_info.get("started_at"), run_info.get("finished_at"))
     for k, v in SOURCE_NOTES.items():
