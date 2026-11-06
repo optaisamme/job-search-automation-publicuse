@@ -51,12 +51,19 @@ def _short(text: str, n: int = 100) -> str:
     return text if len(text) <= n else text[: n - 1].rstrip(" ,;(") + "…"
 
 
+def drop_state_list(text: str) -> str:
+    """'Allowed-state list omits New Mexico (alabama, …)' -> 'Allowed-state list omits New Mexico'
+    (searches before 2026-11-07 saved the list of states)."""
+    import re
+    return re.sub(r"(Allowed-state list omits [^();]+?) \([^)]*\)", r"\1", text or "")
+
+
 def _plain_reason(x: str) -> str:
     """Current plain wording for a saved reason (older searches saved 'salary: …' style text)."""
     for a, b in OLD_PREFIX.items():
         if x.startswith(a):
             x = b + x[len(a):]
-    return _short(x)
+    return _short(drop_state_list(x))
 
 
 def _check_table(rows) -> list[str]:

@@ -865,3 +865,11 @@ def test_near_miss_row_names_rules_that_could_not_be_checked():
     row = next(l for l in _reject_table([r]) if l.startswith("| Data Analyst") or "Acme" in l)
     assert "Location: Allowed-state list omits New Mexico (other rules could not be checked: Salary, Certifications)" in row
 
+
+
+def test_location_reason_does_not_list_allowed_states():
+    from jobsearch.report import drop_state_list, _plain_reason
+    old = "Location: Allowed-state list omits New Mexico (alabama, florida, georgia) (per third-party listing; employer posting not confirmed)"
+    assert drop_state_list(old) == "Location: Allowed-state list omits New Mexico (per third-party listing; employer posting not confirmed)"
+    assert "alabama" not in _plain_reason(old)
+    assert drop_state_list("Salary: range $60,000-$70,000 (job site's copy)") == "Salary: range $60,000-$70,000 (job site's copy)"

@@ -48,7 +48,7 @@ def _current_sections(db) -> list[str]:
         "SELECT j.*, n.payload AS npayload FROM notifications n JOIN jobs j ON j.id=n.job_id "
         "WHERE n.kind='near_miss' AND j.closed_at IS NULL AND j.status!='Qualified' ORDER BY j.first_seen DESC, n.id DESC").fetchall()
     look = needs_employer_posting(db)
-    from .report import _label, _salary_cell
+    from .report import _label, _salary_cell, drop_state_list
     from .skills_match import SKILLS_FAMILY
 
     def match_rows(rows):
@@ -76,7 +76,7 @@ def _current_sections(db) -> list[str]:
         L += ["| Job | Company | Why it did not match | Link | Found by | First found |", "|---|---|---|---|---|---|"]
         for r in near:
             p = _j(r["npayload"], {})
-            L.append(f"| {_cell(_label(r))} | {_cell(r['employer'])} | {_cell('; '.join(_j(r['reasons'], []) or p.get('reasons', [])))} | "
+            L.append(f"| {_cell(_label(r))} | {_cell(r['employer'])} | {_cell(drop_state_list('; '.join(_j(r['reasons'], []) or p.get('reasons', []))))} | "
                      f"[Link]({p.get('link') or r['canonical_url'] or ''}) | {_cell(found_by(r))} | {(r['first_seen'] or '')[:10]} |")
     else:
         L.append("None right now.")
@@ -101,7 +101,7 @@ def _current_sections(db) -> list[str]:
         for r in check:
             ver = _j(r["verification"], {}) or {}
             link = ver.get("apply_url") or r["apply_url"] or r["canonical_url"] or ""
-            L.append(f"| {_cell(_label(r))} | {_cell(r['employer'])} | {_cell('; '.join(_j(r['reasons'], [])))} | [Link]({link}) |")
+            L.append(f"| {_cell(_label(r))} | {_cell(r['employer'])} | {_cell(drop_state_list('; '.join(_j(r['reasons'], []))))} | [Link]({link}) |")
     else:
         L.append("None right now.")
     return L

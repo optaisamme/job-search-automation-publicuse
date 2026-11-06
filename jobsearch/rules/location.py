@@ -214,7 +214,7 @@ def evaluate(location_text: str, workplace_type: str | None, text: str, url: str
             return res(UNCLEAR if periodic else PASS,
                        f"{HOME} appears in the allowed-state list" + ("; periodic office attendance mentioned" if periodic else ""))
         data["nm_eligible"] = False
-        return res(FAIL, f"Allowed-state list omits {HOME} ({', '.join(sorted(listed))[:120]})")
+        return res(FAIL, f"Allowed-state list omits {HOME}")
 
     # 2c. location label names a non-US region only
     loc_states = _states_in(loc) if loc else set()
