@@ -158,7 +158,7 @@ def _unchecked_rules(row) -> list[str]:
     return [f'Your rule "{n[6:]}"' if n.startswith("rule: ") else RULE_LABELS.get(n, n.capitalize()) for n in names]
 
 
-def _reject_table(rows, limit: int = 40) -> list[str]:
+def _reject_table(rows, limit: int = 100) -> list[str]:
     """Jobs that did not match: one short row each, newest first."""
     if not rows:
         return ["None.", ""]
@@ -206,7 +206,7 @@ def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report"
     md += ["## Hourly or contract jobs", "",
            "Pay is listed per hour or per contract, so the yearly salary rule was not applied. Check the pay yourself.", ""]
     md += _check_table(held)
-    md += ["## Near Misses: Jobs that did not match one of your rules", "", "Newest first, 40 at most.", ""]
+    md += ["## Near Misses: Jobs that did not match one of your rules", "", "Newest first, 100 at most.", ""]
     md += _reject_table([r for r in rej if _one_rule_failed(r)])
     from .sources_summary import section as where_section
     md += [""] + where_section(run_info.get("sources", []), run_info.get("started_at"), run_info.get("finished_at"))
