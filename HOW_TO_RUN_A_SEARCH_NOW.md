@@ -56,11 +56,11 @@ It opens the page in the picture below. Then do steps 3 and 4 in the picture.
 2. **Any time:** click the **Code** tab, then open the **JOB_SEARCH_RESULTS** folder. Its main
    page shows your latest results:
    a. jobs that match all your rules, with **Apply** links,
-   b. near misses (failed exactly one rule) and the reason,
+   b. near misses (did not meet one of your rules) and the reason,
    c. jobs whose link could not be checked, with a **Find employer posting** link.
 3. Below that is the list of reports, one per search, newest first, for example
    `REPORT_001_2026-11-06_13-47_UTC.md` (search number, date, time in UTC). Open one to see
-   every job checked in that search and why it did or did not match.
+   the jobs found in that search: matches, jobs that need checking, and near misses.
 4. A search with nothing new still adds a report.
 
 ## If you see a red X

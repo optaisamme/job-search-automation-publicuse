@@ -123,11 +123,11 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 
 1. **The folder's main page** opens automatically and shows your **latest results**:
    a. **Jobs that match all your rules**, with an **Apply** link for each.
-   b. **Near misses:** jobs that failed exactly one of your rules, and which rule.
+   b. **Near misses:** jobs that did not meet one of your rules, and which rule.
    c. **Jobs whose link could not be checked**, with a **Find employer posting** link.
 2. **One numbered report per search**, for example `REPORT_001_2026-11-06_13-47_UTC.md`
-   (search number, date, time in UTC). The newest is listed first. Each report also lists
-   every job checked in that search and why it did or did not match.
+   (search number, date, time in UTC). The newest is listed first. Each report lists the
+   jobs found in that search: matches, jobs that need checking, and near misses.
 3. **Actions tab:** green check = the search worked; click it to see its results. Red X =
    click it, then the red step, to read what to fix.
 4. The **first search** shows all jobs that already match. After that, each job is shown

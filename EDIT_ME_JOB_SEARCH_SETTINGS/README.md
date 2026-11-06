@@ -40,7 +40,7 @@ Open the **[JOB_SEARCH_RESULTS](../JOB_SEARCH_RESULTS)** folder. Its main page s
 results, followed by one numbered, dated report per search:
 
 1. Jobs that match all your rules, with **Apply** links.
-2. Near misses: jobs that failed exactly one rule, and which rule.
+2. Near misses: jobs that did not meet one of your rules, and which rule.
 3. Jobs whose link could not be checked, with a **Find employer posting** link.
 4. Possible matches: jobs that failed no rule but did not say enough to be sure.
 5. Popular job boards to search yourself: one-click searches for your job titles.

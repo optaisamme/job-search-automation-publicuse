@@ -344,7 +344,7 @@ def test_results_folder_numbered_reports(root):
     assert index.startswith("# JOB SEARCH RESULTS") and names[1] in index and "Salesforce Administrator" in index
     assert index.index(names[1]) < index.rindex(names[0])  # newest first
     rep = (folder / names[1]).read_text()
-    assert "Every job checked in this search" in rep and "Jobs that match all your rules (1)" in rep
+    assert "Full report: jobs found in this search" in rep and "Jobs that match all your rules (1)" in rep
 
 
 def test_plain_language_link_messages():
@@ -624,7 +624,7 @@ def test_results_tables_have_first_found_and_newest_first(root):
         return head, [r.strip("|").split("|")[head.index("First found")].strip() for r in rows[2:]]
 
     head_q, q = table("## Jobs that match all your rules")
-    head_n, n = table("## Near misses")
+    head_n, n = table("## Near Misses")
     assert "First found" in head_q and "First found" in head_n
     assert q == ["2026-10-05", "2026-10-01"] and n == ["2026-10-09", "2026-10-02"]
 
@@ -779,7 +779,7 @@ def test_link_not_checked_and_near_miss_tables_have_found_by_and_first_found(roo
                   (json.dumps({"status": "blocked"}),))
     st.db.commit()
     index = results_folder.write(root)["text"]
-    near = index[index.index("## Near misses"):]
+    near = index[index.index("## Near Misses"):]
     near = near[:near.find("\n## ", 3)]
     assert "| Link | Found by | First found |" in near and "| Company careers page (Greenhouse) |" in near, near
     look = index[index.index("## Jobs whose link could not be checked"):]
@@ -902,3 +902,50 @@ def test_company_list_explains_how_companies_are_added_and_dropped():
     assert "**Company careers pages read (1):** Acme." in md
     assert "a company is added when a job matching your job titles or skills is found" in md
     assert "dropped after more than 5 searches in a row with no matching job" in md
+
+
+def _rebuild_report(root, tmp_name="rebuilt"):
+    from jobsearch import report as reportmod
+    st = Store(root / "data/jobs.sqlite")
+    r = st.db.execute("SELECT * FROM runs WHERE finished_at IS NOT NULL ORDER BY id DESC LIMIT 1").fetchone()
+    info = {"run_id": r["id"], "started_at": r["started_at"], "finished_at": r["finished_at"],
+            "sources": json.loads(r["sources"] or "[]"), "errors": [], "counts": {}, "fixtures": True}
+    return open(reportmod.build(st, info, root / tmp_name)).read()
+
+
+def test_report_lists_only_jobs_found_in_this_search_and_explains_totals(root):
+    c = FakeClient()
+    bad_salary = GOOD_DESC.replace("$95,000 - $115,000", "$90,000 - $100,000")
+    setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Senior Salesforce Administrator", desc=bad_salary)])
+    run(root, c)
+    st = Store(root / "data/jobs.sqlite")
+    st.db.execute("UPDATE jobs SET last_run_id = last_run_id - 1 WHERE title = 'Senior Salesforce Administrator'")
+    st.db.commit()
+    md = _rebuild_report(root)
+    assert "Senior Salesforce Administrator" not in md          # not found in this search: not carried over
+    assert "Totals for this search:" in md
+    assert "did not match 0 (0 near misses listed; 0 failed 2 or more rules)" in md
+
+
+def test_results_page_near_misses_use_the_report_rule(root):
+    c = FakeClient()
+    bad_salary = GOOD_DESC.replace("$95,000 - $115,000", "$90,000 - $100,000")
+    setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Senior Salesforce Administrator", desc=bad_salary)])
+    run(root, c)
+    st = Store(root / "data/jobs.sqlite")
+    row = st.db.execute("SELECT id, rules FROM jobs WHERE title = 'Senior Salesforce Administrator'").fetchone()
+    rules = json.loads(row["rules"])
+    for x in rules:
+        if x["rule"] == "location":
+            x["outcome"] = "unclear"          # one rule failed, another could not be checked: still a near miss
+    st.db.execute("UPDATE jobs SET rules = ? WHERE id = ?", (json.dumps(rules), row["id"]))
+    st.db.commit()
+    from jobsearch.report import near_misses
+    near = near_misses(st.db)
+    assert [r["title"] for r in near] == ["Senior Salesforce Administrator"]
+    md = _rebuild_report(root)
+    assert "(other rules could not be checked: Location)" in md
+    from jobsearch import results_folder
+    index = results_folder.write(root)["text"]
+    sec = index[index.index("## Near Misses: Jobs that did not match one of your rules (1)"):]
+    assert "(other rules could not be checked: Location)" in sec.split("\n## ")[0]

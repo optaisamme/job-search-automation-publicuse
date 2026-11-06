@@ -40,7 +40,8 @@ Open the **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)** folder.
 
 1. **The folder's main page** opens automatically and shows your **latest results**:
    a. **Jobs that match all your rules**, with an **Apply** link for each.
-   b. **Near misses:** jobs that failed exactly one of your rules, and which rule.
+   b. **Near misses:** jobs that did not meet one of your rules, and which rule. Other rules
+      passed or could not be checked.
    c. **Jobs whose link could not be checked**, with a link to find the employer's own posting.
    d. **Possible matches:** jobs that failed none of your rules but did not say enough to be
       sure (for example, no salary listed), with what to check.
@@ -52,8 +53,8 @@ Open the **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)** folder.
       more);
       diversity (DiversityJobs, PowerToFly and more); and tech and startups.
 2. **One report per search**, numbered and dated, for example
-   `REPORT_001_2026-11-06_13-47_UTC.md`. The newest is listed first. Each report also lists
-   every job checked in that search and why it did or did not match.
+   `REPORT_001_2026-11-06_13-47_UTC.md`. The newest is listed first. Each report lists the jobs
+   found in that search: matches, jobs that need checking, and near misses.
 
 Also:
 
@@ -164,7 +165,7 @@ links on the results page for those.
    a. **No setup needed:** Himalayas, The Muse, Remote OK, Jobicy, We Work Remotely, Remotive
       and Hacker News "Who is hiring?" (mostly tech jobs). Several send their newest jobs
       whatever your search words are (for example The Muse's newest 1,000 and all of Jobicy's US
-      remote jobs), so each search looks at a few thousand listings.
+      remote jobs, set in section 10), so each search looks at a few thousand listings.
    b. **Web search (free key, recommended, see SETUP.md Step 6):** searches the whole web for
       each of your job titles, finding jobs that are on no job site above. For each title it
       runs 2 searches: one across company careers pages (Greenhouse, Lever, Ashby,

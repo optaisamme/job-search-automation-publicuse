@@ -183,6 +183,24 @@ def _unchecked_rules(row) -> list[str]:
     return [f'Your rule "{n[6:]}"' if n.startswith("rule: ") else RULE_LABELS.get(n, n.capitalize()) for n in names]
 
 
+def unchecked_note(row) -> str:
+    """' (other rules could not be checked: Salary)' when other rules could not be checked."""
+    unchecked = _unchecked_rules(row)
+    return f" (other rules could not be checked: {', '.join(unchecked)})" if unchecked else ""
+
+
+def near_misses(db) -> list:
+    """Open jobs where exactly one rule failed (other rules passed or could not be checked), newest first."""
+    rows = db.execute("SELECT * FROM jobs WHERE status='Rejected' AND closed_at IS NULL "
+                      "ORDER BY first_seen DESC, id DESC").fetchall()
+    return [r for r in rows if _one_rule_failed(r)]
+
+
+def near_miss_link(r) -> str:
+    ver = _j(r, "verification", {}) or {}
+    return ver.get("final_url") or r["canonical_url"] or r["apply_url"] or ((_j(r, "source_urls", []) or [""])[0])
+
+
 def _reject_table(rows, limit: int = 100) -> list[str]:
     """Jobs that did not match: one short row each, newest first."""
     if not rows:
@@ -193,9 +211,7 @@ def _reject_table(rows, limit: int = 100) -> list[str]:
     for r in rows[:limit]:
         title = _label(r)
         why = "; ".join(_plain_reason(x, short_pay=True) for x in (_j(r, "reasons", []) or []))
-        unchecked = _unchecked_rules(r)
-        if unchecked:
-            why += f" (other rules could not be checked: {', '.join(unchecked)})"
+        why += unchecked_note(r)
         link = r["canonical_url"] or ((_j(r, "source_urls", []) or [""])[0])
         L.append(f"| {cell(title)} | {cell(r['employer'] or 'employer not given')} | {cell(why)} | "
                  f"[Open]({link}) | {(r['first_seen'] or '')[:10]} |")
@@ -206,18 +222,22 @@ def _reject_table(rows, limit: int = 100) -> list[str]:
 
 def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report") -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
-    rows = store.jobs("closed_at IS NULL")
+    # only jobs found in this search; nothing is carried over from earlier searches
+    run_id, started = run_info.get("run_id"), run_info.get("started_at")
+    rows = store.jobs("closed_at IS NULL AND last_run_id = ?", (run_id,)) if run_id else store.jobs("closed_at IS NULL")
     q = [r for r in rows if r["status"] == "Qualified"]
     held = [r for r in rows if r["status"] == "Needs Verification" and r["compensation_type"] in ("hourly", "contract")]
     nv = [r for r in rows if r["status"] == "Needs Verification" and r not in held]
     rej = [r for r in rows if r["status"] == "Rejected"]
-    closed = store.jobs("closed_at IS NOT NULL")
+    closed = store.jobs("closed_at IS NOT NULL AND closed_at >= ?", (started,)) if started else store.jobs("closed_at IS NOT NULL")
+    near = [r for r in rej if _one_rule_failed(r)]
     md = [f"# {title}", "",
           f"Search started: {(run_info.get('started_at') or '')[:16].replace('T', ' ')} UTC", ""]
     if run_info.get("fixtures"):
         md += ["**TEST DATA** (not live listings).", ""]
-    md += [f"Totals: match all your rules {len(q)} | need checking {len(nv)} | hourly or contract {len(held)} | "
-           f"did not match {len(rej)} | no longer open {len(closed)}",
+    md += [f"Totals for this search: match all your rules {len(q)} | need checking {len(nv)} | hourly or contract {len(held)} | "
+           f"did not match {len(rej)} ({len(near)} near misses listed; {len(rej) - len(near)} failed 2 or more rules) | "
+           f"no longer open {len(closed)}",
            "", "## Jobs that match all your rules", ""]
     from .skills_match import SKILLS_FAMILY
     md += _match_table([r for r in q if r["family"] != SKILLS_FAMILY])
@@ -232,7 +252,7 @@ def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report"
            "Pay is listed per hour or per contract, so the yearly salary rule was not applied. Check the pay yourself.", ""]
     md += _check_table(held)
     md += ["## Near Misses: Jobs that did not match one of your rules", "", "Newest first, 100 at most.", ""]
-    md += _reject_table([r for r in rej if _one_rule_failed(r)])
+    md += _reject_table(near)
     from .sources_summary import section as where_section
     md += [""] + where_section(run_info.get("sources", []), run_info.get("started_at"), run_info.get("finished_at"))
     for k, v in SOURCE_NOTES.items():
@@ -308,5 +328,6 @@ def new_in_run(db, run_id) -> tuple[list[int], int]:
     Uses only saved data, so the results page is the same wherever it is rebuilt."""
     rows = db.execute("SELECT id, kind, status FROM notifications WHERE run_id = ?", (run_id,)).fetchall()
     ids = [r["id"] for r in rows if r["kind"] != "near_miss" and r["status"] not in ("cancelled", "held", "suppressed_baseline")]
-    near = sum(1 for r in rows if r["kind"] == "near_miss")
+    run = db.execute("SELECT started_at FROM runs WHERE id = ?", (run_id,)).fetchone()
+    near = sum(1 for r in near_misses(db) if run and (r["first_seen"] or "") >= (run["started_at"] or ""))
     return ids, near

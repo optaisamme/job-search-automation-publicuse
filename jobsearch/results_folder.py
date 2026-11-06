@@ -44,11 +44,10 @@ def report_name(run_id: int, finished_at: str) -> str:
 def _current_sections(db) -> list[str]:
     from .lookup import needs_employer_posting
     qualified = db.execute("SELECT * FROM jobs WHERE status='Qualified' AND closed_at IS NULL ORDER BY first_seen DESC").fetchall()
-    near = db.execute(
-        "SELECT j.*, n.payload AS npayload FROM notifications n JOIN jobs j ON j.id=n.job_id "
-        "WHERE n.kind='near_miss' AND j.closed_at IS NULL AND j.status!='Qualified' ORDER BY j.first_seen DESC, n.id DESC").fetchall()
+    from .report import near_misses
+    near = near_misses(db)
     look = needs_employer_posting(db)
-    from .report import _label, _salary_cell, near_miss_reason
+    from .report import _label, _salary_cell, near_miss_reason, unchecked_note, near_miss_link
     from .skills_match import SKILLS_FAMILY
 
     def match_rows(rows):
@@ -70,14 +69,14 @@ def _current_sections(db) -> list[str]:
         L += ["", f"### Matches by skills (other titles) ({len(by_skills)})", "",
               "Their title is not one of yours, but the listing has your required keywords and enough of your skills.", ""]
         L += match_rows(by_skills)
-    L += ["", f"## Near misses: failed exactly one of your rules ({len(near)})", ""]
+    L += ["", f"## Near Misses: Jobs that did not match one of your rules ({len(near)})", ""]
     if near:
         from .sources_summary import found_by
         L += ["| Job | Company | Why it did not match | Link | Found by | First found |", "|---|---|---|---|---|---|"]
         for r in near:
-            p = _j(r["npayload"], {})
-            L.append(f"| {_cell(_label(r))} | {_cell(r['employer'])} | {_cell('; '.join(near_miss_reason(x) for x in (_j(r['reasons'], []) or p.get('reasons', []))))} | "
-                     f"[Link]({p.get('link') or r['canonical_url'] or ''}) | {_cell(found_by(r))} | {(r['first_seen'] or '')[:10]} |")
+            why = "; ".join(near_miss_reason(x) for x in (_j(r["reasons"], []) or [])) + unchecked_note(r)
+            L.append(f"| {_cell(_label(r))} | {_cell(r['employer'])} | {_cell(why)} | "
+                     f"[Link]({near_miss_link(r)}) | {_cell(found_by(r))} | {(r['first_seen'] or '')[:10]} |")
     else:
         L.append("None right now.")
     L += ["", f"## Jobs whose link could not be checked automatically ({len(look)})", "",
@@ -202,7 +201,7 @@ def write(root: Path) -> dict:
             full = re.sub(r"^# .*\n", "", full, count=1)
             full = re.sub(r"(?m)^### ", "#### ", full)
             full = re.sub(r"(?m)^## ", "### ", full)
-            R += ["", "## Every job checked in this search, and why it did or did not match", "", full]
+            R += ["", "## Full report: jobs found in this search", "", full]
         report_file = folder / name
         report_file.write_text("\n".join(R) + "\n")
 
