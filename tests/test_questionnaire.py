@@ -110,3 +110,9 @@ def test_only_owner_or_collaborator_can_change_settings(tmp_path, monkeypatch):
     monkeypatch.setenv("GITHUB_REPOSITORY", "optaisamme/job-search-automation-publicuse")
     q.main()
     assert q.SETTINGS.read_text() == before
+
+
+def test_text_box_answers_in_code_blocks_are_read():
+    body = "### Job titles to look for\n\n```text\nProgram Manager\nProgram Director\n```\n\n### Your state\n\nUtah\n"
+    a = q.parse_issue_body(body)
+    assert a["titles_1"] == "Program Manager\nProgram Director" and a["state"] == "Utah"

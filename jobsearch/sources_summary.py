@@ -7,18 +7,16 @@ SITES = [  # (source name in the run record, name shown, what it searches)
     ("ats_watchlist", "Company careers pages", "every open job at the companies listed below "
                                                "(Greenhouse, Lever, Ashby, SmartRecruiters)"),
     ("remotive", "Remotive", "remote jobs, searched by your job titles"),
-    ("remoteok", "Remote OK", "its newest remote jobs (about 100)"),
-    ("himalayas", "Himalayas", "remote jobs: up to 100 per job title, plus about 200 of its newest jobs"),
-    ("themuse", "The Muse", "its newest 400 remote jobs, all fields"),
-    ("jobicy", "Jobicy", "its newest 100 US remote jobs"),
-    ("weworkremotely", "We Work Remotely", "its newest 100 remote jobs, all categories"),
-    ("workingnomads", "Working Nomads", "its newest remote jobs"),
-    ("jobspresso", "Jobspresso", "its newest hand-checked remote jobs"),
+    ("remoteok", "Remote OK", "its newest remote jobs (about 100: all its feed gives)"),
+    ("himalayas", "Himalayas", "remote jobs: up to 200 per search word, plus its newest 1,000"),
+    ("themuse", "The Muse", "its newest 1,000 remote jobs, all fields"),
+    ("jobicy", "Jobicy", "all of its US remote jobs"),
+    ("weworkremotely", "We Work Remotely", "its newest 100 remote jobs, all categories (all its feed gives)"),
     ("hackernews", "Hacker News: Who is hiring?", "this month's hiring thread (mostly tech jobs)"),
 ]
 
 
-REMOVED = {"adzuna", "usajobs", "jooble", "reliefweb", "web_search_leads"}   # sources this tool no longer uses
+REMOVED = {"adzuna", "usajobs", "jooble", "reliefweb", "web_search_leads", "workingnomads", "jobspresso"}   # sources this tool no longer uses
 
 
 def _worked(s: dict) -> str:
@@ -84,7 +82,6 @@ SOURCE_LABELS = {"greenhouse": "Company careers page (Greenhouse)", "lever": "Co
                  "ashby": "Company careers page (Ashby)", "smartrecruiters": "Company careers page (SmartRecruiters)"}
 HOST_LABELS = {"himalayas.app": "Himalayas", "remoteok.com": "Remote OK", "remotive.com": "Remotive",
                "themuse.com": "The Muse", "jobicy.com": "Jobicy", "weworkremotely.com": "We Work Remotely",
-               "workingnomads.com": "Working Nomads", "jobspresso.co": "Jobspresso",
                "news.ycombinator.com": "Hacker News: Who is hiring?"}
 
 

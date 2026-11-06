@@ -12,7 +12,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from .adapters.aggregators import (RemotiveAdapter, RemoteOKAdapter, HimalayasAdapter, TheMuseAdapter, JobicyAdapter,
-                                   WeWorkRemotelyAdapter, WorkingNomadsAdapter, JobspressoAdapter,
+                                   WeWorkRemotelyAdapter, 
                                    HackerNewsHiringAdapter)
 from .adapters.ats import AtsWatchlistAdapter, FETCHERS
 from .adapters.base import SourceStatus
@@ -34,7 +34,7 @@ log = logging.getLogger("jobsearch.pipeline")
 ADAPTERS = {  # order matters: web search first so newly discovered boards are scanned in the same run
     "websearch": WebSearchAdapter, "ats_watchlist": AtsWatchlistAdapter, "remotive": RemotiveAdapter,
     "remoteok": RemoteOKAdapter, "himalayas": HimalayasAdapter, "themuse": TheMuseAdapter, "jobicy": JobicyAdapter,
-    "weworkremotely": WeWorkRemotelyAdapter, "workingnomads": WorkingNomadsAdapter, "jobspresso": JobspressoAdapter, "hackernews": HackerNewsHiringAdapter,
+    "weworkremotely": WeWorkRemotelyAdapter, "hackernews": HackerNewsHiringAdapter,
 }
 
 

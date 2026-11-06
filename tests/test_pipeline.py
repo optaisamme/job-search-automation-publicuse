@@ -414,7 +414,7 @@ def test_title_words_any_order():
 
 
 def test_new_job_sites_parse():
-    from jobsearch.adapters.aggregators import TheMuseAdapter, JobicyAdapter, WeWorkRemotelyAdapter, WorkingNomadsAdapter
+    from jobsearch.adapters.aggregators import TheMuseAdapter, JobicyAdapter, WeWorkRemotelyAdapter
     from jobsearch.adapters.base import SourceStatus
     c = FakeClient()
     c.set("https://www.themuse.com/api/public/jobs?page=1&location=Flexible+%2F+Remote",
@@ -429,17 +429,13 @@ def test_new_job_sites_parse():
           "<rss><channel><item><title>WWR Co: Data Analyst</title><region>USA Only</region>"
           "<link>https://weworkremotely.com/remote-jobs/wwr-data-analyst</link><description>&lt;p&gt;x&lt;/p&gt;</description>"
           "</item></channel></rss>")
-    c.set("https://www.workingnomads.com/api/exposed_jobs/",
-          [{"url": "https://www.workingnomads.com/job/go/1/", "title": "Data Analyst", "company_name": "WN Co",
-            "description": "<p>x</p>", "location": "USA"}])
     ctx = {"queries": []}
     got = {}
-    for A in (TheMuseAdapter, JobicyAdapter, WeWorkRemotelyAdapter, WorkingNomadsAdapter):
+    for A in (TheMuseAdapter, JobicyAdapter, WeWorkRemotelyAdapter):
         got[A.name] = A(c, ctx).search(SourceStatus(A.name))
     assert got["themuse"][0].employer == "Muse Co" and got["themuse"][0].workplace_type == "remote"
     assert got["jobicy"][0].structured_salaries[0]["min"] == 95000
     assert (got["weworkremotely"][0].employer, got["weworkremotely"][0].title) == ("WWR Co", "Data Analyst")
-    assert got["workingnomads"][0].employer == "WN Co"
 
 
 def test_himalayas_feed_listing_counts_when_site_blocks_checks():
@@ -457,18 +453,6 @@ def test_himalayas_feed_listing_counts_when_site_blocks_checks():
     assert feed_listing(p, blocked, "now") is None            # no closing date
     other = RawPosting("remoteok", "u", "X", "Data Analyst", "", extra={"expiry": str(int(time.time()) + 86400)})
     assert feed_listing(other, blocked, "now") is None        # only Himalayas
-
-
-def test_jobspresso_parse():
-    from jobsearch.adapters.aggregators import JobspressoAdapter
-    from jobsearch.adapters.base import SourceStatus
-    c = FakeClient()
-    c.set("https://jobspresso.co/feed/?post_type=job_listing",
-          '<rss xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><item><title>Data Analyst</title>'
-          '<link>https://jobspresso.co/job/data-analyst</link><dc:creator>Figma&lt;br&gt;&#9906;&amp;nbsp;United States</dc:creator>'
-          '<description>&lt;p&gt;x&lt;/p&gt;</description></item></channel></rss>')
-    p = JobspressoAdapter(c, {"queries": []}).search(SourceStatus("jobspresso"))[0]
-    assert (p.employer, p.location_text, p.title) == ("Figma", "United States", "Data Analyst")
 
 
 def test_manual_board_links_use_job_titles():
@@ -859,3 +843,14 @@ def test_link_not_checked_and_near_miss_tables_have_found_by_and_first_found(roo
     look = index[index.index("## Jobs whose link could not be checked"):]
     look = look[:look.find("\n## ", 3)]
     assert "| Find the employer's posting | First found |" in look and "Salesforce Business Systems Analyst" in look, look
+
+
+def test_jobicy_reads_every_page():
+    from jobsearch.adapters.aggregators import JobicyAdapter
+    from jobsearch.adapters.base import SourceStatus
+    c = FakeClient()
+    job = lambda i: {"id": i, "jobTitle": f"Analyst {i}", "companyName": "Co", "url": f"https://jobicy.com/jobs/{i}", "jobDescription": "x"}
+    c.set("https://jobicy.com/api/v2/remote-jobs?count=100&geo=usa", {"jobs": [job(1), job(2)], "hasMore": True, "nextCursor": "abc"})
+    c.set("https://jobicy.com/api/v2/remote-jobs?count=100&geo=usa&cursor=abc", {"jobs": [job(3)], "hasMore": False})
+    got = JobicyAdapter(c, {"queries": []}).search(SourceStatus("jobicy"))
+    assert [p.title for p in got] == ["Analyst 1", "Analyst 2", "Analyst 3"]

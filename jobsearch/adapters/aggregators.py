@@ -68,8 +68,8 @@ class RemoteOKAdapter(Adapter):
 class HimalayasAdapter(Adapter):
     # https://himalayas.app/api — search returns 20 per page (?page=N); the browse feed pages by ?cursor=.
     name = "himalayas"
-    SEARCH_PAGES = 5     # per search word: up to 100 jobs
-    BROWSE_PAGES = 10    # newest jobs regardless of search words: up to 200 jobs
+    SEARCH_PAGES = 10    # per search word: up to 200 jobs
+    BROWSE_PAGES = 50    # newest jobs regardless of search words: up to 1,000 jobs
 
     def _posting(self, j: dict) -> RawPosting:
         return RawPosting(
@@ -130,7 +130,7 @@ class TheMuseAdapter(Adapter):
     # https://www.themuse.com/developers/api/v2 — public jobs API, all job types; no key needed at low volume.
     # Not searchable by keyword, so the newest jobs are collected and matched to your titles here.
     name = "themuse"
-    PAGES = 20   # 20 jobs per page: newest 400
+    PAGES = 50   # 20 jobs per page: newest 1,000
 
     def search(self, status: SourceStatus) -> list[RawPosting]:
         from ..criteria import CRITERIA
@@ -165,24 +165,40 @@ class JobicyAdapter(Adapter):
     # and for apply buttons to go to the original job URL (results link to each Jobicy job page).
     name = "jobicy"
 
+    MAX_PAGES = 50   # safety limit: 100 jobs per page
+
     def search(self, status: SourceStatus) -> list[RawPosting]:
-        r = self.client.get("https://jobicy.com/api/v2/remote-jobs?" + urllib.parse.urlencode({"count": 100, "geo": "usa"}))
-        if r.status >= 400:
-            raise RuntimeError(f"HTTP {r.status}")
-        out = []
-        for j in r.json().get("jobs", []):
-            lo, hi = _num(j.get("salaryMin")), _num(j.get("salaryMax"))
-            yearly = (j.get("salaryPeriod") or "") == "yearly" and (j.get("salaryCurrency") or "USD") == "USD"
-            out.append(RawPosting(
-                source="jobicy", source_url=j.get("url", ""), employer=j.get("companyName", ""), title=j.get("jobTitle", ""),
-                description_text=html_to_text(j.get("jobDescription")), location_text=j.get("jobGeo", ""),
-                workplace_type="remote", apply_url=j.get("url"),
-                employment_type=", ".join(j.get("jobType") or []) or None,
-                structured_salaries=([{"min": lo, "max": hi, "interval": "year", "context": f"Jobicy listing salary USD {lo:,.0f}-{hi:,.0f}"}]
-                                     if yearly and lo and hi else []),
-                extra={"third_party_salary": [lo, hi], "third_party_published": j.get("pubDate")},
-            ))
+        """Every US remote job Jobicy lists, 100 per page, following its page cursor."""
+        out, seen, cursor = [], set(), None
+        for _ in range(self.MAX_PAGES):
+            params = {"count": 100, "geo": "usa", **({"cursor": cursor} if cursor else {})}
+            r = self.client.get("https://jobicy.com/api/v2/remote-jobs?" + urllib.parse.urlencode(params))
+            if r.status >= 400:
+                if not out:
+                    raise RuntimeError(f"HTTP {r.status}")
+                status.errors.append(f"page after {len(out)} jobs: HTTP {r.status}")
+                break
+            d = r.json()
+            new = [j for j in d.get("jobs", []) if j.get("id") not in seen]
+            seen.update(j.get("id") for j in new)
+            out.extend(self._posting(j) for j in new)
+            cursor = d.get("nextCursor")
+            if not d.get("hasMore") or not cursor or not new:
+                break
         return out
+
+    def _posting(self, j: dict) -> RawPosting:
+        lo, hi = _num(j.get("salaryMin")), _num(j.get("salaryMax"))
+        yearly = (j.get("salaryPeriod") or "") == "yearly" and (j.get("salaryCurrency") or "USD") == "USD"
+        return RawPosting(
+            source="jobicy", source_url=j.get("url", ""), employer=j.get("companyName", ""), title=j.get("jobTitle", ""),
+            description_text=html_to_text(j.get("jobDescription")), location_text=j.get("jobGeo", ""),
+            workplace_type="remote", apply_url=j.get("url"),
+            employment_type=", ".join(j.get("jobType") or []) or None,
+            structured_salaries=([{"min": lo, "max": hi, "interval": "year", "context": f"Jobicy listing salary USD {lo:,.0f}-{hi:,.0f}"}]
+                                 if yearly and lo and hi else []),
+            extra={"third_party_salary": [lo, hi], "third_party_published": j.get("pubDate")},
+        )
 
 
 class WeWorkRemotelyAdapter(Adapter):
@@ -206,50 +222,6 @@ class WeWorkRemotelyAdapter(Adapter):
                 description_text=html_to_text(f.get("description")), location_text=where, workplace_type="remote",
                 apply_url=f.get("link"), employment_type=f.get("type") or None,
                 extra={"third_party_published": f.get("pubDate"), "expiry": f.get("expires_at")},
-            ))
-        return out
-
-
-class WorkingNomadsAdapter(Adapter):
-    # https://www.workingnomads.com/api/exposed_jobs/ — public feed of the newest remote jobs.
-    name = "workingnomads"
-
-    def search(self, status: SourceStatus) -> list[RawPosting]:
-        r = self.client.get("https://www.workingnomads.com/api/exposed_jobs/")
-        if r.status >= 400:
-            raise RuntimeError(f"HTTP {r.status}")
-        out = []
-        for j in r.json():
-            out.append(RawPosting(
-                source="workingnomads", source_url=j.get("url", ""), employer=j.get("company_name", ""), title=j.get("title", ""),
-                description_text=html_to_text(j.get("description")), location_text=j.get("location", ""),
-                workplace_type="remote", apply_url=j.get("url"),
-                extra={"third_party_published": j.get("pub_date")},
-            ))
-        return out
-
-
-class JobspressoAdapter(Adapter):
-    # https://jobspresso.co — public RSS feed of the newest hand-checked remote jobs.
-    name = "jobspresso"
-
-    def search(self, status: SourceStatus) -> list[RawPosting]:
-        import html as _html
-        import re as _re
-        import xml.etree.ElementTree as ET
-        r = self.client.get("https://jobspresso.co/feed/?post_type=job_listing")
-        if r.status >= 400:
-            raise RuntimeError(f"HTTP {r.status}")
-        out = []
-        for it in ET.fromstring(r.body).findall("./channel/item"):
-            f = {c.tag.split("}")[-1]: (c.text or "").strip() for c in it}
-            # creator looks like "Figma<br>⚲&nbsp;United States": company, then location
-            parts = [x.strip(" \u26b2\xa0") for x in _re.split(r"<br\s*/?>", _html.unescape(f.get("creator", "")))]
-            out.append(RawPosting(
-                source="jobspresso", source_url=f.get("link", ""), employer=parts[0] if parts else "", title=f.get("title", ""),
-                description_text=html_to_text(f.get("encoded") or f.get("description")),
-                location_text=parts[1] if len(parts) > 1 else "", workplace_type="remote", apply_url=f.get("link"),
-                extra={"third_party_published": f.get("pubDate")},
             ))
         return out
 

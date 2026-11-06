@@ -24,7 +24,7 @@ grey **Run workflow** button and the green **Run workflow** button.
 | Step | What you do | Where | Time |
 |---|---|---|---|
 | **1. Make your own copy** | Copy this project into your own GitHub account ([picture of where to click](SETUP.md#step-1-make-your-own-copy)) | [SETUP.md](SETUP.md), Step 1 | 2 minutes |
-| **2. Answer the setup questionnaire** | In **your copy**: [open the questionnaire](../../issues/new?template=job_search_setup.yml) (**Issues** tab, **New issue**, **Job search setup**), answer the questions, click **Submit**. Your settings are saved for you | [SETUP.md](SETUP.md), Step 2 | 10 minutes |
+| **2. Answer the setup questionnaire** | In **your copy**: [open the questionnaire list](../../issues/new/choose) (**Issues** tab, then **New issue**), click **Job search setup**, answer the questions, then click **Create**. Your settings are saved for you | [SETUP.md](SETUP.md), Step 2 | 10 minutes |
 | **3. Run a search** | **Only after steps 1 and 2.** In **your copy**: **Actions** tab, then **Run job search**, then **Run workflow** (twice). Automatic weekly searches start **off** (see below) | [HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md) | 1 minute to start, 10 to 20 minutes to finish |
 | **4. Read your results** | Open the results folder | **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)** folder | Any time |
 
@@ -81,7 +81,7 @@ Both settings files start **empty**: nothing is searched or filtered until you f
 
 **Also optional:** a free web search key. It is added in **Settings**, not in a file. See [Other optional edits: a free web search key](#other-optional-edits-a-free-web-search-key).
 
-**Easier than editing files:** the [setup questionnaire](../../issues/new?template=job_search_setup.yml) fills in files 1 and 2 for you
+**Easier than editing files:** the [setup questionnaire](../../issues/new/choose) fills in files 1 and 2 for you
 (Issues tab, New issue, Job search setup). Blank answers keep your current settings; type `none`
 to clear one. Submit it again any time to change something.
 
@@ -114,7 +114,7 @@ set section 9 of file 1 (`[automatic_weekly_search]`: `on = "yes"`, `day = "Frid
 
 ## Other optional edits: a free web search key
 
-Without a key, every search already checks 9 job sites and company careers pages. Adding
+Without a key, every search already checks 7 job sites and company careers pages. Adding
 one free key turns on a **web search**: for each of your job titles, the tool also searches
 the whole web, including company careers pages, and finds jobs that are on no job site. It
 also finds new companies to check. It is optional and stays off until you add the key.
@@ -164,10 +164,10 @@ links on the results page for those.
 
 1. **Checks your settings** and lists what is ON and OFF.
 2. **Collects public job listings** from these job sites:
-   a. **No setup needed:** Himalayas, The Muse, Remote OK, Jobicy, We Work Remotely, Working
-      Nomads, Jobspresso, Remotive and Hacker News "Who is hiring?" (mostly tech jobs).
-      Several send their newest jobs whatever your search words are, so each search looks at
-      more than 1,000 listings.
+   a. **No setup needed:** Himalayas, The Muse, Remote OK, Jobicy, We Work Remotely, Remotive
+      and Hacker News "Who is hiring?" (mostly tech jobs). Several send their newest jobs
+      whatever your search words are (for example The Muse's newest 1,000 and all of Jobicy's US
+      remote jobs), so each search looks at a few thousand listings.
    b. **Web search (free key, recommended, see SETUP.md Step 6):** searches the whole web for
       each of your job titles, finding jobs that are on no job site above. For each title it
       runs 2 searches: one across company careers pages (Greenhouse, Lever, Ashby,

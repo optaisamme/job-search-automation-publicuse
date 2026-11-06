@@ -1,35 +1,45 @@
 name: Job search setup
-description: Answer these questions to set up or change your job search. No coding or file editing needed.
+description: Set up or change your job search by answering questions. No coding or file editing.
 title: "Job search setup"
 body:
   - type: markdown
     attributes:
       value: |
-        **Fill in what you know, then click "Submit new issue" at the bottom.**
-        Your answers are saved to your settings within a minute or two, and a reply here tells you what changed.
+        ### How this works
+        1. Answer the questions below. **Only the first one is required.**
+        2. Click the green **Create** button at the bottom (it may say **Submit new issue**).
+        3. Wait 1 to 2 minutes. A reply appears on this page saying what was saved, or what to fix.
 
-        - **Leave a question empty** to keep what you have now (the first time, empty means "off").
-        - **Type `none`** to clear a setting.
-        - For lists, put **one item per line**.
+        **Good to know:** leave a question empty to keep your current setting. Type `none` to clear one.
+        For lists, put one item on each line. Only you (and collaborators you add) can change your settings.
 
-        Only you (the owner of this copy) and people you added as collaborators can change these settings.
+  - type: markdown
+    attributes:
+      value: "## Step 1 of 7: The jobs you want"
   - type: textarea
     attributes:
       label: Job titles to look for
-      description: One per line. "Senior", "Sr." or "Lead" versions are found automatically, and the words can be in any order.
+      description: "One title per line. Senior, Sr. and Lead versions are found too, and the words can be in any order."
       placeholder: |
         Program Manager
         Program Director
+      render: text
     validations:
       required: true
   - type: textarea
     attributes:
       label: "More job titles: a second kind of job"
-      description: Optional. One per line.
+      description: Optional. One title per line.
+      render: text
   - type: textarea
     attributes:
       label: "More job titles: a third kind of job"
-      description: Optional. One per line.
+      description: Optional. One title per line.
+      render: text
+
+  - type: markdown
+    attributes:
+      value: "## Step 2 of 7: Where you can work"
   - type: dropdown
     attributes:
       label: Remote jobs only?
@@ -39,72 +49,100 @@ body:
   - type: input
     attributes:
       label: Your state
-      description: Full name. Jobs that say they cannot hire in your state are left out.
-      placeholder: New Mexico
+      description: "Full name. Jobs that cannot hire in your state are left out. Example: New Mexico"
   - type: input
     attributes:
       label: Your state's two-letter abbreviation
-      placeholder: NM
+      description: "Example: NM"
   - type: textarea
     attributes:
       label: Cities where you could work on site
-      description: Optional. One per line. Used when "Remote jobs only?" is No.
+      description: Optional. One city per line. Only used if you chose "No" for remote jobs only.
+      render: text
+
+  - type: markdown
+    attributes:
+      value: "## Step 3 of 7: Pay (per year, numbers only, 0 = no minimum)"
   - type: input
     attributes:
       label: Lowest single salary you would accept
-      description: Numbers only, per year. Used when a job lists one salary. 0 = no minimum.
-      placeholder: "100000"
+      description: "For jobs that list one salary. Example: 100000"
   - type: input
     attributes:
       label: Lowest acceptable start of a salary range
-      description: Numbers only. A range like $85,000-$110,000 must start at or above this. 0 = no minimum.
-      placeholder: "90000"
+      description: "For jobs that list a range like $85,000 to $110,000: the low end must be at least this. Example: 90000"
   - type: input
     attributes:
       label: A salary range must end above
-      description: Numbers only. A range must end above this. 0 = no minimum.
-      placeholder: "100000"
-  - type: textarea
+      description: "The high end of a range must be more than this. Example: 100000"
+
+  - type: markdown
     attributes:
-      label: Words the job description must mention
-      description: Optional. One per line. A job must mention at least one of them.
+      value: "## Step 4 of 7: Jobs to leave out (optional)"
   - type: textarea
     attributes:
       label: Title words to skip
-      description: Optional. One per line. Only the job TITLE is checked, never the rest of the posting. Whole words; capitalization does not matter.
-      placeholder: |
-        Intern
-        Engineer
+      description: "One per line. Only the job TITLE is checked, never the rest of the posting. Whole words, capitals do not matter. Example: Intern"
+      render: text
+  - type: textarea
+    attributes:
+      label: Words the job description must mention
+      description: One per line. A job must mention at least one of them, or it is left out.
+      render: text
   - type: dropdown
     attributes:
       label: Check certification requirements?
-      description: If Yes, jobs that require a certification you do not list below are left out.
+      description: If Yes, jobs that require a certification you do not list in the next question are left out.
       options:
         - "No"
         - "Yes"
   - type: textarea
     attributes:
       label: Certifications you have, or could get before being hired
-      description: Optional. One per line.
+      description: One per line.
+      render: text
+
+  - type: markdown
+    attributes:
+      value: "## Step 5 of 7: About you (optional: shows how well each job fits you)"
+  - type: textarea
+    attributes:
+      label: Your skills
+      description: 'One skill per line, written as "Skill: words a job posting might use". Only things you have done. This replaces your current skill list.'
+      placeholder: |
+        Reports and dashboards: report, dashboard
+        Data cleanup: data quality, dedup, import
+      render: text
+  - type: input
+    attributes:
+      label: Years of experience in your field
+      description: "A number. Jobs asking for more years are flagged, never removed. Example: 3"
+  - type: textarea
+    attributes:
+      label: Certifications you hold
+      description: One per line.
+      render: text
+
+  - type: markdown
+    attributes:
+      value: "## Step 6 of 7: More ways to find jobs (optional)"
   - type: textarea
     attributes:
       label: Companies to watch
-      description: Optional. Links to company job pages on Greenhouse, Lever, Ashby or SmartRecruiters, one per line. Every job there is checked each search.
-      placeholder: https://job-boards.greenhouse.io/examplecompany
+      description: "Links to company job pages on Greenhouse, Lever, Ashby or SmartRecruiters, one per line. Every job there is checked. Example: https://job-boards.greenhouse.io/examplecompany"
+      render: text
   - type: dropdown
     attributes:
       label: Skills-based matching
-      description: Also find jobs with OTHER titles when the listing has your required keywords and enough of your skills (listed further down).
+      description: "On = also find jobs with OTHER titles, when the listing has your keywords (next question) and enough of your skills (Step 5)."
       options:
         - "Off"
         - "On"
   - type: textarea
     attributes:
       label: "Skills-based matching: required keywords"
-      description: One per line. These words must appear in the job listing.
-      placeholder: |
-        Salesforce
-        NPSP
+      description: "One per line. These words must appear in the job listing. Example: Salesforce"
+      render: text
   - type: dropdown
     attributes:
       label: "Skills-based matching: how many keywords must appear?"
@@ -114,27 +152,15 @@ body:
   - type: input
     attributes:
       label: "Skills-based matching: how many of your skills must the posting mention?"
-      description: A number. 3 is a good start.
-      placeholder: "3"
-  - type: textarea
+      description: "A number. 3 is a good start."
+
+  - type: markdown
     attributes:
-      label: Your skills
-      description: 'One skill per line, as "Skill name: words a job posting might use". Only things you have actually done. This replaces your current skill list.'
-      placeholder: |
-        Reports and dashboards: report, dashboard
-        Data cleanup: data quality, dedup, import
-  - type: input
-    attributes:
-      label: Years of experience in your field
-      description: A number. Jobs asking for more years are flagged (never removed).
-  - type: textarea
-    attributes:
-      label: Certifications you hold
-      description: Optional. One per line.
+      value: "## Step 7 of 7: When to search"
   - type: dropdown
     attributes:
       label: Automatic weekly searches
-      description: On = a search runs by itself once a week.
+      description: On = a search also runs by itself once a week.
       options:
         - "Off"
         - "On"

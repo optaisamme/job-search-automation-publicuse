@@ -71,6 +71,9 @@ def parse_issue_body(body: str) -> dict:
     def flush():
         if current in LABELS:
             text = "\n".join(lines).strip()
+            m = re.fullmatch(r"(`{3,})[\w-]*\n(.*?)\n?\1", text, re.S)   # answers from plain text boxes come as a code block
+            if m:
+                text = m.group(2).strip()
             answers[LABELS[current]] = "" if text in ("", "_No response_") else text
 
     for line in (body or "").replace("\r\n", "\n").split("\n"):

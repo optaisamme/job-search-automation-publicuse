@@ -29,11 +29,13 @@ The [EDIT_ME_JOB_SEARCH_SETTINGS folder page](EDIT_ME_JOB_SEARCH_SETTINGS) lists
 
 **Easiest: the setup questionnaire.**
 
-1. In **your copy**, click the **Issues** tab, then **New issue**, then **Job search setup**
-   (or use this link while in your copy: [open the questionnaire](../../issues/new?template=job_search_setup.yml)).
+1. In **your copy**, click the **Issues** tab, then the green **New issue** button. A list of
+   forms opens (or use this link while in your copy: [open the questionnaire list](../../issues/new/choose)).
+   Click **Job search setup**. If a blank "Create new issue" page opens instead, click
+   **Choose a different template** near the top, then **Job search setup**.
 2. Answer the questions. Only "Job titles to look for" is required. Leave a question empty to
    keep the current setting; type `none` to clear one.
-3. Click **Submit new issue**. Within a minute or two, a reply on the issue lists what was saved,
+3. Click **Create** (on some screens it says **Submit new issue**). Within a minute or two, a reply on the issue lists what was saved,
    or explains what to fix (edit the issue to fix it; it is checked again).
 4. If there is no **Issues** tab: click **Settings**, then **General**, scroll to **Features**,
    and tick **Issues**.
@@ -140,7 +142,7 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
       and while weekly searches are off, it stops after a few seconds without searching. The
       Actions tab shows those as short runs with the search skipped.
 2. **Free web search key (recommended).**
-   Without a key, every search already checks 9 job sites and company careers pages. Adding
+   Without a key, every search already checks 7 job sites and company careers pages. Adding
    one free key turns on a **web search**: for each of your job titles, the tool also searches
    the whole web, including company careers pages, and finds jobs that are on no job site. It
    also finds new companies to check. It is optional and stays off until you add the key.
@@ -190,8 +192,8 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 2. It does not search LinkedIn, Indeed, Handshake, Idealist and the other popular boards on
    the results page (no public data feed, sign-in required, or their terms do not allow it).
    The results page has one-click search links for them instead.
-3. It searches Himalayas, The Muse, Remote OK, Jobicy, We Work Remotely, Working Nomads,
-   Jobspresso, Remotive, Hacker News "Who is hiring?", and the careers pages of companies you
+3. It searches Himalayas, The Muse, Remote OK, Jobicy, We Work Remotely, Remotive,
+   Hacker News "Who is hiring?", and the careers pages of companies you
    add (settings section 7) or that it found earlier. It searches the wider web only if you
    add the free Tavily key.
 4. Results come from text rules. When a posting is unclear, the job is marked "Needs

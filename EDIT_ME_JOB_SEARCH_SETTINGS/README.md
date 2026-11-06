@@ -1,8 +1,8 @@
 # START HERE: the files you edit
 
 **Easiest: answer the setup questionnaire instead of editing these files.** In your copy, open
-[the questionnaire](../../../issues/new?template=job_search_setup.yml) (**Issues** tab, **New issue**,
-**Job search setup**), answer the questions and click **Submit new issue**. It fills in files 1
+[the questionnaire](../../../issues/new/choose) (**Issues** tab, **New issue**,
+**Job search setup**), answer the questions and click **Create**. It fills in files 1
 and 2 for you and replies with what changed.
 
 Every file you are meant to edit has **EDIT_ME** at the start of its name.
