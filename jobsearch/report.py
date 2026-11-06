@@ -242,7 +242,7 @@ def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report"
         md += ["", "Companies no longer checked (no job matching your titles in more than 5 searches in a row): "
                + ", ".join(sorted(b.get("employer") or b["board"] for b in dropped)) + "."]
     md += ["", "Good to know:",
-           "1. Only the job sites marked Yes above were searched. No tool finds every job.",
+           "1. Only the job sites marked **Yes** in the \"Searched this time?\" column of \"Where this search looked\" were searched. No tool finds every job.",
            "2. \"First found\" is when this tool first saw a job, not when the employer posted it.",
            "3. Rules are checked by reading the posting's text. When the wording is unclear, the job is put under "
            "\"need checking\" instead of guessed.",
