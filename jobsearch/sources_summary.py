@@ -61,7 +61,7 @@ def section(sources: list[dict], started_at: str | None = None, finished_at: str
           + (f": this search took about {mins} minute{'s' if mins != 1 else ''}" if mins else "")
           + ". GitHub stops a search after 60 minutes.", ""]
     L += [
-         "| Job site | What it searches | Searched this time? | Listings looked at | Matched your job titles | Matched your skills |",
+         "| Job site | What it searches | Searched this time? | Listings checked | Matched your job titles | Matched your skills |",
          "|---|---|---|---|---|---|"]
     known = [n for n, _, _ in SITES]
     for name, shown, what in SITES:
