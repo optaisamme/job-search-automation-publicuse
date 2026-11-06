@@ -58,12 +58,28 @@ def drop_state_list(text: str) -> str:
     return re.sub(r"(Allowed-state list omits [^();]+?) \([^)]*\)", r"\1", text or "")
 
 
-def _plain_reason(x: str) -> str:
+def short_salary(x: str) -> str:
+    """'Salary: range $60,000-$70,000: starts at $60,000, below $90,000; …' -> 'Salary: $60,000-$70,000 (too low)'."""
+    import re
+    m = re.match(r"(Salary: )(.*?)( \((?:per third-party listing[^)]*|job site's copy)\))?$", x)
+    if not m:
+        return x
+    head, body, tail = m.group(1), m.group(2), m.group(3) or ""
+    for pat, fmt in ((r"range (\$[\d,]+-\$[\d,]+)", "{0}"), (r"(?:single )?salary (\$[\d,]+)", "{0}"),
+                     (r"(lowest|highest) pay (\$[\d,]+)", "{0} pay {1}")):
+        hit = re.match(pat, body)
+        if hit:
+            return f"{head}{fmt.format(*hit.groups())} (too low){tail}"
+    return x
+
+
+def _plain_reason(x: str, short_pay: bool = False) -> str:
     """Current plain wording for a saved reason (older searches saved 'salary: …' style text)."""
     for a, b in OLD_PREFIX.items():
         if x.startswith(a):
             x = b + x[len(a):]
-    return _short(drop_state_list(x))
+    x = drop_state_list(x)
+    return _short(short_salary(x) if short_pay else x)
 
 
 def _check_table(rows) -> list[str]:
@@ -167,7 +183,7 @@ def _reject_table(rows, limit: int = 100) -> list[str]:
     L = ["| Job | Company | Why it did not match | Link | First found |", "|---|---|---|---|---|"]
     for r in rows[:limit]:
         title = _label(r)
-        why = "; ".join(_plain_reason(x) for x in (_j(r, "reasons", []) or []))
+        why = "; ".join(_plain_reason(x, short_pay=True) for x in (_j(r, "reasons", []) or []))
         unchecked = _unchecked_rules(r)
         if unchecked:
             why += f" (other rules could not be checked: {', '.join(unchecked)})"

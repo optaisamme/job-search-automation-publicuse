@@ -267,7 +267,7 @@ def test_report_sections(root):
     md = open(info["report"]).read()
     for h in ("## Jobs that match all your rules", "## Jobs that need checking", "## Near Misses: Jobs that did not match one of your rules", "## Where this search looked", "TEST DATA"):
         assert h in md
-    assert "ends at $100,000, not above $100,000" in md
+    assert "Salary: $90,000-$100,000 (too low)" in md and "not above $100,000" not in md
 
 
 def test_all_blocked_run_is_not_baseline(root):
@@ -873,3 +873,14 @@ def test_location_reason_does_not_list_allowed_states():
     assert drop_state_list(old) == "Location: Allowed-state list omits New Mexico (per third-party listing; employer posting not confirmed)"
     assert "alabama" not in _plain_reason(old)
     assert drop_state_list("Salary: range $60,000-$70,000 (job site's copy)") == "Salary: range $60,000-$70,000 (job site's copy)"
+
+
+def test_near_miss_salary_reason_is_short():
+    from jobsearch.report import _plain_reason
+    long = ("Salary: range $60,000-$70,000: starts at $60,000, below $90,000; ends at $70,000, not above $100,000 "
+            "(per third-party listing; employer posting not confirmed)")
+    assert _plain_reason(long, short_pay=True) == "Salary: $60,000-$70,000 (too low) (job site's copy)"
+    assert _plain_reason("salary: single salary $85,000 < $100,000", short_pay=True) == "Salary: $85,000 (too low)"
+    assert _plain_reason("Salary: salary $85,000 is below your minimum of $100,000", short_pay=True) == "Salary: $85,000 (too low)"
+    assert _plain_reason("Salary: lowest pay $80,000 is below $90,000", short_pay=True) == "Salary: lowest pay $80,000 (too low)"
+    assert _plain_reason("Salary: Hourly/contract compensation only", short_pay=True) == "Salary: Hourly/contract compensation only"
