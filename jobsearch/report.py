@@ -73,6 +73,14 @@ def short_salary(x: str) -> str:
     return x
 
 
+def near_miss_reason(x: str) -> str:
+    """A near miss's reason for the results page: no state list, short salary wording."""
+    for a, b in OLD_PREFIX.items():
+        if x.startswith(a):
+            x = b + x[len(a):]
+    return short_salary(drop_state_list(x))
+
+
 def _plain_reason(x: str, short_pay: bool = False) -> str:
     """Current plain wording for a saved reason (older searches saved 'salary: …' style text)."""
     for a, b in OLD_PREFIX.items():

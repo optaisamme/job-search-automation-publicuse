@@ -884,3 +884,11 @@ def test_near_miss_salary_reason_is_short():
     assert _plain_reason("Salary: salary $85,000 is below your minimum of $100,000", short_pay=True) == "Salary: $85,000 (too low)"
     assert _plain_reason("Salary: lowest pay $80,000 is below $90,000", short_pay=True) == "Salary: lowest pay $80,000 (too low)"
     assert _plain_reason("Salary: Hourly/contract compensation only", short_pay=True) == "Salary: Hourly/contract compensation only"
+
+
+def test_results_page_near_miss_reason_is_short():
+    from jobsearch.report import near_miss_reason
+    x = ("salary: range $60,000-$70,000: starts at $60,000, below $90,000; ends at $70,000, not above $100,000 "
+         "(per third-party listing; employer posting not confirmed)")
+    assert near_miss_reason(x) == "Salary: $60,000-$70,000 (too low) (per third-party listing; employer posting not confirmed)"
+    assert near_miss_reason("Location: Allowed-state list omits New Mexico (alabama, utah)") == "Location: Allowed-state list omits New Mexico"
