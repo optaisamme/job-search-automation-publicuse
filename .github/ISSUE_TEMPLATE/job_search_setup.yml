@@ -15,7 +15,7 @@ body:
 
   - type: markdown
     attributes:
-      value: "## Step 1 of 7: The jobs you want"
+      value: "## Step 1 of 8: The jobs you want"
   - type: textarea
     attributes:
       label: Job titles to look for
@@ -39,7 +39,7 @@ body:
 
   - type: markdown
     attributes:
-      value: "## Step 2 of 7: Where you can work"
+      value: "## Step 2 of 8: Where you can work"
   - type: dropdown
     attributes:
       label: Remote jobs only?
@@ -62,7 +62,7 @@ body:
 
   - type: markdown
     attributes:
-      value: "## Step 3 of 7: Pay (per year, numbers only, 0 = no minimum)"
+      value: "## Step 3 of 8: Pay (per year, numbers only, 0 = no minimum)"
   - type: input
     attributes:
       label: Lowest single salary you would accept
@@ -78,7 +78,7 @@ body:
 
   - type: markdown
     attributes:
-      value: "## Step 4 of 7: Jobs to leave out (optional)"
+      value: "## Step 4 of 8: Jobs to leave out (optional)"
   - type: textarea
     attributes:
       label: Title words to skip
@@ -104,7 +104,7 @@ body:
 
   - type: markdown
     attributes:
-      value: "## Step 5 of 7: About you (optional: shows how well each job fits you)"
+      value: "## Step 5 of 8: About you (optional: shows how well each job fits you)"
   - type: textarea
     attributes:
       label: Your skills
@@ -125,7 +125,7 @@ body:
 
   - type: markdown
     attributes:
-      value: "## Step 6 of 7: More ways to find jobs (optional)"
+      value: "## Step 6 of 8: More ways to find jobs (optional)"
   - type: textarea
     attributes:
       label: Companies to watch
@@ -156,7 +156,24 @@ body:
 
   - type: markdown
     attributes:
-      value: "## Step 7 of 7: When to search"
+      value: |
+        ## Step 7 of 8: How many jobs to look through
+        **We recommend keeping "Recommended" for now.** Some job sites offer thousands of jobs. This sets how many
+        the search reads from Himalayas, The Muse and Jobicy. Reading more makes each search take longer, and
+        GitHub stops a search after 60 minutes.
+  - type: dropdown
+    attributes:
+      label: How many jobs to look through
+      description: "In a test search on 2026-11-06, Recommended read 3,763 job listings in about 11 minutes (without the web search). More job titles make a search longer."
+      options:
+        - "Recommended: 1,000 newest jobs per site, 200 for each job title, Jobicy up to 5,000"
+        - "Fewer (faster): 200 newest jobs per site, 100 for each job title, Jobicy up to 500"
+        - "More (slower): 2,000 newest jobs per site, 400 for each job title, Jobicy up to 10,000"
+      default: 0
+
+  - type: markdown
+    attributes:
+      value: "## Step 8 of 8: When to search"
   - type: dropdown
     attributes:
       label: Automatic weekly searches

@@ -70,6 +70,7 @@ class SourceStatus:
     skills_matched: int = 0   # matched by skills-based matching (other titles)
     errors: list[str] = field(default_factory=list)
     searches: list[dict] = field(default_factory=list)   # web search: each search's words and settings
+    limit: str = ""   # how much of the site this search read (shown in the report)
 
 
 class Adapter:

@@ -53,9 +53,18 @@ LABELS = {
     "Your skills": "my_skills",
     "Years of experience in your field": "years",
     "Certifications you hold": "certs_held",
+    "How many jobs to look through": "search_size",
     "Automatic weekly searches": "weekly",
     "Day for automatic weekly searches": "weekly_day",
     "Start a search right after saving?": "run_now",
+}
+
+
+# "How many jobs to look through": the numbers written to settings section 10
+SEARCH_SIZES = {
+    "recommended": {"newest_jobs_per_site": 1000, "jobs_per_search_word": 200, "jobicy_max_jobs": 5000},
+    "fewer": {"newest_jobs_per_site": 200, "jobs_per_search_word": 100, "jobicy_max_jobs": 500},
+    "more": {"newest_jobs_per_site": 2000, "jobs_per_search_word": 400, "jobicy_max_jobs": 10000},
 }
 
 
@@ -237,6 +246,19 @@ def apply(answers: dict, settings_text: str, experience_text: str) -> tuple[str,
     v = as_number(answers.get("skills_min", ""), "Skills-based matching: how many of your skills")
     if v is not None:
         put("[skills_matching]", "minimum_skills_matched", v, "Skills-matching minimum skills", append_block=sk_block)
+
+    c = as_choice(answers.get("search_size", ""))
+    if c:
+        name = next((k for k in SEARCH_SIZES if c.startswith(k)), None)
+        if name is None:
+            raise AnswerProblem('"How many jobs to look through": choose Recommended, Fewer or More.')
+        size = SEARCH_SIZES[name]
+        block = "[search_size]\n" + "\n".join(f"{k} = {v}" for k, v in size.items())
+        for k, v in size.items():
+            s = set_value(s, "[search_size]", k, v, append_block=block)
+        changed.append(f"How many jobs to look through: {name.capitalize()} "
+                       f"({size['newest_jobs_per_site']:,} newest jobs per site, {size['jobs_per_search_word']:,} for each "
+                       f"job title, Jobicy up to {size['jobicy_max_jobs']:,})")
 
     wk_block = '[automatic_weekly_search]\non = "no"\nday = "Friday"'
     c = as_choice(answers.get("weekly", ""))

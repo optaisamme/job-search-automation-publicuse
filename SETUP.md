@@ -86,6 +86,10 @@ reject_when = "mentioned"
       the listing has your required keywords (for example `["Salesforce", "NPSP"]`) and at
       least 3 of the skills in your experience file (Step 3). Change `on = "no"` to
       `on = "yes"` and type your keywords.
+   h. Section 9: automatic weekly searches (see Step 6).
+   i. Section 10: how many jobs to read from Himalayas, The Muse and Jobicy. **We recommend
+      keeping these numbers for now.** Bigger numbers make each search take longer (GitHub
+      stops a search after 60 minutes). The questionnaire offers Recommended, Fewer or More.
 5. Click **Commit changes** (green button), then **Commit changes** again.
 6. The first step of every run ("Check settings files") lists exactly what is ON and
    OFF. If no job titles are set, the run stops there and says so.

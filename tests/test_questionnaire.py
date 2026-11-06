@@ -116,3 +116,31 @@ def test_text_box_answers_in_code_blocks_are_read():
     body = "### Job titles to look for\n\n```text\nProgram Manager\nProgram Director\n```\n\n### Your state\n\nUtah\n"
     a = q.parse_issue_body(body)
     assert a["titles_1"] == "Program Manager\nProgram Director" and a["state"] == "Utah"
+
+
+def test_search_size_choice_is_saved_and_recommended_is_the_default():
+    import yaml
+    f = yaml.safe_load(open(ROOT / ".github/ISSUE_TEMPLATE/job_search_setup.yml"))
+    dd = next(b for b in f["body"] if b["attributes"].get("label") == "How many jobs to look through")
+    assert dd["attributes"]["default"] == 0 and dd["attributes"]["options"][0].startswith("Recommended")
+    assert "recommend keeping" in yaml.safe_dump(f).lower()
+    # the recommended choice equals the numbers the settings file starts with and the search uses by default
+    from jobsearch.adapters.aggregators import SEARCH_SIZE_DEFAULTS
+    assert q.SEARCH_SIZES["recommended"] == SEARCH_SIZE_DEFAULTS == tomllib.loads(SETTINGS)["search_size"]
+    s, _, changes, _ = q.apply(q.parse_issue_body(form(titles_1="Data Analyst", search_size=dd["attributes"]["options"][1])),
+                               SETTINGS, EXPERIENCE)
+    assert tomllib.loads(s)["search_size"] == q.SEARCH_SIZES["fewer"]
+    assert any(c.startswith("How many jobs to look through: Fewer") for c in changes)
+    # an older copy without section 10 gets it added
+    old = SETTINGS[:SETTINGS.index("[search_size]")]
+    s, _, _, _ = q.apply(q.parse_issue_body(form(search_size="More (slower)")), old, EXPERIENCE)
+    assert tomllib.loads(s)["search_size"] == q.SEARCH_SIZES["more"]
+    with pytest.raises(q.AnswerProblem):
+        q.apply(q.parse_issue_body(form(search_size="Huge")), SETTINGS, EXPERIENCE)
+
+
+def test_search_size_numbers_are_kept_within_limits():
+    from jobsearch.adapters.aggregators import search_size, _pages
+    sz = search_size({"search_size": {"newest_jobs_per_site": 999999, "jobs_per_search_word": 1, "jobicy_max_jobs": "x"}})
+    assert sz == {"newest_jobs_per_site": 5000, "jobs_per_search_word": 20, "jobicy_max_jobs": 5000}
+    assert (_pages(1000, 20), _pages(30, 20), _pages(5000, 100)) == (50, 2, 50)

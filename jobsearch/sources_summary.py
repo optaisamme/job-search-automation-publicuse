@@ -8,12 +8,18 @@ SITES = [  # (source name in the run record, name shown, what it searches)
                                                "(Greenhouse, Lever, Ashby, SmartRecruiters)"),
     ("remotive", "Remotive", "remote jobs, searched by your job titles"),
     ("remoteok", "Remote OK", "its newest remote jobs (about 100: all its feed gives)"),
-    ("himalayas", "Himalayas", "remote jobs: up to 200 per search word, plus its newest 1,000"),
-    ("themuse", "The Muse", "its newest 1,000 remote jobs, all fields"),
-    ("jobicy", "Jobicy", "all of its US remote jobs"),
+    ("himalayas", "Himalayas", "remote jobs: {limit}"),
+    ("themuse", "The Muse", "{limit}"),
+    ("jobicy", "Jobicy", "{limit}"),
     ("weworkremotely", "We Work Remotely", "its newest 100 remote jobs, all categories (all its feed gives)"),
     ("hackernews", "Hacker News: Who is hiring?", "this month's hiring thread (mostly tech jobs)"),
 ]
+
+# shown when a search did not record how many jobs it read (searches before 2026-11-07)
+DEFAULT_LIMITS = {"himalayas": "how many it read was not recorded for this search",
+                  "themuse": "its newest remote jobs, all fields (how many it read was not recorded for this search)",
+                  "jobicy": "its US remote jobs (how many it read was not recorded for this search)"}
+SIZE_SETTING = "settings file 1, section 10 (or the setup questionnaire)"
 
 
 REMOVED = {"adzuna", "usajobs", "jooble", "reliefweb", "web_search_leads", "workingnomads", "jobspresso"}   # sources this tool no longer uses
@@ -34,11 +40,27 @@ def _cell(x) -> str:
     return str(x if x is not None else "").replace("|", "/").replace("\n", " ")
 
 
-def section(sources: list[dict]) -> list[str]:
+def _minutes(started_at, finished_at):
+    from datetime import datetime
+    try:
+        secs = (datetime.fromisoformat(finished_at) - datetime.fromisoformat(started_at)).total_seconds()
+    except (TypeError, ValueError):
+        return None
+    return max(1, round(secs / 60))
+
+
+def section(sources: list[dict], started_at: str | None = None, finished_at: str | None = None) -> list[str]:
     by = {s.get("name"): s for s in sources or []}
     companies = (by.get("ats_watchlist") or {}).get("companies")
     L = ["## Where this search looked", "",
-         "Every job site and source used in the last search, and how many listings each gave.", "",
+         "Every job site and source used in the last search, and how many listings each gave.", ""]
+    mins = _minutes(started_at, finished_at)
+    L += ["**Why only part of some sites is read:** some sites send a set number of jobs (Remote OK about 100, "
+          "We Work Remotely 100). For Himalayas, The Muse and Jobicy, this tool reads up to the numbers set in "
+          f"{SIZE_SETTING}. Reading more makes each search take longer"
+          + (f": this search took about {mins} minute{'s' if mins != 1 else ''}" if mins else "")
+          + ". GitHub stops a search after 60 minutes.", ""]
+    L += [
          "| Job site | What it searches | Searched this time? | Listings looked at | Matched your job titles | Matched your skills |",
          "|---|---|---|---|---|---|"]
     known = [n for n, _, _ in SITES]
@@ -46,6 +68,7 @@ def section(sources: list[dict]) -> list[str]:
         s = by.get(name)
         if s is None:
             continue
+        what = what.format(limit=s.get("limit") or DEFAULT_LIMITS.get(name, ""))
         L.append(f"| {shown} | {what} | {_worked(s)} | {s.get('fetched', 0)} | {s.get('matched', 0)} | {_skills(s)} |")
     for name, s in by.items():   # any source not described above (removed sources are not shown)
         if name not in known and name not in REMOVED:
@@ -65,11 +88,22 @@ def section(sources: list[dict]) -> list[str]:
         from .adapters.websearch import CAREERS_DOMAINS, EXCLUDE_DOMAINS
         rows = ws.get("searches") or []
         if rows:
-            L += ["| # | Search words | Where | Period | Up to | Results | Kept as jobs to check |",
-                  "|---|---|---|---|---|---|---|"]
+            L += ["| # | Search words | Where | Period | Results asked for | Results returned | Matches | Others |",
+                  "|---|---|---|---|---|---|---|---|"]
             for i, r in enumerate(rows, 1):
+                matches = r.get("matches", "not recorded" if "kept" in r else "")
+                others = r.get("others", (f"not recorded ({r['kept']} kept in all)" if "kept" in r else ""))
                 L.append(f"| {i} | {_cell(r.get('words'))} | {_cell(r.get('where'))} | {_cell(r.get('period'))} | "
-                         f"{r.get('max_results', '')} | {_cell(r.get('results', ''))} | {r.get('kept', '')} |")
+                         f"{r.get('max_results', '')} | {_cell(r.get('results', ''))} | {matches} | {others} |")
+            L += ["", "1. **Results asked for:** the most web pages Tavily may send back for that search. Tavily "
+                  "allows at most 20 per search. Searches of the wider web ask for 10. Each search uses 1 of the "
+                  "1,000 free monthly searches, whatever the number asked for.",
+                  "2. **Results returned:** the web pages Tavily sent back.",
+                  "3. **Matches:** jobs from that search that match all your rules.",
+                  "4. **Others:** other job postings from that search: a different job title, a rule not met, "
+                  "or a link that still needs checking.",
+                  "5. The rest were not single job postings (pages listing many jobs, or sites this tool "
+                  "already reads), or were already found by an earlier search in the table."]
         else:
             L.append(_cell(ws.get("detail")) or "No searches were recorded.")
         L += ["", "Company careers pages searched: " + ", ".join(CAREERS_DOMAINS) + ".", "",

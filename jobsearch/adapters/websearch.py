@@ -157,6 +157,7 @@ class WebSearchAdapter(Adapter):
                         # a matching job on a supported careers page: read that company's whole page this search too
                         self.ctx.setdefault("boards_added", []).append({"ats": hit[0], "board": hit[1], "employer": employer or None})
                     out.append(p)
+                    log.setdefault("urls", []).append(url)
                 log["kept"] = len(out) - kept_before
         status.detail = f"{searches} searches ({searches} of the free monthly allowance used)"
         return out

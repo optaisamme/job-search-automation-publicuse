@@ -75,6 +75,7 @@ def load_config(root: Path) -> tuple[dict, dict]:
         prof["title_rules"] = {"must_mention": list(flt.get("description_must_mention", [])),
                                "exclude_plain": list(flt.get("exclude_titles_containing", []))}
         prof["skills_matching"] = dict(settings.get("skills_matching") or {})
+        prof["search_size"] = dict(settings.get("search_size") or {})
         prof["watch_links"] = [u for u in ((settings.get("companies_to_watch") or {}).get("job_page_links") or [])
                                if isinstance(u, str) and u.strip()]
         kw = list((settings.get("search") or {}).get("keywords") or [])
@@ -201,7 +202,8 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
     run_id = store.start_run("dry_run" if dry_run else ("fixtures" if fixtures else "live"))
     was_baseline_done = store.baseline_done()
 
-    ctx = {"skill_words": matcher.skills.search_words(), "skill_keywords": matcher.skills.required if matcher.skills.active else [],
+    ctx = {"search_size": dict(prof.get("search_size") or {}),
+           "skill_words": matcher.skills.search_words(), "skill_keywords": matcher.skills.required if matcher.skills.active else [],
            "skill_rule": matcher.skills.rule,
            "queries": prof["search"]["queries"], "boards": with_watched(boards, watched_boards(prof)[0]), "title_matcher": matcher}
     statuses: list[SourceStatus] = []
@@ -235,7 +237,9 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
     seen_ids: set[int] = set()
     new_boards: list[dict] = list(ctx.get("boards_added", []))
 
+    web_outcome: dict[str, str] = {}   # web search link -> result (counted per search in the report)
     for p, m in matched:
+        web_url = p.source_url if p.source == "websearch" else None
         try:
             p = verifymod.resolve_employer_posting(client, p)
         except Exception as e:  # noqa: BLE001
@@ -291,6 +295,8 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
             status, reasons = "Closed", [f"No longer open: {ver.detail}"]
         else:
             status, reasons = decide(ev["rules"], ver, ev["authoritative"])
+        if web_url:
+            web_outcome[web_url] = status
         rec = _record(p, m2, ev, ver, status, reasons)
         jid, change = store.upsert(rec, run_id)
         if store.job(jid)["closed_at"]:
@@ -376,6 +382,12 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
     success = any(s.state == "ok" and s.fetched > 0 for s in statuses)
     is_baseline = success and not was_baseline_done
     store.commit()
+    for st in statuses:   # web search: per search, jobs that match all rules vs other kept links
+        for log in st.searches:
+            urls = log.pop("urls", [])
+            if "kept" in log:
+                log["matches"] = sum(1 for u in urls if web_outcome.get(u) == QUALIFIED)
+                log["others"] = log["kept"] - log["matches"]
     src_dicts = [asdict(s) for s in statuses]
     # record which company careers pages this search read (shown in each report)
     scanned = {(e.get("employer") or e["board"]) for lst in ctx["boards"].values() for e in lst}
@@ -393,7 +405,8 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
             dropped_boards = age_boards(boards, found)
             aged = True
         save_boards(root, boards, new_boards, aged=aged)
-    run_info = {"run_id": run_id, "started_at": now_iso(), "mode": "dry_run" if dry_run else ("fixtures" if fixtures else "live"),
+    times = store.db.execute("SELECT started_at, finished_at FROM runs WHERE id=?", (run_id,)).fetchone()
+    run_info = {"run_id": run_id, "started_at": times["started_at"], "finished_at": times["finished_at"], "mode": "dry_run" if dry_run else ("fixtures" if fixtures else "live"),
                 "is_baseline": is_baseline, "sources": src_dicts, "errors": errors, "counts": counts, "fixtures": fixtures,
                 "new_boards": new_boards, "dropped_boards": dropped_boards}
     rdir = report_dir or (root / ("out/practice-run" if dry_run else "out"))

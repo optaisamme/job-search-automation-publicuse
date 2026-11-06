@@ -315,3 +315,24 @@ minimum_skills_matched = 3
 [automatic_weekly_search]
 on = "no"
 day = "Friday"
+
+
+# ---------------------------------------------------------------------
+#  10. HOW MANY JOBS TO LOOK THROUGH  (optional: we recommend keeping these)
+# ---------------------------------------------------------------------
+#  Some job sites offer more jobs than they send at once. These numbers
+#  say how many to read. Bigger numbers find a few more jobs but make each
+#  search take longer (GitHub stops a search after 60 minutes). Most of
+#  your matches come from searches by your job titles, not from the
+#  newest-jobs lists, so we recommend keeping these numbers for now.
+#  You can also choose Recommended, Fewer or More in the questionnaire.
+#    newest_jobs_per_site = newest jobs (any title) read from Himalayas and
+#                           The Muse. 20 to 5000. Recommended: 1000
+#    jobs_per_search_word = Himalayas results for each of your job titles.
+#                           20 to 1000. Recommended: 200
+#    jobicy_max_jobs      = most jobs read from Jobicy (it stops when it
+#                           runs out). 100 to 10000. Recommended: 5000
+[search_size]
+newest_jobs_per_site = 1000
+jobs_per_search_word = 200
+jobicy_max_jobs = 5000

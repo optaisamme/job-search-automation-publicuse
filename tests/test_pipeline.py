@@ -270,7 +270,7 @@ def test_report_sections(root):
     setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Senior Salesforce Administrator", desc=bad)])
     info = run(root, c)
     md = open(info["report"]).read()
-    for h in ("## Jobs that match all your rules", "## Jobs that need checking", "## Jobs that did not match", "## Where this search looked", "TEST DATA"):
+    for h in ("## Jobs that match all your rules", "## Jobs that need checking", "## Near Misses: Jobs that did not match one of your rules", "## Where this search looked", "TEST DATA"):
         assert h in md
     assert "ends at $100,000, not above $100,000" in md
 
@@ -524,6 +524,10 @@ def test_web_search_finds_job_and_remembers_company(root, monkeypatch):
     assert [b["board"] for b in saved.get("greenhouse", [])] == ["acme"]
     ws = next(s for s in info["sources"] if s["name"] == "websearch")
     assert ws["state"] == "ok" and "searches" in ws["detail"]
+    # per search: links kept, split into jobs that match all rules and other jobs; the link list itself is not saved
+    first = ws["searches"][0]
+    assert (first["kept"], first["matches"], first["others"]) == (1, 1, 0), first
+    assert all("urls" not in x for x in ws["searches"])
 
 
 def test_web_search_off_without_key(root, monkeypatch):
@@ -702,7 +706,10 @@ def test_report_lists_sites_and_web_search_criteria(root, monkeypatch):
     md = open(info["report"]).read()
     for text in ("## Where this search looked", "| Web search (Tavily) |", "| Company careers pages |", "| Remote OK |",
                  "### Web search (Tavily) criteria", '"Salesforce Administrator" remote', "company careers pages",
-                 "the wider web", "last 30 days", "Company careers pages read (1):** Acme Nonprofit"):
+                 "the wider web", "last 30 days", "Company careers pages read (1):** Acme Nonprofit",
+                 "| Results asked for | Results returned | Matches | Others |", "Tavily allows at most 20 per search",
+                 "**Why only part of some sites is read:**", "this search took about 1 minute",
+                 "GitHub stops a search after 60 minutes"):
         assert text in md, text
     index = results_folder.write(root)["text"]
     assert "## Where this search looked" in index and '"Salesforce Administrator" remote' in index
@@ -751,7 +758,7 @@ def test_did_not_match_list_is_a_table(root):
     setup_board(c, [gh_job(1, "Salesforce Administrator", desc=bad)])
     info = run(root, c)
     md = open(info["report"]).read()
-    sec = md[md.index("## Jobs that did not match"):]
+    sec = md[md.index("## Near Misses: Jobs that did not match one of your rules"):]
     sec = sec[:sec.find("\n## ", 3)]
     assert "| Job | Company | Why it did not match | Link | First found |" in sec
     assert any(l.startswith("| Salesforce Administrator |") and "$60,000" in l for l in sec.splitlines())
@@ -854,3 +861,25 @@ def test_jobicy_reads_every_page():
     c.set("https://jobicy.com/api/v2/remote-jobs?count=100&geo=usa&cursor=abc", {"jobs": [job(3)], "hasMore": False})
     got = JobicyAdapter(c, {"queries": []}).search(SourceStatus("jobicy"))
     assert [p.title for p in got] == ["Analyst 1", "Analyst 2", "Analyst 3"]
+
+
+def test_where_section_shows_limits_time_and_web_search_split():
+    from jobsearch.sources_summary import section
+    sources = [
+        {"name": "himalayas", "state": "ok", "fetched": 900, "matched": 4, "skills_matched": 1,
+         "limit": "up to 100 jobs for each search word, plus its 200 newest jobs"},
+        {"name": "themuse", "state": "ok", "fetched": 1000, "matched": 0, "skills_matched": 0},   # older search: no limit saved
+        {"name": "websearch", "state": "ok", "fetched": 3, "matched": 1, "skills_matched": 0, "searches": [
+            {"words": '"Data Analyst" remote', "where": "company careers pages", "period": "last 30 days",
+             "max_results": 20, "results": 12, "kept": 5, "matches": 2, "others": 3},
+            {"words": '"Data Analyst" job opening apply remote', "where": "the wider web", "period": "last 7 days",
+             "max_results": 10, "results": 10, "kept": 4}]},   # older search: matches not recorded
+    ]
+    md = "\n".join(section(sources, "2026-11-06T10:00:00+00:00", "2026-11-06T10:12:40+00:00"))
+    assert "| Himalayas | remote jobs: up to 100 jobs for each search word, plus its 200 newest jobs |" in md
+    assert "| The Muse | its newest remote jobs, all fields (how many it read was not recorded for this search) |" in md
+    assert "this search took about 13 minutes" in md and "GitHub stops a search after 60 minutes" in md
+    assert "| 1 | \"Data Analyst\" remote | company careers pages | last 30 days | 20 | 12 | 2 | 3 |" in md
+    assert "| 10 | 10 | not recorded | not recorded (4 kept in all) |" in md
+    assert "Up to |" not in md and "Kept as jobs to check" not in md
+    assert "this search took" not in "\n".join(section(sources))   # no times known: no time shown

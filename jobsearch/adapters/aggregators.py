@@ -11,6 +11,27 @@ from ..text import html_to_text
 from .base import Adapter, SourceStatus
 
 
+SEARCH_SIZE_DEFAULTS = {"newest_jobs_per_site": 1000, "jobs_per_search_word": 200, "jobicy_max_jobs": 5000}
+SEARCH_SIZE_LIMITS = {"newest_jobs_per_site": (20, 5000), "jobs_per_search_word": (20, 1000), "jobicy_max_jobs": (100, 10000)}
+
+
+def search_size(ctx: dict) -> dict:
+    """How many jobs to read from sites that offer more than they send at once (settings: search_size)."""
+    out = dict(SEARCH_SIZE_DEFAULTS)
+    for k, v in (ctx.get("search_size") or {}).items():
+        if k in out:
+            try:
+                lo, hi = SEARCH_SIZE_LIMITS[k]
+                out[k] = max(lo, min(hi, int(v)))
+            except (TypeError, ValueError):
+                pass
+    return out
+
+
+def _pages(n: int, per_page: int) -> int:
+    return max(1, -(-n // per_page))
+
+
 def search_words(ctx: dict) -> list[str]:
     """Your first 6 search words, plus the skills-matching keywords when that is on."""
     words = list(dict.fromkeys(ctx.get("queries", [])))[:6]
@@ -68,8 +89,7 @@ class RemoteOKAdapter(Adapter):
 class HimalayasAdapter(Adapter):
     # https://himalayas.app/api — search returns 20 per page (?page=N); the browse feed pages by ?cursor=.
     name = "himalayas"
-    SEARCH_PAGES = 10    # per search word: up to 200 jobs
-    BROWSE_PAGES = 50    # newest jobs regardless of search words: up to 1,000 jobs
+    # Pages (20 jobs each) come from settings: search_size.jobs_per_search_word and newest_jobs_per_site.
 
     def _posting(self, j: dict) -> RawPosting:
         return RawPosting(
@@ -95,8 +115,11 @@ class HimalayasAdapter(Adapter):
                     seen.add(gid)
                     out.append(self._posting(j))
 
+        size = search_size(self.ctx)
+        search_pages, browse_pages = _pages(size["jobs_per_search_word"], 20), _pages(size["newest_jobs_per_site"], 20)
+        status.limit = f"up to {search_pages * 20:,} jobs for each search word, plus its {browse_pages * 20:,} newest jobs"
         for q in search_words(self.ctx):
-            for page in range(1, self.SEARCH_PAGES + 1):
+            for page in range(1, search_pages + 1):
                 r = self.client.get("https://himalayas.app/jobs/api/search?" + urllib.parse.urlencode({"q": q, "country": "US", "page": page}))
                 if r.status >= 400:
                     status.errors.append(f"query {q!r} page {page}: HTTP {r.status}")
@@ -106,7 +129,7 @@ class HimalayasAdapter(Adapter):
                 if len(jobs) < 20:
                     break
         cursor = None
-        for _ in range(self.BROWSE_PAGES):
+        for _ in range(browse_pages):
             r = self.client.get("https://himalayas.app/jobs/api?" + urllib.parse.urlencode({"limit": 20, **({"cursor": cursor} if cursor else {})}))
             if r.status >= 400:
                 status.errors.append(f"newest jobs feed: HTTP {r.status}")
@@ -130,13 +153,14 @@ class TheMuseAdapter(Adapter):
     # https://www.themuse.com/developers/api/v2 — public jobs API, all job types; no key needed at low volume.
     # Not searchable by keyword, so the newest jobs are collected and matched to your titles here.
     name = "themuse"
-    PAGES = 50   # 20 jobs per page: newest 1,000
 
     def search(self, status: SourceStatus) -> list[RawPosting]:
         from ..criteria import CRITERIA
         remote = CRITERIA.get("remote_only", True)
         out, seen = [], set()
-        for page in range(1, self.PAGES + 1):
+        pages = _pages(search_size(self.ctx)["newest_jobs_per_site"], 20)   # 20 jobs per page
+        status.limit = f"its {pages * 20:,} newest remote jobs, all fields"
+        for page in range(1, pages + 1):
             params = [("page", page)] + ([("location", "Flexible / Remote")] if remote else [])
             r = self.client.get("https://www.themuse.com/api/public/jobs?" + urllib.parse.urlencode(params))
             if r.status >= 400:
@@ -165,12 +189,13 @@ class JobicyAdapter(Adapter):
     # and for apply buttons to go to the original job URL (results link to each Jobicy job page).
     name = "jobicy"
 
-    MAX_PAGES = 50   # safety limit: 100 jobs per page
 
     def search(self, status: SourceStatus) -> list[RawPosting]:
         """Every US remote job Jobicy lists, 100 per page, following its page cursor."""
         out, seen, cursor = [], set(), None
-        for _ in range(self.MAX_PAGES):
+        pages = _pages(search_size(self.ctx)["jobicy_max_jobs"], 100)   # 100 jobs per page
+        status.limit = f"all of its US remote jobs (up to {pages * 100:,})"
+        for _ in range(pages):
             params = {"count": 100, "geo": "usa", **({"cursor": cursor} if cursor else {})}
             r = self.client.get("https://jobicy.com/api/v2/remote-jobs?" + urllib.parse.urlencode(params))
             if r.status >= 400:

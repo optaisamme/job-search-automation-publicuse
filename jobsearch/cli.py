@@ -157,6 +157,14 @@ def main(argv=None) -> int:
         except (OSError, ValueError):
             wk = {}
         wk_on = str(wk.get("on", "no")).strip().lower() in ("yes", "y", "true", "on", "1")
+        from .adapters.aggregators import search_size, SEARCH_SIZE_DEFAULTS
+        try:
+            sz = search_size({"search_size": _t.load(open(root / SETTINGS_DIR / "EDIT_ME_1_job_search_settings.toml", "rb")).get("search_size", {})})
+        except (OSError, ValueError):
+            sz = dict(SEARCH_SIZE_DEFAULTS)
+        print(f"How many jobs to look through (section 10): {sz['newest_jobs_per_site']:,} newest jobs per site, "
+              f"{sz['jobs_per_search_word']:,} for each search word, Jobicy up to {sz['jobicy_max_jobs']:,}"
+              + (" (Recommended)" if sz == SEARCH_SIZE_DEFAULTS else ""))
         print("Automatic weekly searches (section 9): " + (f"ON, every {str(wk.get('day', 'Friday')).capitalize()}" if wk_on else "OFF"))
         print(f"Companies to watch (section 7): {', '.join(b['board'] for b in watched) or 'none added (optional: only for companies whose careers page runs on Greenhouse, Lever, Ashby or SmartRecruiters; all job sites are still searched)'}")
         if bad:

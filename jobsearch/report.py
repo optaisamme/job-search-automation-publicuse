@@ -184,10 +184,11 @@ def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report"
     md += ["## Hourly or contract jobs", "",
            "Pay is listed per hour or per contract, so the yearly salary rule was not applied. Check the pay yourself.", ""]
     md += _check_table(held)
-    md += ["## Jobs that did not match, and why (newest 40)", ""]
+    md += ["## Near Misses: Jobs that did not match one of your rules", "",
+           "Newest first, 40 at most. The \"Why it did not match\" column lists every rule a job failed.", ""]
     md += _reject_table(rej)
     from .sources_summary import section as where_section
-    md += [""] + where_section(run_info.get("sources", []))
+    md += [""] + where_section(run_info.get("sources", []), run_info.get("started_at"), run_info.get("finished_at"))
     for k, v in SOURCE_NOTES.items():
         md.append(f"**{k}:** {v}")
     dropped = run_info.get("dropped_boards") or []
