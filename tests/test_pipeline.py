@@ -523,6 +523,7 @@ def test_web_search_finds_job_and_remembers_company(root, monkeypatch):
     first = ws["searches"][0]
     assert (first["kept"], first["matches"], first["others"]) == (1, 1, 0), first
     assert all("urls" not in x for x in ws["searches"])
+    assert {x["max_results"] for x in ws["searches"]} == {20}   # careers pages and the wider web: Tavily's maximum
 
 
 def test_web_search_off_without_key(root, monkeypatch):
@@ -641,7 +642,7 @@ def test_report_lists_sites_and_web_search_criteria(root, monkeypatch):
     for text in ("## Where this search looked", "| Web search (Tavily) |", "| Company careers pages |", "| Remote OK |",
                  "### Web search (Tavily) criteria", '"Salesforce Administrator" remote', "company careers pages",
                  "the wider web", "last 30 days", "Company careers pages read (1):** Acme Nonprofit",
-                 "| Pages dated within | Most links allowed | Links returned | Matches | Others |", "20 is the most Tavily allows",
+                 "| Pages dated within | Links returned | Matches | Others |", "up to 20 (the most Tavily allows)",
                  "**Why only part of some sites is read:**", "this search took about 1 minute",
                  "GitHub stops a search after 60 minutes"):
         assert text in md, text
@@ -813,10 +814,10 @@ def test_where_section_shows_limits_time_and_web_search_split():
     assert "| Himalayas | remote jobs: up to 100 jobs for each search word, plus its 200 newest jobs |" in md
     assert "| The Muse | its newest remote jobs, all fields (how many it read was not recorded for this search) |" in md
     assert "this search took about 13 minutes" in md and "GitHub stops a search after 60 minutes" in md
-    assert "| 1 | \"Data Analyst\" remote | company careers pages | last 30 days | 20 | 12 | 2 | 3 |" in md
-    assert "| 10 | 10 | not recorded | not recorded |" in md and "did not record Matches and Others" in md
+    assert "| 1 | \"Data Analyst\" remote | company careers pages | last 30 days | 12 | 2 | 3 |" in md
+    assert "| last 7 days | 10 | not recorded | not recorded |" in md and "did not record Matches and Others" in md
     assert "Up to |" not in md and "Kept as jobs to check" not in md and "Results asked for" not in md
-    assert "| Pages dated within | Most links allowed | Links returned | Matches | Others |" in md and "a limit, not a minimum" in md
+    assert "| Pages dated within | Links returned | Matches | Others |" in md and "up to 20 (the most Tavily allows)" in md
     assert "this search took" not in "\n".join(section(sources))   # no times known: no time shown
 
 

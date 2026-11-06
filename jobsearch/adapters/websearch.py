@@ -123,7 +123,7 @@ class WebSearchAdapter(Adapter):
         for term in terms:
             plan = [
                 (f'{term} {where}'.strip(), CAREERS_DOMAINS, None, 20, "month"),
-                (f'{term} job opening apply {where}'.strip(), None, EXCLUDE_DOMAINS, 10, "week"),
+                (f'{term} job opening apply {where}'.strip(), None, EXCLUDE_DOMAINS, 20, "week"),
             ]
             for query, inc, exc, n, rng in plan:
                 log = {"words": query, "where": "company careers pages" if inc else "the wider web",
