@@ -79,3 +79,39 @@ def section(sources: list[dict]) -> list[str]:
               "Left out of the wider-web search (sites this tool does not open, sites it already reads "
               "directly, and sites that repost other sites' jobs): " + ", ".join(EXCLUDE_DOMAINS) + "."]
     return L + [""]
+
+
+SOURCE_LABELS = {"lead": "Web search leads (Claude)", "third_party_page": "Web search leads (Claude)",
+                 "greenhouse": "Company careers page (Greenhouse)", "lever": "Company careers page (Lever)",
+                 "ashby": "Company careers page (Ashby)", "smartrecruiters": "Company careers page (SmartRecruiters)"}
+HOST_LABELS = {"himalayas.app": "Himalayas", "remoteok.com": "Remote OK", "remotive.com": "Remotive",
+               "themuse.com": "The Muse", "jobicy.com": "Jobicy", "weworkremotely.com": "We Work Remotely",
+               "workingnomads.com": "Working Nomads", "jobspresso.co": "Jobspresso",
+               "news.ycombinator.com": "Hacker News: Who is hiring?"}
+
+
+def found_by(row) -> str:
+    """The job site(s) or search that found a job, from its saved sources and listing links."""
+    import json
+    from urllib.parse import urlsplit
+    site_names = {name: shown for name, shown, _ in SITES}
+
+    def load(key):
+        try:
+            return json.loads(row[key] or "[]")
+        except (KeyError, IndexError, TypeError, ValueError):
+            return []
+
+    names = []
+    for s in load("sources"):
+        label = SOURCE_LABELS.get(s) or site_names.get(s)
+        if label and label not in names:
+            names.append(label)
+    for url in load("source_urls"):
+        host = urlsplit(url or "").netloc.lower().removeprefix("www.")
+        label = HOST_LABELS.get(host)
+        if label and label not in names:
+            names.append(label)
+    if not names and "employer_page" in load("sources"):
+        names.append("Employer's website (reached from another listing)")
+    return ", ".join(names) or "not recorded"

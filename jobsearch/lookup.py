@@ -10,8 +10,8 @@ from .agencies import is_agency
 
 def needs_employer_posting(db) -> list[dict]:
     rows = db.execute(
-        "SELECT id, employer, title, canonical_url, source_urls, reasons, verification FROM jobs "
-        "WHERE closed_at IS NULL AND status = 'Needs Verification' ORDER BY id").fetchall()
+        "SELECT id, employer, title, canonical_url, source_urls, reasons, verification, first_seen FROM jobs "
+        "WHERE closed_at IS NULL AND status = 'Needs Verification' ORDER BY first_seen DESC, id").fetchall()
     out = []
     for r in rows:
         reasons = " ".join(json.loads(r["reasons"] or "[]"))
@@ -26,5 +26,6 @@ def needs_employer_posting(db) -> list[dict]:
             "current_link": (json.loads(r["source_urls"] or "[]") or [r["canonical_url"]])[0],
             "why": ver.get("status") or "third-party",
             "search_link": "https://www.google.com/search?q=" + urllib.parse.quote_plus(q),
+            "first_seen": (r["first_seen"] or "")[:10],
         })
     return out

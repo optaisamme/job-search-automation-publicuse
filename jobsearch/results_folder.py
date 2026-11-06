@@ -72,21 +72,22 @@ def _current_sections(db) -> list[str]:
         L += match_rows(by_skills)
     L += ["", f"## Near misses: failed exactly one of your rules ({len(near)})", ""]
     if near:
-        L += ["| Job | Company | Why it did not match | Link | First found |", "|---|---|---|---|---|"]
+        from .sources_summary import found_by
+        L += ["| Job | Company | Why it did not match | Link | Found by | First found |", "|---|---|---|---|---|---|"]
         for r in near:
             p = _j(r["npayload"], {})
             L.append(f"| {_cell(_label(r))} | {_cell(r['employer'])} | {_cell('; '.join(_j(r['reasons'], []) or p.get('reasons', [])))} | "
-                     f"[Link]({p.get('link') or r['canonical_url'] or ''}) | {(r['first_seen'] or '')[:10]} |")
+                     f"[Link]({p.get('link') or r['canonical_url'] or ''}) | {_cell(found_by(r))} | {(r['first_seen'] or '')[:10]} |")
     else:
         L.append("None right now.")
     L += ["", f"## Jobs whose link could not be checked automatically ({len(look)})", "",
           "These come from job sites that block automated checks, or only from a third-party site. "
           "Use **Find employer posting** to search for the same job on the employer's own website, then apply there.", ""]
     if look:
-        L += ["| Job | Company | Listing found | Find the employer's posting |", "|---|---|---|---|"]
+        L += ["| Job | Company | Listing found | Find the employer's posting | First found |", "|---|---|---|---|---|"]
         for x in look:
             L.append(f"| {_cell(x['title'])} | {_cell(x['employer'])} | [Listing]({x['current_link']}) | "
-                     f"[Find employer posting]({x['search_link']}) |")
+                     f"[Find employer posting]({x['search_link']}) | {x.get('first_seen', '')} |")
     else:
         L.append("None right now.")
     shown = {r["id"] for r in near} | {x["job_id"] for x in look}

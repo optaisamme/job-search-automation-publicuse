@@ -840,3 +840,22 @@ def test_title_words_to_skip_check_the_title_only():
     assert m.match("Internal Program Manager", "")                   # whole words only
     assert m.match("Major Gifts Officer", "Salesforce reports") is None   # also skips skills matches
     assert m.match("Gifts Officer", "Salesforce reports")            # ...but other titles can still be skills matches
+
+
+def test_link_not_checked_and_near_miss_tables_have_found_by_and_first_found(root):
+    from jobsearch import results_folder
+    c = FakeClient()
+    bad_salary = GOOD_DESC.replace("$95,000 - $115,000", "$90,000 - $100,000")
+    setup_board(c, [gh_job(1, "Salesforce Administrator", desc=bad_salary), gh_job(2, "Salesforce Business Systems Analyst")])
+    run(root, c)
+    st = Store(root / "data/jobs.sqlite")
+    st.db.execute("UPDATE jobs SET status='Needs Verification', verification=? WHERE title='Salesforce Business Systems Analyst'",
+                  (json.dumps({"status": "blocked"}),))
+    st.db.commit()
+    index = results_folder.write(root)["text"]
+    near = index[index.index("## Near misses"):]
+    near = near[:near.find("\n## ", 3)]
+    assert "| Link | Found by | First found |" in near and "| Company careers page (Greenhouse) |" in near, near
+    look = index[index.index("## Jobs whose link could not be checked"):]
+    look = look[:look.find("\n## ", 3)]
+    assert "| Find the employer's posting | First found |" in look and "Salesforce Business Systems Analyst" in look, look
