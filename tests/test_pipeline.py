@@ -397,7 +397,7 @@ def test_results_page_lists_possible_matches(root):
                   (json.dumps(["salary: no salary listed", "location: not clear which states"]),))
     st.db.commit()
     index = results_folder.write(root)["text"]
-    assert "## Possible matches: check these yourself (1)" in index
+    assert "## Jobs that need checking (1)" in index
     assert "Salary: no salary listed; Location: not clear which states" in index
 
 

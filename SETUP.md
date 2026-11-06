@@ -166,10 +166,9 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
    5. Click the green **New repository secret** button.
    6. In **Name**, type `TAVILY_API_KEY` exactly (capital letters and underscores included).
       In **Secret**, paste the key. Click **Add secret**.
-   7. Start a search. In the full report, the table "Where jobs were looked for" shows
-      **Web search (Tavily): Yes** when it worked. "Off: needs a free key" means the secret is
-      missing or its name is misspelled. "No: error" means the key was not accepted; check it
-      and add it again.
+   7. Start a search. In the report, under "Where this search looked", the Web search (Tavily)
+      row shows **Yes** in "Searched this time?" when it worked. **Off: no key** means the secret
+      is missing or misspelled. **No: error** means the key was not accepted.
 
    The key is private: only you can see it, and it is never shown in results. To remove it,
    open the same page and click the trash icon next to it.
@@ -183,7 +182,8 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 1. Edit the EDIT_ME file and commit. Changes take effect on the next run (weekly if turned on, or start
    one now with [HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md)).
 2. Jobs still listed online are re-checked: a job that now passes is shown as
-   **NEWLY VERIFIED**; one that now fails moves to **Rejected** in the report. Jobs
+   **Newly verified (seen before)**. A job that now fails one rule is listed under Near Misses
+   in the next report; jobs that fail 2 or more rules are only counted in the totals. Jobs
    already shown as new are never shown as new again.
 3. To start over completely, delete `data/jobs.sqlite`; the next run is treated as a first
    run again.

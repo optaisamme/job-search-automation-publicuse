@@ -42,7 +42,7 @@ results, followed by one numbered, dated report per search:
 1. Jobs that match all your rules, with **Apply** links.
 2. Near misses: jobs that did not meet one of your rules, and which rule.
 3. Jobs whose link could not be checked, with a **Find employer posting** link.
-4. Possible matches: jobs that failed no rule but did not say enough to be sure.
+4. Jobs that need checking: jobs that failed no rule but did not say enough to be sure.
 5. Popular job boards to search yourself: one-click searches for your job titles.
 6. Companies checked every search.
 
@@ -55,11 +55,12 @@ results, followed by one numbered, dated report per search:
    and says what to fix. Click the red X on the Actions tab to read the message.
 3. Results are saved in the **JOB_SEARCH_RESULTS** folder.
 4. Jobs still listed online are re-checked every run against your current settings:
-   a. A job that now passes because of your change is shown as **NEWLY VERIFIED**.
-   b. A job that now fails moves to the "did not match" part of the next report.
+   a. A job that now passes because of your change is shown as **Newly verified (seen before)**.
+   b. A job that now fails one rule is listed under Near Misses in the next report. Jobs that
+      fail 2 or more rules are only counted in the totals.
    c. A job already shown as new is never shown as new again.
-5. The very first successful run posts all jobs that already match in one
-   "Job search results (first run)" post. Later runs post only new jobs.
+5. The first successful search lists every job that already matches, marked "Already listed
+   when you started". Later searches mark only new jobs as new.
 
 ## Starting over
 

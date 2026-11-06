@@ -259,7 +259,7 @@ def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report"
         md.append(f"**{k}:** {v}")
     dropped = run_info.get("dropped_boards") or []
     if dropped:
-        md += ["", "Companies no longer checked (no job matching your titles in more than 5 searches in a row): "
+        md += ["", "Companies no longer checked (no job matching your job titles or skills in more than 5 searches in a row): "
                + ", ".join(sorted(b.get("employer") or b["board"] for b in dropped)) + "."]
     md += ["", "Good to know:",
            "1. Only the job sites marked **Yes** in the \"Searched this time?\" column of \"Where this search looked\" were searched. No tool finds every job.",

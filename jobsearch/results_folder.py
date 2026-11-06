@@ -92,7 +92,7 @@ def _current_sections(db) -> list[str]:
     shown = {r["id"] for r in near} | {x["job_id"] for x in look}
     check = [r for r in db.execute("SELECT * FROM jobs WHERE status='Needs Verification' AND closed_at IS NULL "
                                    "ORDER BY first_seen DESC").fetchall() if r["id"] not in shown]
-    L += ["", f"## Possible matches: check these yourself ({len(check)})", "",
+    L += ["", f"## Jobs that need checking ({len(check)})", "",
           "These jobs failed none of your rules, but the posting does not say enough to be sure "
           "(for example, no salary listed). Open the posting and check the items listed.", ""]
     if check:

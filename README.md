@@ -43,7 +43,7 @@ Open the **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)** folder.
    b. **Near misses:** jobs that did not meet one of your rules, and which rule. Other rules
       passed or could not be checked.
    c. **Jobs whose link could not be checked**, with a link to find the employer's own posting.
-   d. **Possible matches:** jobs that failed none of your rules but did not say enough to be
+   d. **Jobs that need checking:** jobs that failed none of your rules but did not say enough to be
       sure (for example, no salary listed), with what to check.
    e. **Popular job boards to search yourself:** one-click searches for your job titles on 32
       boards, grouped by type: large job sites (LinkedIn, Indeed, Google Jobs and more);
@@ -71,7 +71,7 @@ Only files whose names start with **EDIT_ME**. Do not change any other file.
 
 | File | Do I have to? | What it changes |
 |---|---|---|
-| [`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml`](EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml) | **Yes:** type at least one job title | Which jobs are found and which are left out: job titles, remote only or not, your state, salary, certifications, your own rules, companies to watch, skills-based matching |
+| [`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml`](EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml) | **Yes:** type at least one job title | Which jobs are found and which are left out: job titles, remote only or not, your state, salary, certifications, your own rules, companies to watch, skills-based matching, how many jobs to look through |
 | [`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml`](EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml) | No | Your skills, used to show how well each job fits you. It never removes a job. With skills-based matching on (file 1, section 8), it also finds jobs with other titles |
 | [`.github/workflows/EDIT_ME_3_weekly_schedule.yml`](.github/workflows/EDIT_ME_3_weekly_schedule.yml) | No: you no longer need to edit it | Runs the searches. Automatic weekly searches are turned on in the questionnaire or settings section 9 |
 
@@ -99,12 +99,13 @@ set section 9 of file 1 (`[automatic_weekly_search]`: `on = "yes"`, `day = "Frid
 
 ### What happens after you change a setting
 
-1. Your change is used in the **next search** (the Friday search, or one you start yourself).
+1. Your change is used in the **next search** (an automatic weekly search, if you turned it on, or one you start yourself).
 2. Each search first checks your settings. If something is typed wrong, the search stops
    and tells you which line to fix.
 3. Jobs found earlier are checked again with your new settings:
-   a. A job that now fits is shown as **NEWLY VERIFIED**.
-   b. A job that no longer fits moves to the "did not match" part of the report.
+   a. A job that now fits is shown as **Newly verified (seen before)**.
+   b. A job that now fails one rule is listed under Near Misses in the next report. Jobs that
+      fail 2 or more rules are only counted in the totals.
    c. A job already shown to you is never shown again as new.
 4. To start completely fresh, delete the file `data/jobs.sqlite`. The next search starts over.
 
@@ -134,10 +135,9 @@ month with weekly searches.
 5. Click the green **New repository secret** button.
 6. In **Name**, type `TAVILY_API_KEY` exactly (capital letters and underscores included).
    In **Secret**, paste the key. Click **Add secret**.
-7. Start a search. In the full report, the table "Where jobs were looked for" shows
-   **Web search (Tavily): Yes** when it worked. "Off: needs a free key" means the secret is
-   missing or its name is misspelled. "No: error" means the key was not accepted; check it
-   and add it again.
+7. Start a search. In the report, under "Where this search looked", the Web search (Tavily)
+   row shows **Yes** in "Searched this time?" when it worked. **Off: no key** means the secret
+   is missing or misspelled. **No: error** means the key was not accepted.
 
 The key is private: only you can see it, and it is never shown in results. To remove it,
 open the same page and click the trash icon next to it.
@@ -171,28 +171,10 @@ links on the results page for those.
       runs 2 searches: one across company careers pages (Greenhouse, Lever, Ashby,
       SmartRecruiters, Workday) and one across the rest of the web. Every result is checked
       like any other job.
-   c. **Company careers pages**, only for companies whose careers page runs on Greenhouse,
-      Lever, Ashby or SmartRecruiters. These are not searched as whole sites: the tool reads
-      the careers page of one company at a time, and only for these companies:
-      1. **Found automatically**, step by step:
-         1. A job site lists a job whose title matches yours.
-         2. The tool opens that job's apply link (the one the job site gives).
-         3. If the link leads to a posting on a careers page that runs on one of those 4 systems,
-            the tool uses the employer's own posting and remembers the company (in
-            `data/boards.json`).
-         4. From the next search on, it reads every job open on that company's careers page.
-         5. With a web search key, companies are also remembered when the web search finds a
-            matching job on their careers page; their whole careers page is read in the same search.
-         6. Companies on other systems (for example Workday), and links a job site blocks (for
-            example Himalayas), are not remembered.
-         7. A remembered company is removed after more than 5 searches in a row with no job
-            matching your titles. It comes back if a matching job shows up again. Companies you
-            add in section 7 are never removed. The results page lists every remembered
-            company under "Companies checked every search."
-      2. **Companies you add** in settings section 7, "Companies to watch." Every search reads
-         every job open on each company's careers page and keeps the ones with your job titles.
-         Companies on other systems (for example Workday or iCIMS) cannot be added. If you leave
-         section 7 empty, everything else above still runs.
+   c. **Company careers pages** on Greenhouse, Lever, Ashby or SmartRecruiters. A company is
+      added when a job matching your job titles or skills is found on its own careers page;
+      every open job there is then read each search. It is dropped after more than 5 searches
+      in a row with no matching job. Companies you add in section 7 are always read.
 3. **Keeps jobs with your job titles.** With skills-based matching on (settings section 8), it
    also keeps jobs with other titles whose listing has your required keywords and enough of
    your skills (from your experience file). Those are marked "(skills match)".
