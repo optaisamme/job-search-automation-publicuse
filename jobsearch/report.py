@@ -74,11 +74,12 @@ def short_salary(x: str) -> str:
 
 
 def near_miss_reason(x: str) -> str:
-    """A near miss's reason for the results page: no state list, short salary wording."""
+    """A reason for the results page: no state list, short salary wording, "(job site's copy)"."""
     for a, b in OLD_PREFIX.items():
         if x.startswith(a):
             x = b + x[len(a):]
-    return short_salary(drop_state_list(x))
+    return short_salary(drop_state_list(x)).replace(" (per third-party listing; employer posting not confirmed)",
+                                                    " (job site's copy)")
 
 
 def _plain_reason(x: str, short_pay: bool = False) -> str:

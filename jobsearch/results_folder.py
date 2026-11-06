@@ -48,7 +48,7 @@ def _current_sections(db) -> list[str]:
         "SELECT j.*, n.payload AS npayload FROM notifications n JOIN jobs j ON j.id=n.job_id "
         "WHERE n.kind='near_miss' AND j.closed_at IS NULL AND j.status!='Qualified' ORDER BY j.first_seen DESC, n.id DESC").fetchall()
     look = needs_employer_posting(db)
-    from .report import _label, _salary_cell, drop_state_list, near_miss_reason
+    from .report import _label, _salary_cell, near_miss_reason
     from .skills_match import SKILLS_FAMILY
 
     def match_rows(rows):
@@ -101,7 +101,7 @@ def _current_sections(db) -> list[str]:
         for r in check:
             ver = _j(r["verification"], {}) or {}
             link = ver.get("apply_url") or r["apply_url"] or r["canonical_url"] or ""
-            L.append(f"| {_cell(_label(r))} | {_cell(r['employer'])} | {_cell(drop_state_list('; '.join(_j(r['reasons'], []))))} | [Link]({link}) |")
+            L.append(f"| {_cell(_label(r))} | {_cell(r['employer'])} | {_cell('; '.join(near_miss_reason(x) for x in _j(r['reasons'], [])))} | [Link]({link}) |")
     else:
         L.append("None right now.")
     return L

@@ -398,7 +398,7 @@ def test_results_page_lists_possible_matches(root):
     st.db.commit()
     index = results_folder.write(root)["text"]
     assert "## Possible matches: check these yourself (1)" in index
-    assert "salary: no salary listed; location: not clear which states" in index
+    assert "Salary: no salary listed; Location: not clear which states" in index
 
 
 def test_title_words_any_order():
@@ -641,7 +641,7 @@ def test_report_lists_sites_and_web_search_criteria(root, monkeypatch):
     for text in ("## Where this search looked", "| Web search (Tavily) |", "| Company careers pages |", "| Remote OK |",
                  "### Web search (Tavily) criteria", '"Salesforce Administrator" remote', "company careers pages",
                  "the wider web", "last 30 days", "Company careers pages read (1):** Acme Nonprofit",
-                 "| Results asked for | Results returned | Matches | Others |", "Tavily allows at most 20 per search",
+                 "| Pages dated within | Most results allowed | Results returned | Matches | Others |", "20 is the most Tavily allows",
                  "**Why only part of some sites is read:**", "this search took about 1 minute",
                  "GitHub stops a search after 60 minutes"):
         assert text in md, text
@@ -814,8 +814,9 @@ def test_where_section_shows_limits_time_and_web_search_split():
     assert "| The Muse | its newest remote jobs, all fields (how many it read was not recorded for this search) |" in md
     assert "this search took about 13 minutes" in md and "GitHub stops a search after 60 minutes" in md
     assert "| 1 | \"Data Analyst\" remote | company careers pages | last 30 days | 20 | 12 | 2 | 3 |" in md
-    assert "| 10 | 10 | not recorded | not recorded (4 kept in all) |" in md
-    assert "Up to |" not in md and "Kept as jobs to check" not in md
+    assert "| 10 | 10 | not recorded | not recorded |" in md and "did not record Matches and Others" in md
+    assert "Up to |" not in md and "Kept as jobs to check" not in md and "Results asked for" not in md
+    assert "| Pages dated within | Most results allowed | Results returned | Matches | Others |" in md and "It is a limit, not a minimum" in md
     assert "this search took" not in "\n".join(section(sources))   # no times known: no time shown
 
 
@@ -890,5 +891,5 @@ def test_results_page_near_miss_reason_is_short():
     from jobsearch.report import near_miss_reason
     x = ("salary: range $60,000-$70,000: starts at $60,000, below $90,000; ends at $70,000, not above $100,000 "
          "(per third-party listing; employer posting not confirmed)")
-    assert near_miss_reason(x) == "Salary: $60,000-$70,000 (too low) (per third-party listing; employer posting not confirmed)"
+    assert near_miss_reason(x) == "Salary: $60,000-$70,000 (too low) (job site's copy)"
     assert near_miss_reason("Location: Allowed-state list omits New Mexico (alabama, utah)") == "Location: Allowed-state list omits New Mexico"
