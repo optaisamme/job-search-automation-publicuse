@@ -140,9 +140,15 @@ def _match_table(rows) -> list[str]:
 
 
 def _one_rule_failed(row) -> bool:
-    """Exactly one rule failed and every other rule passed."""
-    outcomes = [x.get("outcome") for x in (_j(row, "rules", []) or [])]
-    return outcomes.count("fail") == 1 and all(o in ("pass", "fail") for o in outcomes)
+    """Exactly one rule failed. Other rules passed or could not be checked."""
+    return [x.get("outcome") for x in (_j(row, "rules", []) or [])].count("fail") == 1
+
+
+def _unchecked_rules(row) -> list[str]:
+    """Names of the rules that could not be checked for a job (for example, no salary listed)."""
+    from .classify import RULE_LABELS
+    names = [x.get("rule", "") for x in (_j(row, "rules", []) or []) if x.get("outcome") == "unclear"]
+    return [f'Your rule "{n[6:]}"' if n.startswith("rule: ") else RULE_LABELS.get(n, n.capitalize()) for n in names]
 
 
 def _reject_table(rows, limit: int = 40) -> list[str]:
@@ -155,6 +161,9 @@ def _reject_table(rows, limit: int = 40) -> list[str]:
     for r in rows[:limit]:
         title = _label(r)
         why = "; ".join(_plain_reason(x) for x in (_j(r, "reasons", []) or []))
+        unchecked = _unchecked_rules(r)
+        if unchecked:
+            why += f" (other rules could not be checked: {', '.join(unchecked)})"
         link = r["canonical_url"] or ((_j(r, "source_urls", []) or [""])[0])
         L.append(f"| {cell(title)} | {cell(r['employer'] or 'employer not given')} | {cell(why)} | "
                  f"[Open]({link}) | {(r['first_seen'] or '')[:10]} |")

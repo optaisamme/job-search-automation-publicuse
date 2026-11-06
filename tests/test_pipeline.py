@@ -851,5 +851,17 @@ def test_near_misses_section_lists_only_jobs_that_failed_exactly_one_rule():
     row = lambda *outs: {"rules": _json.dumps([{"rule": f"r{i}", "outcome": o} for i, o in enumerate(outs)])}
     assert _one_rule_failed(row("fail", "pass", "pass"))
     assert not _one_rule_failed(row("fail", "fail", "pass"))      # two rules failed
-    assert not _one_rule_failed(row("fail", "unclear", "pass"))   # another rule could not be checked
+    assert _one_rule_failed(row("fail", "unclear", "pass"))       # another rule could not be checked: still listed
     assert not _one_rule_failed(row("pass", "pass"))
+
+
+def test_near_miss_row_names_rules_that_could_not_be_checked():
+    import json as _json
+    from jobsearch.report import _reject_table
+    r = {"title": "Data Analyst", "employer": "Acme", "first_seen": "2026-11-06", "canonical_url": "https://x.test/1",
+         "source_urls": "[]", "family": "", "reasons": _json.dumps(["Location: Allowed-state list omits New Mexico"]),
+         "rules": _json.dumps([{"rule": "location", "outcome": "fail"}, {"rule": "salary", "outcome": "unclear"},
+                               {"rule": "certifications", "outcome": "unclear"}])}
+    row = next(l for l in _reject_table([r]) if l.startswith("| Data Analyst") or "Acme" in l)
+    assert "Location: Allowed-state list omits New Mexico (other rules could not be checked: Salary, Certifications)" in row
+
