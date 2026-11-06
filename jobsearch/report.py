@@ -234,3 +234,33 @@ def _html(md: str, title: str) -> str:
            "h3{margin-top:22px}table{border-collapse:collapse;font-size:13px}td{border:1px solid #ccc;padding:4px 6px;vertical-align:top}"
            "@media (prefers-color-scheme: dark){body{background:#111;color:#eee}td{border-color:#444}}")
     return f"<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>{html.escape(title)}</title><style>{css}</style></head><body>{joined}</body></html>"
+
+
+NEW_KIND = {"new": "New", "newly_verified": "Newly verified (seen before)", "baseline": "Already listed when you started"}
+
+
+def new_jobs_table(db, notification_ids) -> list[str]:
+    """New matching jobs from one search, one short row each (instead of the long alert text)."""
+    ids = [int(i) for i in (notification_ids or [])]
+    if not ids:
+        return []
+    marks = ",".join("?" * len(ids))
+    rows = db.execute(f"SELECT j.*, n.kind AS nkind FROM notifications n JOIN jobs j ON j.id = n.job_id "
+                      f"WHERE n.id IN ({marks}) ORDER BY j.first_seen DESC", ids).fetchall()
+    cell = lambda x: str(x or "").replace("|", "/").replace("\n", " ")
+    L = ["| Job | Company | Salary | Apply | What's new |", "|---|---|---|---|---|"]
+    for r in rows:
+        ver = _j(r, "verification", {}) or {}
+        L.append(f"| {cell(_label(r))} | {cell(r['employer'] or 'employer not given')} | {_salary_cell(r)} | "
+                 f"{_link_cell(r, ver)} | {NEW_KIND.get(r['nkind'], cell(r['nkind']))} |")
+    return L + [""]
+
+
+def new_in_run(db, run_id) -> tuple[list[int], str, int]:
+    """From the saved job database: (new matching-job alert ids, issue number they were posted to, new near misses)
+    for one search. Uses only saved data, so the results page is the same wherever it is rebuilt."""
+    rows = db.execute("SELECT id, kind, status, channel, channel_ref FROM notifications WHERE run_id = ?", (run_id,)).fetchall()
+    ids = [r["id"] for r in rows if r["kind"] != "near_miss" and r["status"] not in ("cancelled", "held", "suppressed_baseline")]
+    issue = next((r["channel_ref"] for r in rows if r["kind"] != "near_miss" and r["channel"] == "github_issue" and r["channel_ref"]), "")
+    near = sum(1 for r in rows if r["kind"] == "near_miss")
+    return ids, issue, near

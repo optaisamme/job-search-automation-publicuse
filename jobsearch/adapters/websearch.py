@@ -34,7 +34,8 @@ EXCLUDE_DOMAINS = ["linkedin.com", "indeed.com", "glassdoor.com", "ziprecruiter.
                    # sites that repost other sites' jobs, or list many jobs on one page
                    "adzuna.com", "jooble.org", "jobgether.com", "virtualvocations.com", "flexjobs.com", "talent.com",
                    "lensa.com", "careerjet.com", "jobleads.com", "salary.com", "theladders.com", "roberthalf.com",
-                   "edtech.com", "recruit.net", "jobright.ai", "simplyhired.co", "learn4good.com", "remote.co", "jobs.now"]
+                   "edtech.com", "recruit.net", "jobright.ai", "simplyhired.co", "learn4good.com", "remote.co", "jobs.now",
+                   "remoterocketship.com", "dailyremote.com", "cutshort.io"]
 
 # A page title like "Remote Program Manager Jobs in Maryland" or "Search Jobs" is a list of jobs, not one job.
 LIST_PAGE = re.compile(r"(?i)(\bjobs\b(?! at\b)|\bsearch\b|\bresults for\b|\bopenings\b|^\s*careers?\s*$)")

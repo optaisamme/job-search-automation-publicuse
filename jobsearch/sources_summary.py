@@ -4,7 +4,6 @@ from __future__ import annotations
 
 SITES = [  # (source name in the run record, name shown, what it searches)
     ("websearch", "Web search (Tavily)", "the whole web for each job title (criteria below)"),
-    ("web_search_leads", "Web search leads (Claude)", "job links found by the Friday Claude web search"),
     ("ats_watchlist", "Company careers pages", "every open job at the companies listed below "
                                                "(Greenhouse, Lever, Ashby, SmartRecruiters)"),
     ("remotive", "Remotive", "remote jobs, searched by your job titles"),
@@ -19,7 +18,7 @@ SITES = [  # (source name in the run record, name shown, what it searches)
 ]
 
 
-REMOVED = {"adzuna", "usajobs", "jooble", "reliefweb"}   # sources this tool no longer uses
+REMOVED = {"adzuna", "usajobs", "jooble", "reliefweb", "web_search_leads"}   # sources this tool no longer uses
 
 
 def _worked(s: dict) -> str:
@@ -81,8 +80,7 @@ def section(sources: list[dict]) -> list[str]:
     return L + [""]
 
 
-SOURCE_LABELS = {"lead": "Web search leads (Claude)", "third_party_page": "Web search leads (Claude)",
-                 "greenhouse": "Company careers page (Greenhouse)", "lever": "Company careers page (Lever)",
+SOURCE_LABELS = {"greenhouse": "Company careers page (Greenhouse)", "lever": "Company careers page (Lever)",
                  "ashby": "Company careers page (Ashby)", "smartrecruiters": "Company careers page (SmartRecruiters)"}
 HOST_LABELS = {"himalayas.app": "Himalayas", "remoteok.com": "Remote OK", "remotive.com": "Remotive",
                "themuse.com": "The Muse", "jobicy.com": "Jobicy", "weworkremotely.com": "We Work Remotely",

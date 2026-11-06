@@ -16,6 +16,7 @@ JOB_BOARD_HOSTS = (
     "weworkremotely.com", "workingnomads.com", "jobgether.com", "talent.com", "lensa.com", "jobright.ai",
     "builtinchicago.org", "builtinboston.com", "builtinla.com", "builtinnyc.com", "virtualvocations.com",
     "impactpool.org", "edtech.com", "career.io", "themomproject.com", "remotejobs.org", "jobs.philanthropy.com",
+    "remoterocketship.com", "dailyremote.com", "cutshort.io",
 )
 ATS_HOSTS = (
     "greenhouse.io", "lever.co", "ashbyhq.com", "smartrecruiters.com", "myworkdayjobs.com", "workday.com",

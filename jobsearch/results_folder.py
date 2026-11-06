@@ -175,11 +175,13 @@ def write(root: Path) -> dict:
              f"Checked {c.get('discovered', 0)} job listings; {c.get('title_matched', 0)} matched your job titles"
              + (f" and {c['skills_matched']} matched your skills" if c.get("skills_matched") else "") + ".", "",
              "## New in this search", ""]
-        draft = outbox.get("issue_draft")   # new matching jobs only; near misses are in their own table below
-        if draft:
-            R.append(f"**{draft['subject']}**" + (f" (also posted: {issue_url})" if issue_url else ""))
-            R += ["", "```text", draft["body"], "```", ""]
-        elif outbox.get("near_miss_ids"):
+        from .report import new_in_run, new_jobs_table
+        ids, issue, near_new = new_in_run(db, last["id"])
+        if ids:
+            R.append(f"**{len(ids)} new job{'s' if len(ids) != 1 else ''} that match all your rules**"
+                     + (f" ([also posted as issue #{issue}](../../../issues/{issue}))" if issue.isdigit() else ""))
+            R += [""] + new_jobs_table(db, ids)
+        elif near_new:
             R += ["No new jobs match all your rules. New near misses are in the near-miss table below.", ""]
         elif c.get("title_matched", 0) == 0 and not c.get("skills_matched"):
             R += ["Nothing new in this search.", "",
