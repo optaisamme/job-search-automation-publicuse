@@ -23,19 +23,24 @@ from ..agencies import is_agency
 
 CAREERS_DOMAINS = ["job-boards.greenhouse.io", "boards.greenhouse.io", "jobs.lever.co", "jobs.ashbyhq.com",
                    "jobs.smartrecruiters.com", "myworkdayjobs.com"]
-# Sites this tool does not open (terms, blocks or sign-in), plus job sites it already reads directly.
-EXCLUDE_DOMAINS = ["linkedin.com", "indeed.com", "glassdoor.com", "ziprecruiter.com", "builtin.com", "idealist.org",
-                   "monster.com", "careerbuilder.com", "simplyhired.com", "handshake.com", "joinhandshake.com",
-                   "wellfound.com", "dice.com", "diversityjobs.com", "techjobsforgood.com", "greenjobsboard.us",
-                   "remote100k.com", "conservationjobboard.com", "higheredjobs.com", "hiring.cafe",
-                   "himalayas.app", "remoteok.com", "remotive.com", "themuse.com", "jobicy.com", "weworkremotely.com",
-                   "workingnomads.com", "jobspresso.co", "news.ycombinator.com",
-                   "facebook.com", "instagram.com", "x.com", "twitter.com", "reddit.com", "youtube.com",
-                   # sites that repost other sites' jobs, or list many jobs on one page
-                   "adzuna.com", "jooble.org", "jobgether.com", "virtualvocations.com", "flexjobs.com", "talent.com",
-                   "lensa.com", "careerjet.com", "jobleads.com", "salary.com", "theladders.com", "roberthalf.com",
-                   "edtech.com", "recruit.net", "jobright.ai", "simplyhired.co", "learn4good.com", "remote.co", "jobs.now",
-                   "remoterocketship.com", "dailyremote.com", "cutshort.io"]
+# Sites left out of the wider-web search, in groups (each group is labeled in the report).
+EXCLUDE_GROUPS = [
+    ("Sites this tool never opens (sign-in required, automated access blocked, or not allowed by their terms)",
+     ["linkedin.com", "indeed.com", "glassdoor.com", "ziprecruiter.com", "builtin.com", "idealist.org",
+      "joinhandshake.com", "flexjobs.com", "virtualvocations.com", "diversityjobs.com", "techjobsforgood.com",
+      "greenjobsboard.us", "remote100k.com", "conservationjobboard.com", "higheredjobs.com"]),
+    ("Job sites this tool already reads directly",
+     ["himalayas.app", "remoteok.com", "remotive.com", "themuse.com", "jobicy.com", "weworkremotely.com",
+      "news.ycombinator.com"]),
+    ("Other job sites, and sites that repost other sites' jobs or list many jobs on one page",
+     ["monster.com", "careerbuilder.com", "simplyhired.com", "simplyhired.co", "handshake.com", "wellfound.com",
+      "dice.com", "hiring.cafe", "workingnomads.com", "jobspresso.co", "adzuna.com", "jooble.org", "jobgether.com",
+      "talent.com", "lensa.com", "careerjet.com", "jobleads.com", "salary.com", "theladders.com", "roberthalf.com",
+      "edtech.com", "recruit.net", "jobright.ai", "learn4good.com", "remote.co", "jobs.now", "remoterocketship.com",
+      "dailyremote.com", "cutshort.io"]),
+    ("Social media", ["facebook.com", "instagram.com", "x.com", "twitter.com", "reddit.com", "youtube.com"]),
+]
+EXCLUDE_DOMAINS = [d for _, group in EXCLUDE_GROUPS for d in group]
 
 # A page title like "Remote Program Manager Jobs in Maryland" or "Search Jobs" is a list of jobs, not one job.
 LIST_PAGE = re.compile(r"(?i)(\bjobs\b(?! at\b)|\bsearch\b|\bresults for\b|\bopenings\b|^\s*careers?\s*$)")

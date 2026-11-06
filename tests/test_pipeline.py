@@ -949,3 +949,18 @@ def test_results_page_near_misses_use_the_report_rule(root):
     index = results_folder.write(root)["text"]
     sec = index[index.index("## Near Misses: Jobs that did not match one of your rules (1)"):]
     assert "(other rules could not be checked: Location)" in sec.split("\n## ")[0]
+
+
+def test_left_out_sites_are_grouped_and_labeled_truthfully():
+    from jobsearch.adapters.websearch import EXCLUDE_GROUPS, EXCLUDE_DOMAINS
+    from jobsearch.adapters.base import NO_FETCH_HOSTS, _host_in
+    from jobsearch.sources_summary import HOST_LABELS, section
+    groups = dict(EXCLUDE_GROUPS)
+    never_open = next(g for label, g in EXCLUDE_GROUPS if label.startswith("Sites this tool never opens"))
+    assert all(_host_in("https://" + d + "/x", NO_FETCH_HOSTS) for d in never_open)
+    read_directly = groups["Job sites this tool already reads directly"]
+    assert set(read_directly) == set(HOST_LABELS)              # exactly the job sites with their own reader
+    assert len(EXCLUDE_DOMAINS) == len(set(EXCLUDE_DOMAINS))    # no site in two groups
+    md = "\n".join(section([{"name": "websearch", "state": "ok", "fetched": 0, "searches": []}]))
+    assert "1. **Sites this tool never opens" in md and "2. **Job sites this tool already reads directly:** himalayas.app" in md
+    assert "4. **Social media:** facebook.com" in md

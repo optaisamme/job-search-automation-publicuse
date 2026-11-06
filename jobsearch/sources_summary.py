@@ -90,7 +90,7 @@ def section(sources: list[dict], started_at: str | None = None, finished_at: str
     elif ws.get("state") == "needs_credentials":
         L.append("Off this time: no Tavily key is set, so no web search was run.")
     else:
-        from .adapters.websearch import CAREERS_DOMAINS, EXCLUDE_DOMAINS
+        from .adapters.websearch import CAREERS_DOMAINS, EXCLUDE_GROUPS
         rows = ws.get("searches") or []
         if rows:
             L += ["| # | Search words | Where | Pages dated within | Links returned | Matches | Others |",
@@ -117,8 +117,8 @@ def section(sources: list[dict], started_at: str | None = None, finished_at: str
         else:
             L.append(_cell(ws.get("detail")) or "No searches were recorded.")
         L += ["", "Company careers pages searched: " + ", ".join(CAREERS_DOMAINS) + ".", "",
-              "Left out of the wider-web search (sites this tool does not open, sites it already reads "
-              "directly, and sites that repost other sites' jobs): " + ", ".join(EXCLUDE_DOMAINS) + "."]
+              "Left out of the wider-web search:", ""]
+        L += [f"{n}. **{label}:** " + ", ".join(group) + "." for n, (label, group) in enumerate(EXCLUDE_GROUPS, 1)]
     return L + [""]
 
 
