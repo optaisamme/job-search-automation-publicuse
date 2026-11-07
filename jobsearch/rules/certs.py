@@ -34,11 +34,22 @@ NOT_A_CERT = re.compile(
     r"|\b(information|documents?|materials?|references|transcripts?)\s+(and|or|&)\s+credentials?\b"
     r"|\bcredentials?\s+(submitted|provided|will\s+be\s+(verified|checked|provided))\b"
     r"|\b(verify|verified|verifying|verification\s+of)\s+(your\s+|all\s+|any\s+)?credentials?\b"
-    r"|\bcertif(y|ies|ying)\b",
+    r"|\bcertif(y|ies|ying)\b"
+    # "results rather than credentials", "no certification needed": not a requirement
+    r"|\b(rather\s+than|instead\s+of|regardless\s+of|without|no|not)\s+(formal\s+|a\s+|any\s+)?(credentials?|certifications?|certificates?)\b"
+    r"|\b(credentials?|certifications?|certificates?)\s+(is\s+|are\s+)?not\s+(required|necessary|needed)\b"
+    # handling credentials, a certification company, certification training offered, "any required certifications"
+    r"|\bcredentials?\s+(handling|management|storage|sharing)\b"
+    r"|\b(inspection|testing)\s+(and\s+)?certification\s+(company|body|bodies|services|firm)\b"
+    r"|\bcertification\s+(company|body|bodies|services|firm)\b"
+    r"|\bcertifications?\s+(training|programs?|courses?|classes|prep(aration)?|support|reimbursement|opportunities)\b"
+    r"|\bany\s+(required\s+)?(licen[sc]es?\s+(or|and|and/or)\s+)?(certifications?|credentials?|certificates?)\b"
+    r"|\b(combination|mix)\s+of\s+[^.]{0,80}?(certifications?|credentials?)\b",
     re.I)
 ORG_CERT = re.compile(r"\b(certified\s+b\s+corp|great\s+place\s+to\s+work|we\s+are\s+(a\s+)?certified|certified\s+(minority|woman|women)[\s-]owned)\b", re.I)
 
-PREFERRED = re.compile(r"\b(preferred|preferably|a\s+plus|nice[\s-]to[\s-]have|bonus|desired|desirable|ideal(ly)?|optional|helpful|advantage(ous)?|beneficial|welcome|not\s+required|appreciated|big\s+plus)\b", re.I)
+PREFERRED = re.compile(r"\b(preferred|preferably|a\s+plus|nice[\s-]to[\s-]have|bonus|desired|desirable|ideal(ly)?|optional|helpful|advantage(ous)?|beneficial|welcome|not\s+required|appreciated|big\s+plus"
+                       r"|(an?\s+|strong\s+|added\s+)+asset|deemed\s+relevant|(may|will|can)\s+be\s+considered|if\s+you\s+(already\s+)?(hold|have))\b", re.I)
 EQUIV = re.compile(r"\bor\s+(equivalent|comparable)\s+(experience|knowledge|work\s+experience)\b|\bin\s+lieu\s+of\b", re.I)
 POST_HIRE = re.compile(
     r"(within|in\s+the\s+first|during\s+the\s+first|by\s+the\s+end\s+of\s+(the\s+|your\s+)?first)\s+(\d+|one|two|three|four|five|six|nine|twelve|eighteen|twenty[\s-]?four)?\s*(days?|weeks?|months?|years?|quarters?|year)"
@@ -60,7 +71,11 @@ _WORDNUM = {"two": 2, "three": 3, "four": 4, "five": 5, "multiple": 2, "several"
 def _allowed_patterns():
     """The user's allowed-before-hire certification names, matched as typed (any capitalization)."""
     from ..criteria import CRITERIA
-    return [(a.strip(), re.compile(r"(?<![A-Za-z0-9])" + r"[\s\-]+".join(map(re.escape, a.split())) + r"(?![A-Za-z0-9])", re.I))
+    # each word may carry ".com" or "'s", and "Certified" or "Platform" may come between words: "Certified
+    # Salesforce.com Administrator" and "Salesforce Certified Platform Administrator" are "Salesforce Administrator"
+    word = lambda w: re.escape(w) + r"(?:\.com|['’]s)?"
+    gap = r"[\s\-]+(?:(?:certified|platform)[\s\-]+){0,2}"
+    return [(a.strip(), re.compile(r"(?<![A-Za-z0-9])" + gap.join(map(word, a.split())) + r"(?![A-Za-z0-9])", re.I))
             for a in CRITERIA.get("allowed_prehire_certs", []) if a.strip()]
 
 
@@ -87,7 +102,9 @@ _NAME_CERTIFIED = re.compile(r"\bCertified\s+((?:[A-Z0-9][\w'’/&+.\-]*\s*){1,5
 _NAME_AFTER = re.compile(r"\b(?i:certification|certificate|credential)\s+(?i:in|as\s+an?|as)\s+((?:[A-Z0-9][\w'’/&+.\-]*\s*){1,5})")
 # words that never name a certification on their own ("information and credentials", "proof of ... certificate")
 _NOT_A_NAME = {"information", "document", "documents", "materials", "application", "applications", "submitted", "proof",
-               "copy", "copies", "official", "academic", "educational", "your", "their", "its", "and", "or", "&", "of"}
+               "copy", "copies", "official", "academic", "educational", "your", "their", "its", "and", "or", "&", "of",
+               "progress", "toward", "towards", "pursuing", "working", "on", "results", "demonstrated", "any", "required",
+               "license", "licenses", "licensure", "experience", "education", "and/or", "skills", "training", "formerly"}
 
 
 def extract_cert_name(s: str) -> str | None:

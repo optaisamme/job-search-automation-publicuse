@@ -616,3 +616,41 @@ def test_words_that_rule_out_a_job_when_required(sentence, want):
         assert custom.evaluate_all(segment(sentence), "u", True)[0].outcome == want
     finally:
         criteria.configure(None)
+
+
+# Sentences from a live search on 2026-11-07, allowed before hire: Salesforce Administrator, Salesforce Business Analyst.
+LIVE = [  # sentences from the 2026-11-07 live search; allowed: Salesforce Administrator, Salesforce Business Analyst
+ ("Salesforce Certified Administrator required", "pass"),
+ ("Required: Salesforce Certified Platform Administrator (formerly Administrator).", "pass"),
+ ("Required: Certified Salesforce.com Administrator", "pass"),
+ ("CPQ certification deemed relevant", "pass"),
+ ("An employee's position within the salary range will be based on several factors including, but not limited to, relevant education, qualifications, certifications, experience, skills, geographic location.", "pass"),
+ ("The following range takes into account a wide range of factors including but not limited to, skills, experience, education, licenses, certifications, business needs, and internal equity.", "pass"),
+ ("Salesforce certifications (e.g., Salesforce Administrator, Business Analyst) are a plus but not required.", "pass"),
+ ("Follow iMentor's policies on credential handling, software installation, and third-party access to iMentor systems, and raise concerns early", "pass"),
+ ("We are SGS – the world's leading testing, inspection and certification company.", "pass"),
+ ("If you already hold AI certifications, it's a strong asset.", "pass"),
+ ("Any combination of education and experience that would likely provide the required knowledge, skills and abilities as well as possession of any required licenses or certifications is qualifying.", "pass"),
+ ("Not all internships include certification training by Vets2PM, as many host companies include their own internship-focused training instead.", "pass"),
+ ("Any appropriate combination of relevant education, experience and/or certifications may be considered.", "pass"),
+ ("We evaluate candidates on demonstrated results rather than credentials.", "pass"),
+ ("All information and credentials submitted in your application must be truthful and complete.", "pass"),
+ ("Required: Active Salesforce certifications: Salesforce Administrator and Salesforce Platform Developer I.", "fail"),
+ ("Required: SAFe Product Owner/Product Manager certification", "fail"),
+ ("Certification in Revenue Integrity required (e.g., CRCR, CHRI, CPC, CPMA).", "fail"),
+ ("Required: Veeva Vault CRM Administrator certification.", "fail"),
+ ("Required: Salesforce Advanced Administrator certification.", "fail"),
+]
+
+
+@pytest.mark.parametrize("sentence,want", LIVE)
+def test_certification_check_on_live_search_sentences(sentence, want):
+    from jobsearch import criteria
+    from jobsearch.rules import certs
+    from jobsearch.text import segment
+    criteria.configure({"cert_filter_on": True, "allowed_prehire_certs": ["Salesforce Administrator", "Salesforce Business Analyst"]},
+                       base=criteria.NEUTRAL)
+    try:
+        assert certs.evaluate(segment(sentence), "u", True, []).outcome == want
+    finally:
+        criteria.configure(None)
