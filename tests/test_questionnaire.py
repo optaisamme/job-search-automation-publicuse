@@ -168,3 +168,50 @@ def test_unanswered_dropdowns_keep_settings():
     # typing "none" in a text box still clears a list
     s2, _, _, _ = q.apply(q.parse_issue_body(form(skip_titles="none")), s, EXPERIENCE)
     assert tomllib.loads(s2)["filters"]["exclude_titles_containing"] == []
+
+
+def test_start_search_links_to_the_running_search(tmp_path, monkeypatch):
+    from datetime import datetime, timezone
+    monkeypatch.setattr(q, "OUT", tmp_path)
+    monkeypatch.setenv("GITHUB_REPOSITORY", "someone/my-job-search")
+    calls = []
+
+    def fake_api(method, path, payload=None):
+        calls.append((method, path, payload))
+        if method == "POST":
+            return {}
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        return {"workflow_runs": [{"created_at": now, "html_url": "https://github.com/someone/my-job-search/actions/runs/7"}]}
+    monkeypatch.setattr(q, "_api", fake_api)
+    assert q.start_search(wait_seconds=0) == 0
+    assert calls[0] == ("POST", "actions/workflows/run_job_search.yml/dispatches", {"ref": "main"})
+    msg = (tmp_path / "questionnaire_search.md").read_text()
+    assert "[open the running search](https://github.com/someone/my-job-search/actions/runs/7)" in msg
+
+
+def test_start_search_failure_says_why_and_how_to_start_it(tmp_path, monkeypatch):
+    import io, urllib.error
+    monkeypatch.setattr(q, "OUT", tmp_path)
+    monkeypatch.setenv("GITHUB_REPOSITORY", "someone/my-job-search")
+
+    def fake_api(method, path, payload=None):
+        raise urllib.error.HTTPError("u", 403, "Forbidden", {}, io.BytesIO(b'{"message": "Resource not accessible by integration"}'))
+    monkeypatch.setattr(q, "_api", fake_api)
+    assert q.start_search(wait_seconds=0) == 1
+    msg = (tmp_path / "questionnaire_search.md").read_text()
+    assert "could not be started automatically" in msg and "403: Resource not accessible by integration" in msg
+    assert "https://github.com/someone/my-job-search/actions/workflows/run_job_search.yml" in msg
+
+
+def test_workflows_point_at_files_that_exist():
+    import re
+    wf = ROOT / ".github/workflows"
+    q_wf = (wf / "apply_setup_questionnaire.yml").read_text()
+    assert (wf / q.WORKFLOW_FILE).exists()
+    assert q_wf.index("name: Start a search") < q_wf.index("name: Reply on the issue")   # the reply can link to it
+    for f in wf.glob("*.yml"):
+        for script in re.findall(r"python (scripts/\S+\.py)", f.read_text()):
+            assert (ROOT / script).exists(), (f.name, script)
+    for doc in ("README.md", "HOW_TO_RUN_A_SEARCH_NOW.md", "JOB_SEARCH_RESULTS/README.md", "jobsearch/results_folder.py"):
+        for name in re.findall(r"actions/workflows/([\w.-]+\.yml)", (ROOT / doc).read_text()):
+            assert (wf / name).exists(), (doc, name)
