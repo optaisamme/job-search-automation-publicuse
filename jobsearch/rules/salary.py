@@ -1,6 +1,6 @@
 """Salary hard filter.
 
-Rules (thresholds from EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml; 0 = no minimum):
+Rules (thresholds from JOB_SEARCH_SETTINGS/job_search_settings.toml; 0 = no minimum):
   single salary  -> pass if >= minimum_single_salary
   range          -> pass if lower >= minimum_range_start AND upper > range_end_must_be_above
 Only employer-advertised annual BASE salary counts. Bonuses, commission, OTE,

@@ -147,42 +147,40 @@ def main(argv=None) -> int:
         watched, bad = pipeline.watched_boards(prof)
         from .titles import TitleMatcher
         sm = TitleMatcher(prof, exp.get("skills", [])).skills
-        print(f"Skills-based matching (section 8): {sm.summary()}")
+        print(f"Skills-based matching: {sm.summary()}")
         if sm.on and sm.rule not in ("all", "any"):
-            print('SETTINGS PROBLEM: in EDIT_ME_1 section 8, required_keywords_rule must be "all" or "any". Fix it and save.')
+            print('SETTINGS PROBLEM: the skills-based matching keyword rule must be "all" or "any". Answer the setup questionnaire again to fix it.')
             return 1
         if sm.active and sm.minimum and not sm.skills:
-            print("Note: skills-based matching is on, but your experience file (EDIT_ME_2) has no skills yet, "
+            print("Note: skills-based matching is on, but you have not listed any skills yet (questionnaire Step 6), "
                   "so it will not find any jobs until you add some.")
         import tomllib as _t
         from .pipeline import SETTINGS_DIR
         try:
-            wk = _t.load(open(root / SETTINGS_DIR / "EDIT_ME_1_job_search_settings.toml", "rb")).get("automatic_weekly_search", {})
+            wk = _t.load(open(root / SETTINGS_DIR / "job_search_settings.toml", "rb")).get("automatic_weekly_search", {})
         except (OSError, ValueError):
             wk = {}
         wk_on = str(wk.get("on", "no")).strip().lower() in ("yes", "y", "true", "on", "1")
         from .adapters.aggregators import search_size, SEARCH_SIZE_DEFAULTS
         try:
-            sz = search_size({"search_size": _t.load(open(root / SETTINGS_DIR / "EDIT_ME_1_job_search_settings.toml", "rb")).get("search_size", {})})
+            sz = search_size({"search_size": _t.load(open(root / SETTINGS_DIR / "job_search_settings.toml", "rb")).get("search_size", {})})
         except (OSError, ValueError):
             sz = dict(SEARCH_SIZE_DEFAULTS)
-        print(f"How many jobs to look through (section 10): {sz['newest_jobs_per_site']:,} newest jobs per site, "
+        print(f"How many jobs to look through: {sz['newest_jobs_per_site']:,} newest jobs per site, "
               f"{sz['jobs_per_search_word']:,} for each job title, Jobicy up to {sz['jobicy_max_jobs']:,}"
               + (" (Recommended)" if sz == SEARCH_SIZE_DEFAULTS else ""))
-        print("Automatic weekly searches (section 9): " + (f"ON, every {str(wk.get('day', 'Friday')).capitalize()}" if wk_on else "OFF"))
-        print(f"Companies to watch (section 7): {', '.join(b['board'] for b in watched) or 'none added (optional: only for companies whose careers page runs on Greenhouse, Lever, Ashby or SmartRecruiters; all job sites are still searched)'}")
+        print("Automatic weekly searches: " + (f"ON, every {str(wk.get('day', 'Friday')).capitalize()}" if wk_on else "OFF"))
+        print(f"Companies to watch: {', '.join(b['board'] for b in watched) or 'none added (optional: only for companies whose careers page runs on Greenhouse, Lever, Ashby or SmartRecruiters; all job sites are still searched)'}")
         if bad:
             for link in bad:
                 print(f"COMPANY LINK NOT UNDERSTOOD: {link}")
-            print("In EDIT_ME_1 section 7, each link must be a company's job page on one of these sites: "
+            print("In the questionnaire's 'Companies to watch', each link must be a company's job page on one of these sites: "
                   f"{SUPPORTED_JOB_PAGES}. Fix or delete the link above and save.")
             return 1
         print(f"Experience profile: {len(exp.get('skills', []))} skills, {len(exp.get('gaps', []))} gap areas")
         if not prof["titles"]:
-            print("NO JOB TITLES SET YET. Easiest: answer the setup questionnaire (Issues tab, New issue, Job search setup). "
-                  "Or open EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml, go to section 1, type at least one job title "
-                  "inside the brackets, for example  titles = [\"Data Analyst\"],  and save. "
-                  "Nothing will be searched until then.")
+            print("NO JOB TITLES SET YET. Answer the setup questionnaire (Issues tab, New issue, Job search setup). "
+                  "Nothing will be searched until you save at least one job title.")
             return 1
         print("Settings OK.")
         return 0

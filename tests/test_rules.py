@@ -334,16 +334,8 @@ def test_settings_allowed_cert_list():
 
 
 FILLED_SETTINGS = """
-[[job_titles.group]]
-name = "Salesforce Administrator"
-track = "A"
-titles = ["Salesforce Administrator"]
-
-[[job_titles.group]]
-name = "Advancement"
-track = "B"
-titles = ["Advancement Services"]
-description_must_mention_one_of = ["donor", "fundrais"]
+[job_titles]
+titles = ["Salesforce Administrator", "Advancement Services"]
 
 [where_you_live]
 state = "Ohio"
@@ -396,10 +388,10 @@ def test_filled_settings_apply(tmp_path):
     try:
         prof, exp = pipeline.load_config(_settings_root(tmp_path, FILLED_SETTINGS))
         m = TitleMatcher(prof)
-        assert m.match("Senior Salesforce Administrator", "Salesforce admin role")["track"] == "A"
+        assert m.match("Senior Salesforce Administrator", "Salesforce admin role") is not None
         assert m.match("Salesforce Developer", "Salesforce") is None
         assert m.match("Advancement Services Manager", "Salesforce donor database") is not None
-        assert m.match("Advancement Services Manager", "Salesforce database") is None
+        assert m.match("Advancement Services Manager", "donor database") is None   # must mention "Salesforce"
         assert prof["search"]["queries"] == ["Salesforce Administrator", "Advancement Services"]
         assert criteria.CRITERIA["home_state"] == "Ohio" and criteria.CRITERIA["single_min"] == 80000
         assert CE("Requirements:\n- PMP certification required").outcome == FAIL
@@ -461,16 +453,16 @@ def test_fill_in_slots_with_yes_no(tmp_path):
     from jobsearch import pipeline, criteria
     root = Path(__file__).resolve().parent.parent
     text = (root / "tests/fixtures/blank_settings.toml").read_text()
-    # simulate a user filling group 1 and rule 1 in place
-    text = text.replace('# ---- Job title group 1 ----\n[[job_titles.group]]\ntitles = []',
-                        '# ---- Job title group 1 ----\n[[job_titles.group]]\ntitles = ["Salesforce Administrator"]', 1)
-    text = text.replace('# ---- Rule 1 ----\n[[filters.requirement_rule]]\nname = ""\non = "no"\nterms = []',
-                        '# ---- Rule 1 ----\n[[filters.requirement_rule]]\nname = "Clearance"\non = "yes"\nterms = ["security clearance"]', 1)
+    # what the questionnaire writes into the blank settings file
+    text = text.replace('[job_titles]\ntitles = []', '[job_titles]\ntitles = ["Salesforce Administrator"]', 1)
+    text = text.replace('name = "Words that rule out a job"\non = "no"\nterms = []',
+                        'name = "Words that rule out a job"\non = "yes"\nterms = ["security clearance"]', 1)
     assert 'titles = ["Salesforce Administrator"]' in text and 'on = "yes"' in text
     try:
         prof, exp = pipeline.load_config(_settings_root(tmp_path, text))
-        assert [t["family"] for t in prof["titles"]] == ["Group 1"]  # no name needed
-        assert criteria.CRITERIA["custom_rules"] == [{"name": "Clearance", "on": True, "terms": ["security clearance"], "reject_when": "required"}]
+        assert [t["plain_titles"] for t in prof["titles"]] == [["Salesforce Administrator"]]
+        assert criteria.CRITERIA["custom_rules"] == [{"name": "Words that rule out a job", "on": True,
+                                                      "terms": ["security clearance"], "reject_when": "required"}]
     finally:
         criteria.configure(None)
 
@@ -529,3 +521,14 @@ def test_remote_only_setting_parsed():
     from jobsearch import criteria
     assert criteria.from_settings({"where_you_live": {"remote_only": "no"}})["remote_only"] is False
     assert criteria.from_settings({"where_you_live": {}})["remote_only"] is True
+
+
+def test_older_title_groups_are_combined(tmp_path):
+    from jobsearch import pipeline, criteria
+    old = '[[job_titles.group]]\ntitles = ["Data Analyst"]\n\n[[job_titles.group]]\ntitles = ["Program Manager"]\n'
+    try:
+        prof, _ = pipeline.load_config(_settings_root(tmp_path, old))
+        assert [t["plain_titles"] for t in prof["titles"]] == [["Data Analyst", "Program Manager"]]
+        assert prof["search"]["queries"] == ["Data Analyst", "Program Manager"]
+    finally:
+        criteria.configure(None)

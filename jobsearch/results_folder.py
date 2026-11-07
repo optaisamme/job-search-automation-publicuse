@@ -122,7 +122,7 @@ def _manual_boards(root: Path) -> list[str]:
 
 
 def _companies(root: Path) -> list[str]:
-    """Companies whose careers pages are read every search: found automatically, and added in section 7."""
+    """Companies whose careers pages are read every search: found automatically, and added in the questionnaire."""
     from . import pipeline
     names = {"greenhouse": "Greenhouse", "lever": "Lever", "ashby": "Ashby", "smartrecruiters": "SmartRecruiters"}
     try:
@@ -134,11 +134,11 @@ def _companies(root: Path) -> list[str]:
     from .pipeline import MAX_SEARCHES_WITHOUT_MATCH as M
     rows = [(b.get("employer") or b["board"], names.get(ats, ats), "found automatically",
              f"{int(b.get('searches_without_match', 0))} of {M}") for ats, lst in found.items() for b in lst]
-    rows += [(b["board"], names.get(b["ats"], b["ats"]), "you added it (section 7)", "never removed") for b in added]
+    rows += [(b["board"], names.get(b["ats"], b["ats"]), "you added it", "never removed") for b in added]
     L = ["## Companies checked every search", "",
          "The tool reads every open job on these companies' careers pages each search. Companies are found "
          "automatically when a matching job leads to a careers page on Greenhouse, Lever, Ashby or SmartRecruiters "
-         "(through a job site or the web search), or you can add them in settings section 7.", "",
+         "(through a job site or the web search), or you can add them under \"Companies to watch\" in the questionnaire.", "",
          f"A company found automatically is removed after more than {M} searches in a row with no job matching "
          "your job titles or skills. It is added again if a matching job shows up later. Companies you added are never removed.", ""]
     if not rows:
@@ -197,12 +197,11 @@ def write(root: Path) -> dict:
                   "**None of the listings matched your job titles.** To find more:", "",
                   "1. Use shorter, common titles. For example, \"Data Analyst\" also finds \"Senior Data Analyst\" "
                   "and \"Analyst, Data\", but \"Data Analyst for Nonprofit Programs\" finds almost nothing.",
-                  "2. Add other names for the same job, for example "
-                  "`[\"Program Manager\", \"Program Director\", \"Program Lead\"]`.",
-                  "3. Leave `description_must_mention_one_of` and \"Description must mention\" empty to start; "
-                  "add them later if you get too many jobs.",
+                  "2. Add other names for the same job, for example Program Manager, Program Director and Program Lead.",
+                  "3. Leave \"Words the job description must mention\" empty to start; add words later if you get "
+                  "too many jobs.",
                   "4. Add the free Tavily web search key (SETUP.md Step 6). It finds jobs that are on no job site.",
-                  "5. Add employers you like in settings section 7, \"Companies to watch.\"", ""]
+                  "5. Add employers you like under \"Companies to watch\" in the questionnaire.", ""]
         else:
             R += ["Nothing new in this search."
                   + (" The jobs below were already reported earlier." if c.get("qualified") or c.get("needs_verification") else ""), ""]

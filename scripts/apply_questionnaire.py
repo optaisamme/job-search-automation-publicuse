@@ -1,7 +1,7 @@
 """Apply the "Job search setup" questionnaire (a GitHub issue form) to the settings files.
 
 Runs in GitHub Actions when the copy's owner (or a collaborator) submits the form. Reads the
-answers from the issue text, updates EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1 and EDIT_ME_2, checks
+answers from the issue text, updates JOB_SEARCH_SETTINGS (settings and experience files), checks
 the settings, and writes a plain-language reply for the issue.
 
 Answers are untrusted text: they are only ever written into the settings as quoted values.
@@ -21,8 +21,8 @@ import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SETTINGS = ROOT / "EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml"
-EXPERIENCE = ROOT / "EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml"
+SETTINGS = ROOT / "JOB_SEARCH_SETTINGS/job_search_settings.toml"
+EXPERIENCE = ROOT / "JOB_SEARCH_SETTINGS/my_experience.toml"
 OUT = ROOT / "out"
 TEMPLATE_REPO = "optaisamme/job-search-automation-publicuse"   # the shared template: never changed
 ALLOWED = {"OWNER", "MEMBER", "COLLABORATOR"}   # who may change this copy's settings
@@ -42,6 +42,8 @@ LABELS = {
     "Words the job description must mention": "must_mention",
     "Title words to skip": "skip_titles",
     "Employers to skip": "skip_employers",
+    "Words that rule out a job": "rule_words",
+    "Rule out a job when these words are…": "rule_when",
     "Check certification requirements?": "cert_check",
     "Certifications you have, or could get before being hired": "certs_allowed",
     "Companies to watch": "companies",
@@ -59,7 +61,7 @@ LABELS = {
 }
 
 
-# "How many jobs to look through": the numbers written to settings section 10
+# "How many jobs to look through": the numbers written to the settings file
 SEARCH_SIZES = {
     "recommended": {"newest_jobs_per_site": 1000, "jobs_per_search_word": 200, "jobicy_max_jobs": 5000},
     "fewer": {"newest_jobs_per_site": 200, "jobs_per_search_word": 100, "jobicy_max_jobs": 500},
@@ -79,7 +81,7 @@ OLD_LABELS = {
 
 
 # Dropdown questions. GitHub writes "None" for a dropdown left unanswered; that means "keep my setting".
-DROPDOWNS = {"remote_only", "cert_check", "skills_on", "skills_rule", "search_size", "weekly", "weekly_day", "run_now"}
+DROPDOWNS = {"remote_only", "cert_check", "rule_when", "skills_on", "skills_rule", "search_size", "weekly", "weekly_day", "run_now"}
 
 
 class AnswerProblem(ValueError):
@@ -178,8 +180,9 @@ def set_value(text: str, header: str, key: str, value, occurrence: int = 0, appe
                 start = i
                 break
     if start is None:
-        block = append_block or f"{header}\n{key} = {toml_value(value)}"
-        return text.rstrip("\n") + "\n\n" + block + "\n"
+        if append_block:   # add the whole table with its other settings, then set this value in it
+            return set_value(text.rstrip("\n") + "\n\n" + append_block + "\n", header, key, value, occurrence)
+        return text.rstrip("\n") + "\n\n" + f"{header}\n{key} = {toml_value(value)}" + "\n"
     i = start + 1
     while i < len(lines) and not lines[i].lstrip().startswith("["):
         if re.match(rf"^{re.escape(key)}\s*=", lines[i]):
@@ -205,10 +208,9 @@ def apply(answers: dict, settings_text: str, experience_text: str) -> tuple[str,
         shown = ", ".join(value) if isinstance(value, list) else value
         changed.append(f"{label}: {shown if shown not in ('', []) else 'cleared'}")
 
-    for n, k in enumerate(("titles_1",)):
-        v = as_list(answers.get(k, ""))
-        if v is not None:
-            put("[[job_titles.group]]", "titles", v, "Job titles", n)
+    v = as_list(answers.get("titles_1", ""))
+    if v is not None:
+        put("[job_titles]", "titles", v, "Job titles")
 
     r = as_choice(answers.get("remote_only", ""))
     if r:
@@ -240,6 +242,18 @@ def apply(answers: dict, settings_text: str, experience_text: str) -> tuple[str,
     c = as_choice(answers.get("cert_check", ""))
     if c:
         put("[filters]", "check_certifications", "yes" if c.startswith("yes") else "no", "Check certifications")
+
+    rule = "[[filters.requirement_rule]]"
+    rule_block = f'{rule}\nname = "Words that rule out a job"\non = "no"\nterms = []\nreject_when = "required"'
+    v = as_list(answers.get("rule_words", ""))
+    if v is not None:
+        put(rule, "terms", v, "Words that rule out a job", append_block=rule_block)
+        s = set_value(s, rule, "on", "yes" if v else "no")
+        s = set_value(s, rule, "name", "Words that rule out a job")
+    c = as_choice(answers.get("rule_when", ""))
+    if c:
+        put(rule, "reject_when", "mentioned" if c.startswith("mentioned") else "required",
+            "Rule out a job when the words are", append_block=rule_block)
 
     v = as_list(answers.get("companies", ""))
     if v is not None:
@@ -289,7 +303,7 @@ def apply(answers: dict, settings_text: str, experience_text: str) -> tuple[str,
             raise AnswerProblem(f'"Day for automatic weekly searches": choose a day of the week (you chose "{d}").')
         put("[automatic_weekly_search]", "day", d, "Weekly search day", append_block=wk_block)
 
-    # experience file (EDIT_ME_2)
+    # experience file
     v = as_number(answers.get("years", ""), "Years of experience")
     if v is not None:
         e = set_value(e, "[tenure]", "years_of_experience", v)
@@ -317,7 +331,9 @@ def replace_skills(experience_text: str, skills_text: str) -> tuple[str, list[st
     if len(lines) > MAX_ITEMS:
         raise AnswerProblem(f"Too many skills (at most {MAX_ITEMS}).")
     current = tomllib.loads(experience_text)
-    marker = "# (add your [[skills]] and [[gaps]] blocks below)"
+    marker = "# (skills from the questionnaire are saved below)"
+    old_marker = "# (add your [[skills]] and [[gaps]] blocks below)"   # older copies
+    experience_text = experience_text.replace(old_marker, marker)
     head = experience_text.split(marker)[0].rstrip("\n") if marker in experience_text else \
         re.split(r"\n\[\[(?:skills|gaps)\]\]", experience_text)[0].rstrip("\n")
     blocks, names = [], []
@@ -376,8 +392,8 @@ def main() -> int:
                 reply = ["**Your settings were not saved.**", "", str(e), "",
                          "Edit this issue to fix your answer (the **...** menu, then **Edit**); it is checked again when you save."]
             except tomllib.TOMLDecodeError as e:
-                reply = ["**Your settings were not saved.** One of your settings files has a typing mistake that must "
-                         f"be fixed by hand first: {e}"]
+                reply = ["**Your settings were not saved.** A settings file in JOB_SEARCH_SETTINGS could not be read "
+                         f"({e}). It was probably changed by hand. Ask the person who shared this tool for help."]
     (OUT / "questionnaire_reply.md").write_text("\n".join(reply) + "\n")
     (OUT / "questionnaire_ok.txt").write_text("yes" if ok else "no")
     (OUT / "questionnaire_changed.txt").write_text("yes" if changed_files else "no")

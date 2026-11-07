@@ -11,8 +11,8 @@ spec = importlib.util.spec_from_file_location("q", ROOT / "scripts/apply_questio
 q = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(q)
 
-SETTINGS = (ROOT / "EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml").read_text()
-EXPERIENCE = (ROOT / "EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml").read_text()
+SETTINGS = (ROOT / "JOB_SEARCH_SETTINGS/job_search_settings.toml").read_text()
+EXPERIENCE = (ROOT / "JOB_SEARCH_SETTINGS/my_experience.toml").read_text()
 
 
 def form(**answers):
@@ -43,8 +43,7 @@ def test_full_answers_update_both_files():
     answers = q.parse_issue_body(body)
     s, e, changes, extras = q.apply(answers, SETTINGS, EXPERIENCE)
     st, ex = tomllib.loads(s), tomllib.loads(e)
-    g = st["job_titles"]["group"]
-    assert g[0]["titles"] == ["Program Manager", "Program Director", "Data Analyst"] and g[1]["titles"] == [] and g[2]["titles"] == []
+    assert st["job_titles"]["titles"] == ["Program Manager", "Program Director", "Data Analyst"]
     w = st["where_you_live"]
     assert (w["remote_only"], w["state"], w["state_abbreviation"], w["cities"]) == ("no", "New Mexico", "NM", ["Albuquerque", "Santa Fe"])
     assert st["salary"] == {"minimum_single_salary": 100000, "minimum_range_start": 90000, "range_end_must_be_above": 100000}
@@ -57,7 +56,7 @@ def test_full_answers_update_both_files():
     assert [k["name"] for k in ex["skills"]] == ["Reports and dashboards", "Data cleanup"]
     assert ex["skills"][1]["keywords"] == ["data quality", "dedup"]
     assert extras["run_now"] and len(changes) >= 15
-    assert "# 1. JOB TITLES TO LOOK FOR" in s or "JOB TITLES TO LOOK FOR" in s      # notes and examples are kept
+    assert s.startswith("# YOUR JOB SEARCH SETTINGS")      # the note at the top is kept
 
 
 def test_blank_keeps_and_none_clears():
@@ -82,15 +81,15 @@ def test_bad_answers_are_explained(answers, problem):
 def test_answers_are_only_ever_quoted_values():
     s, _, _, _ = q.apply(q.parse_issue_body(form(titles_1='Analyst"]\n[evil]\nx = 1')), SETTINGS, EXPERIENCE)
     st = tomllib.loads(s)
-    assert "evil" not in st and st["job_titles"]["group"][0]["titles"] == ['Analyst"]', "[evil]", "x = 1"]
+    assert "evil" not in st and st["job_titles"]["titles"] == ['Analyst"]', "[evil]", "x = 1"]
 
 
 def test_only_owner_or_collaborator_can_change_settings(tmp_path, monkeypatch):
-    for d in ("EDIT_ME_JOB_SEARCH_SETTINGS", "jobsearch", "scripts"):
+    for d in ("JOB_SEARCH_SETTINGS", "jobsearch", "scripts"):
         shutil.copytree(ROOT / d, tmp_path / d)
     monkeypatch.setattr(q, "ROOT", tmp_path)
-    monkeypatch.setattr(q, "SETTINGS", tmp_path / "EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml")
-    monkeypatch.setattr(q, "EXPERIENCE", tmp_path / "EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml")
+    monkeypatch.setattr(q, "SETTINGS", tmp_path / "JOB_SEARCH_SETTINGS/job_search_settings.toml")
+    monkeypatch.setattr(q, "EXPERIENCE", tmp_path / "JOB_SEARCH_SETTINGS/my_experience.toml")
     monkeypatch.setattr(q, "OUT", tmp_path / "out")
     monkeypatch.setenv("ISSUE_BODY", form(titles_1="Program Manager"))
     monkeypatch.setenv("AUTHOR_ASSOCIATION", "NONE")
@@ -100,7 +99,7 @@ def test_only_owner_or_collaborator_can_change_settings(tmp_path, monkeypatch):
     monkeypatch.setenv("AUTHOR_ASSOCIATION", "OWNER")
     q.main()
     assert (tmp_path / "out/questionnaire_ok.txt").read_text() == "yes"
-    assert tomllib.loads(q.SETTINGS.read_text())["job_titles"]["group"][0]["titles"] == ["Program Manager"]
+    assert tomllib.loads(q.SETTINGS.read_text())["job_titles"]["titles"] == ["Program Manager"]
     assert "Your settings are saved" in (tmp_path / "out/questionnaire_reply.md").read_text()
     monkeypatch.setenv("IS_TEMPLATE", "true")                      # the shared template is never changed
     before = q.SETTINGS.read_text()
@@ -161,7 +160,7 @@ def test_unanswered_dropdowns_keep_settings():
                 skills_on="None", skills_rule="None", weekly="None", weekly_day="None", run_now="Yes")
     s, _, changes, extras = q.apply(q.parse_issue_body(body), SETTINGS, EXPERIENCE)
     st, before = tomllib.loads(s), tomllib.loads(SETTINGS)
-    assert st["job_titles"]["group"][0]["titles"] == ["Abortion Advocate", "Domestic Violence Advocate"]
+    assert st["job_titles"]["titles"] == ["Abortion Advocate", "Domestic Violence Advocate"]
     assert st["where_you_live"] == before["where_you_live"] and st["automatic_weekly_search"] == before["automatic_weekly_search"]
     assert st["filters"]["check_certifications"] == before["filters"]["check_certifications"]
     assert extras["run_now"]
@@ -237,3 +236,18 @@ def test_reply_starts_with_the_search_link(tmp_path, monkeypatch):
     assert q.post_reply() == 0
     body = _json.loads(sent[0].data)["body"]
     assert body.startswith("## Your job search is running") and body.index("Click here to watch it") < body.index("Your settings are saved")
+
+
+def test_words_that_rule_out_a_job():
+    body = form(rule_words="security clearance\nTS/SCI", rule_when="Mentioned anywhere in the posting")
+    s, _, changes, _ = q.apply(q.parse_issue_body(body), SETTINGS, EXPERIENCE)
+    r = tomllib.loads(s)["filters"]["requirement_rule"][0]
+    assert r == {"name": "Words that rule out a job", "on": "yes", "terms": ["security clearance", "TS/SCI"], "reject_when": "mentioned"}
+    s2, _, _, _ = q.apply(q.parse_issue_body(form(rule_words="none")), s, EXPERIENCE)
+    assert tomllib.loads(s2)["filters"]["requirement_rule"][0]["on"] == "no"     # cleared: off
+
+
+def test_settings_file_has_no_editing_instructions():
+    text = (ROOT / "JOB_SEARCH_SETTINGS/job_search_settings.toml").read_text()
+    assert "questionnaire" in text and "pencil" not in text and "group" not in text and "EXAMPLE" not in text
+    assert len([l for l in text.splitlines() if l.startswith("#")]) <= 6

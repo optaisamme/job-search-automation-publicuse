@@ -1,188 +1,50 @@
-# =====================================================================
-#  EDIT ME  (file 1 of 3): YOUR JOB SEARCH SETTINGS
-# =====================================================================
-#  WHAT THIS FILE DOES
-#    Decides which jobs are found and which are rejected. It starts EMPTY:
-#    nothing is searched or filtered until you fill it in.
-#
-#  HOW TO EDIT IT (on the GitHub website)
-#    1. Click the pencil icon (top right of this file).
-#    2. Fill in the blanks: type between the quotes "" or brackets [] on
-#       lines that do NOT start with "#". Lines starting with "#" are notes
-#       and examples; the program ignores them and you never need to edit them.
-#    3. Lists are typed as items in quotes, separated by commas, inside
-#       square brackets:   ["Salesforce Administrator", "Salesforce Admin"]
-#    4. Click "Commit changes" (green button), then "Commit changes" again.
-#
-#  WHAT YOU MUST FILL IN:  section 1 (at least one job title).
-#  EVERYTHING ELSE IS OPTIONAL and stays OFF until you fill it in.
-#
-#  WHAT HAPPENS AFTER YOU SAVE
-#    - Your changes are used on the NEXT run (right away if you press "Run
-#      workflow" on the Actions tab, or the weekly run if you turned it on).
-#    - The first step of every run, "Check settings files", lists exactly
-#      what is ON and OFF. If something is typed wrong, the run stops there
-#      and names the line to fix.
-#    - Jobs still listed online are re-checked against your new settings.
-#      A job that now passes is posted as "NEWLY VERIFIED". A job that now
-#      fails is moved to "Rejected" in the report. A job already posted to
-#      you is never posted again.
-# =====================================================================
+# YOUR JOB SEARCH SETTINGS
+# This file is filled in by the setup questionnaire. You do not need to edit it.
+# To change your settings, answer the questionnaire again: Issues tab, New issue, Job search setup.
 
-
-# ---------------------------------------------------------------------
-#  1. JOB TITLES TO LOOK FOR  (required: fill in at least one group)
-# ---------------------------------------------------------------------
-#  Below are 3 empty groups. Fill in one or more; leave the rest empty.
-#  Each group is one kind of job. Type between the quotes and brackets.
-#  Capitalization doesn't matter, and "Senior", "Sr." or "Lead" versions
-#  are found automatically.
-#
-#  HOW TO TYPE A LIST: each item in quotes, commas between items, all
-#  inside square brackets:   ["Salesforce Administrator", "Salesforce Admin"]
-#
-#  A FILLED-IN GROUP LOOKS LIKE THIS:
-#     titles = ["Salesforce Administrator", "Salesforce Admin"]
-#     description_must_mention_one_of = []
-#
-#  titles = the job titles to look for
-#  description_must_mention_one_of = optional extra condition: the job
-#           description must also mention one of these words. [] = off.
-#  Results show which group a job came from: Group 1, Group 2 or Group 3.
-
-# ---- Job title group 1 ----
-[[job_titles.group]]
+[job_titles]
 titles = []
-description_must_mention_one_of = []
 
-# ---- Job title group 2 ----
-[[job_titles.group]]
-titles = []
-description_must_mention_one_of = []
-
-# ---- Job title group 3 ----
-[[job_titles.group]]
-titles = []
-description_must_mention_one_of = []
-
-
-# ---------------------------------------------------------------------
-#  2. REMOTE OR IN-PERSON, AND WHERE YOU LIVE  (optional)
-# ---------------------------------------------------------------------
-#  Leave state empty ("") to skip the state check. When set, jobs that
-#  exclude your state, or list allowed states without it, are rejected.
-#
-#  cities (optional): cities in your state. They are used only when a job
-#  lists different pay for different places (for example "Denver: $95,000;
-#  all other locations: $85,000"), to pick the pay that applies to you.
-#  Type each city in quotes, separated by commas, inside square brackets.
-#
-#  EXAMPLE (one per line, as you would type them):
-#     state = "New Mexico"
-#     state_abbreviation = "NM"
-#     cities = ["Albuquerque", "Santa Fe", "Las Cruces"]
-#  One city:   cities = ["Albuquerque"]
-#  No cities:  cities = []
 [where_you_live]
-# Remote jobs only?
-#   "yes" = keep only fully remote jobs; hybrid and on-site jobs are left out. (Starts as "yes".)
-#   "no"  = also keep hybrid and on-site jobs: in your state if you fill in state below,
-#           or anywhere if you leave state empty.
 remote_only = "yes"
 state = ""
 state_abbreviation = ""
 cities = []
 
-
-# ---------------------------------------------------------------------
-#  3. SALARY  (optional; 0 = no minimum)
-# ---------------------------------------------------------------------
-#  Only the advertised yearly BASE salary counts (no bonus or commission).
-#  EXAMPLE: one listed salary must be at least $100,000, and a range must
-#  start at $90,000 or more AND end above $100,000:
-#     minimum_single_salary = 100000
-#     minimum_range_start = 90000
-#     range_end_must_be_above = 100000
 [salary]
+# 0 = no minimum
 minimum_single_salary = 0
 minimum_range_start = 0
 range_end_must_be_above = 0
 
-
-# ---------------------------------------------------------------------
-#  4. OTHER FILTERS  (optional; all empty / off to start)
-# ---------------------------------------------------------------------
 [filters]
-# The job description must mention at least one of these words.
-# EXAMPLE:  description_must_mention = ["Salesforce"]
 description_must_mention = []
-
-# Skip any job whose title contains one of these words.
-# EXAMPLE:  exclude_titles_containing = ["Developer", "Engineer", "Intern"]
 exclude_titles_containing = []
-
-# Certifications (any field, for example "Food Handler", "CPR", "PMP").
-# When check_certifications = "yes", a job is rejected if it requires, BEFORE
-# hire, a certification you have NOT listed below. Type the names the way job
-# postings usually write them. Certifications that can be earned after being
-# hired are always allowed (and reported to you with the deadline).
-# If a posting asks for a certification without naming it ("relevant
-# certification required"), the job is marked "Needs Verification".
-# EXAMPLE:
-#   check_certifications = "yes"
-#   certifications_allowed_before_hire = ["Food Handler", "CPR"]
+exclude_employers = []
 check_certifications = "no"
 certifications_allowed_before_hire = []
 
-
-# ---------------------------------------------------------------------
-#  5. REQUIREMENT RULES  (optional; all 3 rules below are OFF to start)
-# ---------------------------------------------------------------------
-#  A rule rejects jobs that demand something you don't have.
-#  To use a rule: fill in name and terms, then change on = "no" to on = "yes".
-#
-#  name        = a label for the rule (shown in results)
-#  on          = "yes" to use the rule, "no" to switch it off
-#  terms       = words or phrases to look for (a list, see section 1)
-#  reject_when = "required"  -> reject ONLY if the job REQUIRES prior
-#                               experience with a term. "Preferred", "a plus",
-#                               or learning it on the job is fine. Unclear
-#                               wording -> "Needs Verification".
-#                "mentioned" -> reject if a term appears ANYWHERE in the job.
-#
-#  A FILLED-IN RULE LOOKS LIKE THIS:
-#     name = "Security clearance"
-#     on = "yes"
-#     terms = ["security clearance", "TS/SCI"]
-#     reject_when = "mentioned"
-
-# ---- Rule 1 ----
+# Words that rule out a job ("required" = only when the job requires them; "mentioned" = whenever they appear)
 [[filters.requirement_rule]]
-name = ""
+name = "Words that rule out a job"
 on = "no"
 terms = []
 reject_when = "required"
 
-# ---- Rule 2 ----
-[[filters.requirement_rule]]
-name = ""
+[companies_to_watch]
+job_page_links = []
+
+[skills_matching]
 on = "no"
-terms = []
-reject_when = "required"
+required_keywords = []
+required_keywords_rule = "all"
+minimum_skills_matched = 3
 
-# ---- Rule 3 ----
-[[filters.requirement_rule]]
-name = ""
+[automatic_weekly_search]
 on = "no"
-terms = []
-reject_when = "required"
+day = "Friday"
 
-
-# ---------------------------------------------------------------------
-#  6. SEARCH WORDS  (optional)
-# ---------------------------------------------------------------------
-#  Words used to search job sites that support keyword search.
-#  Leave empty to search for your job titles from section 1.
-#  EXAMPLE:  keywords = ["Salesforce Administrator", "CRM Administrator"]
-[search]
-keywords = []
+[search_size]
+newest_jobs_per_site = 1000
+jobs_per_search_word = 200
+jobicy_max_jobs = 5000

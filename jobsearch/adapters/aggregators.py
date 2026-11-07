@@ -33,7 +33,7 @@ def _pages(n: int, per_page: int) -> int:
 
 
 def search_words(ctx: dict) -> list[str]:
-    """All your search words (your job titles unless set in section 6), plus the skills-matching keywords."""
+    """All your job titles, plus the skills-matching keywords when that is on."""
     words = list(dict.fromkeys(ctx.get("queries", [])))
     if ctx.get("skill_words") and ctx["skill_words"] not in words:
         words.append(ctx["skill_words"])

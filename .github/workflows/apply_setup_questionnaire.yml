@@ -2,7 +2,7 @@
 # You do not need to edit this file.
 #
 # When the owner of this copy (or a collaborator) submits or edits the questionnaire, this:
-#   1. reads the answers and updates EDIT_ME_JOB_SEARCH_SETTINGS (settings and experience files),
+#   1. reads the answers and updates JOB_SEARCH_SETTINGS (settings and experience files),
 #   2. checks and saves the settings,
 #   3. starts a search if you asked for one,
 #   4. replies on the issue with what changed and a link to the search.
@@ -58,7 +58,7 @@ jobs:
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git config user.name "job-search-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add EDIT_ME_JOB_SEARCH_SETTINGS
+          git add JOB_SEARCH_SETTINGS
           git commit -m "Settings from the Job search setup questionnaire (issue #${{ github.event.issue.number }})"
           for attempt in 1 2 3 4; do
             git push && exit 0

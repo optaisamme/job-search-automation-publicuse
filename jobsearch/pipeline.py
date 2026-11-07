@@ -39,11 +39,11 @@ ADAPTERS = {  # order matters: web search first so newly discovered boards are s
 }
 
 
-SETTINGS_DIR = "EDIT_ME_JOB_SEARCH_SETTINGS"   # the folder people edit
+SETTINGS_DIR = "JOB_SEARCH_SETTINGS"   # filled in by the setup questionnaire
 
 
 def load_config(root: Path) -> tuple[dict, dict]:
-    """Load search configuration. EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml (plain language), when present,
+    """Load search configuration. JOB_SEARCH_SETTINGS/job_search_settings.toml (written by the questionnaire), when present,
     overrides the hard-filter criteria, job titles and search keywords in jobsearch/advanced_settings.toml."""
     from . import criteria
     cfg = root / SETTINGS_DIR if (root / SETTINGS_DIR).exists() else root / "config"   # "config" = older copies/tests
@@ -52,26 +52,27 @@ def load_config(root: Path) -> tuple[dict, dict]:
         adv = Path(__file__).with_name("advanced_settings.toml")  # built-in defaults; not edited by users
     with open(adv, "rb") as f:
         prof = tomllib.load(f)
-    ep = cfg / "EDIT_ME_2_my_experience.toml"
+    ep = cfg / "my_experience.toml"
     if not ep.exists():
         ep = cfg / "experience_profile.toml"
     exp = {}
     if ep.exists():
         with open(ep, "rb") as f:
             exp = tomllib.load(f)
-    sp = cfg / "EDIT_ME_1_job_search_settings.toml"
+    sp = cfg / "job_search_settings.toml"
     if not sp.exists():
         sp = cfg / "settings.toml"
     if sp.exists():
         with open(sp, "rb") as f:
             settings = tomllib.load(f)
         criteria.configure(criteria.from_settings(settings), base=criteria.NEUTRAL)
-        groups = [g for g in ((settings.get("job_titles") or {}).get("group") or []) if any(t.strip() for t in g.get("titles", []))]
+        jt = settings.get("job_titles") or {}
+        # one list of job titles (older copies had up to 3 groups: their titles are combined)
+        titles = list(dict.fromkeys(t.strip() for t in (jt.get("titles") or [t for g in jt.get("group") or [] for t in g.get("titles", [])])
+                                    if isinstance(t, str) and t.strip()))
         # With a settings file, only what the user wrote is used: no built-in titles or filters.
-        prof["titles"] = [{"track": (g.get("track") or "").strip(), "family": (g.get("name") or "").strip() or f"Group {i}",
-                           "plain_titles": [t for t in g.get("titles", []) if t.strip()],
-                           "require_any": g.get("description_must_mention_one_of", []), "include": []}
-                          for i, g in enumerate(groups, 1)]
+        prof["titles"] = [{"track": "", "family": "Your job titles", "plain_titles": titles, "require_any": [], "include": []}] \
+            if titles else []
         flt = settings.get("filters") or {}
         prof["title_rules"] = {"must_mention": list(flt.get("description_must_mention", [])),
                                "exclude_plain": list(flt.get("exclude_titles_containing", []))}
@@ -80,10 +81,7 @@ def load_config(root: Path) -> tuple[dict, dict]:
         prof["search_size"] = dict(settings.get("search_size") or {})
         prof["watch_links"] = [u for u in ((settings.get("companies_to_watch") or {}).get("job_page_links") or [])
                                if isinstance(u, str) and u.strip()]
-        kw = list((settings.get("search") or {}).get("keywords") or [])
-        if not kw:  # default: search for the titles themselves
-            kw = [t for g in groups for t in g.get("titles", [])]
-        prof.setdefault("search", {})["queries"] = kw
+        prof.setdefault("search", {})["queries"] = titles   # every job title is searched
     else:
         criteria.configure(None)
     return prof, exp
@@ -124,7 +122,7 @@ MAX_SEARCHES_WITHOUT_MATCH = 5   # a company found by the search is dropped afte
 def age_boards(boards: dict, found: set[tuple[str, str]]) -> list[dict]:
     """Companies the search found by itself (data/boards.json) are dropped after more than
     MAX_SEARCHES_WITHOUT_MATCH searches in a row in which their careers page had no job matching
-    your titles. Companies typed in settings section 7 are not in this file and are never dropped.
+    your titles. Companies added in the questionnaire ("Companies to watch") are not in this file and are never dropped.
     Returns the dropped companies."""
     dropped = []
     for ats, lst in boards.items():

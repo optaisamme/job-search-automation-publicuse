@@ -1,4 +1,4 @@
-"""Match a job title to one of the user's job title groups (EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml)."""
+"""Match a job title to one of the user's job titles (JOB_SEARCH_SETTINGS/job_search_settings.toml)."""
 from __future__ import annotations
 
 import re

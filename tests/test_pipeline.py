@@ -502,7 +502,7 @@ def test_results_page_lists_companies_checked_every_search(root):
     index = results_folder.write(root)["text"]
     assert "## Companies checked every search" in index
     assert "| Acme Nonprofit | Greenhouse | found automatically |" in index
-    assert "| betaorg | Lever | you added it (section 7) |" in index
+    assert "| betaorg | Lever | you added it |" in index
 
 
 def test_web_search_finds_job_and_remembers_company(root, monkeypatch):
@@ -757,7 +757,7 @@ def _enable_skills_matching(root):
 
 def test_skills_matching_off_by_default_in_template():
     import tomllib, pathlib
-    s = tomllib.load(open(pathlib.Path(__file__).parents[1] / "EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml", "rb"))
+    s = tomllib.load(open(pathlib.Path(__file__).parents[1] / "JOB_SEARCH_SETTINGS/job_search_settings.toml", "rb"))
     assert s["skills_matching"]["on"] == "no" and s["skills_matching"]["required_keywords"] == []
 
 
@@ -1011,7 +1011,7 @@ def test_questionnaire_saves_employers_to_skip():
     root = pathlib.Path(__file__).resolve().parents[1]
     spec = importlib.util.spec_from_file_location("q", root / "scripts/apply_questionnaire.py")
     q = importlib.util.module_from_spec(spec); spec.loader.exec_module(q)
-    settings = (root / "EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml").read_text()
+    settings = (root / "JOB_SEARCH_SETTINGS/job_search_settings.toml").read_text()
     body = "### Job titles to look for\n\nData Analyst\n\n### Employers to skip\n\n```text\nAcme Staffing\nExample Corp\n```\n"
     s, _, changes, _ = q.apply(q.parse_issue_body(body), settings, "")
     assert tomllib.loads(s)["filters"]["exclude_employers"] == ["Acme Staffing", "Example Corp"]

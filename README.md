@@ -65,48 +65,31 @@ Times are in UTC. Mountain Time is UTC minus 7 hours in winter and minus 6 in su
 
 ---
 
-## Files you can change
+## Changing your settings
 
-Only files whose names start with **EDIT_ME**. Do not change any other file.
+All settings are made with the **[setup questionnaire](../../issues/new/choose)** (Issues tab, New issue,
+Job search setup). Answer it again any time to change something: a blank answer, or a dropdown left on
+"None", keeps your current setting; type `none` in a text box to clear one. You never need to edit a file.
 
-| File | Do I have to? | What it changes |
-|---|---|---|
-| [`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml`](EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml) | **Yes:** type at least one job title | Which jobs are found and which are left out: job titles, remote only or not, your state, salary, certifications, your own rules, employers to skip, companies to watch, skills-based matching, how many jobs to look through |
-| [`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml`](EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml) | No | Your skills, used to show how well each job fits you. It never removes a job. With skills-based matching on (file 1, section 8), it also finds jobs with other titles |
+It covers: job titles, remote only or not, your state, salary, title words to skip, words that rule
+out a job, employers to skip, certifications, your skills, companies to watch, skills-based matching,
+how many jobs to look through, and automatic weekly searches (they start **off**).
 
-Both settings files start with no job titles and no skills, so nothing is searched until you add a job title. Remote-only is on to start; the other filters are off until you fill them in.
-
-**Also optional:** a free web search key. It is added in **Settings**, not in a file. See [Other optional edits: a free web search key](#other-optional-edits-a-free-web-search-key).
-
-**Easier than editing files:** the [setup questionnaire](../../issues/new/choose) fills in files 1 and 2 for you
-(Issues tab, New issue, Job search setup). A blank answer, or a dropdown left on "None", keeps
-your current setting; type `none` in a text box to clear one. Submit it again any time to change something.
-
-**Automatic weekly searches are OFF to start.** A search only runs when you start one
-yourself. To have one run by itself every week, choose **On** and a day in the questionnaire, or
-set section 9 of file 1 (`[automatic_weekly_search]`: `on = "yes"`, `day = "Friday"`).
-
-### How to change a file
-
-1. Click the file name in the table above.
-2. Click the **pencil icon** (top right of the file).
-3. Type only on lines that do **not** start with `#`, between the quotes `""` or the
-   brackets `[]`. Lines starting with `#` are notes and examples.
-4. To type a list, put each item in quotes, with commas between, inside brackets:
-   `["Salesforce Administrator", "Salesforce Admin"]`
-5. Click the green **Commit changes** button, then **Commit changes** again to save.
+**Also optional:** a free web search key. It is added in **Settings**, not in the questionnaire. See
+[Other optional edits: a free web search key](#other-optional-edits-a-free-web-search-key).
 
 ### What happens after you change a setting
 
 1. Your change is used in the **next search** (an automatic weekly search, if you turned it on, or one you start yourself).
-2. Each search first checks your settings. If something is typed wrong, the search stops
-   and tells you which line to fix.
+2. Each search first checks your settings. If something is wrong, the search stops and says
+   what to fix.
 3. Jobs found earlier are checked again with your new settings:
    a. A job that now fits is shown as **Newly verified (seen before)**.
    b. A job that now fails one rule is listed under Near Misses in the next report. Jobs that
       fail 2 or more rules are only counted in the totals.
    c. A job already shown to you is never shown again as new.
-4. To start completely fresh, delete the file `data/jobs.sqlite`. The next search starts over.
+4. To start completely fresh, delete the file `data/jobs.sqlite` (the only file you would ever
+   delete). The next search starts over.
 
 ---
 
@@ -164,8 +147,9 @@ links on the results page for those.
 2. **Collects public job listings** from these job sites:
    a. **No setup needed:** Himalayas, The Muse, Remote OK, Jobicy, We Work Remotely, Remotive
       and Hacker News "Who is hiring?" (mostly tech jobs). Several send their newest jobs
-      whatever your search words are (for example The Muse's newest 1,000 and all of Jobicy's US
-      remote jobs, set in section 10), so each search looks at a few thousand listings.
+      whatever your job titles are (for example The Muse's newest 1,000 and all of Jobicy's US
+      remote jobs; see "How many jobs to look through" in the questionnaire), so each search looks
+      at a few thousand listings.
    b. **Web search (free key, recommended, see SETUP.md Step 6):** searches the whole web for
       each of your job titles, finding jobs that are on no job site above. For each title it
       runs 2 searches: one across company careers pages (Greenhouse, Lever, Ashby,
@@ -174,10 +158,10 @@ links on the results page for those.
    c. **Company careers pages** on Greenhouse, Lever, Ashby or SmartRecruiters. A company is
       added when a job matching your job titles or skills is found on its own careers page;
       every open job there is then read each search. It is dropped after more than 5 searches
-      in a row with no matching job. Companies you add in section 7 are always read.
-3. **Keeps jobs with your job titles.** With skills-based matching on (settings section 8), it
+      in a row with no matching job. Companies you add in the questionnaire are always read.
+3. **Keeps jobs with your job titles.** With skills-based matching on (questionnaire), it
    also keeps jobs with other titles whose listing has your required keywords and enough of
-   your skills (from your experience file). Those are marked "(skills match)".
+   your skills (from the questionnaire). Those are marked "(skills match)".
 4. **Applies your rules**: remote only (on unless you turn it off), your state, salary,
    certifications, your own rules. When a
    posting is unclear, the job is listed under **Jobs that need checking** instead of guessed.

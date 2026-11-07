@@ -20,7 +20,7 @@ def rows(root: Path, prof: dict, exp: dict) -> list[list[str]]:
     from .titles import TitleMatcher
     from .adapters.aggregators import search_size, SEARCH_SIZE_DEFAULTS
     try:
-        settings = tomllib.load(open(Path(root) / SETTINGS_DIR / "EDIT_ME_1_job_search_settings.toml", "rb"))
+        settings = tomllib.load(open(Path(root) / SETTINGS_DIR / "job_search_settings.toml", "rb"))
     except (OSError, ValueError):
         settings = {}
     out = []
@@ -44,8 +44,12 @@ def rows(root: Path, prof: dict, exp: dict) -> list[list[str]]:
     if C.get("cert_filter_on", True):
         out.append(["Certifications you have, or could get before being hired", _list(C.get("allowed_prehire_certs"))])
     out.append(["Employers to skip", _list((prof.get("employer_rules") or {}).get("exclude"))])
-    for r in C.get("custom_rules", []):
-        out.append([f"Your rule \"{r['name']}\"", ("on" if r.get("on", True) else "off") + f": {_list(r['terms'])}"])
+    rules = [r for r in C.get("custom_rules", []) if r.get("on", True)]
+    for r in rules:
+        when = "when the job requires them" if r.get("reject_when", "required") == "required" else "whenever they are mentioned"
+        out.append([r["name"], f"{_list(r['terms'])} ({when})"])
+    if not rules:
+        out.append(["Words that rule out a job", "none"])
     out.append(["Your skills", _list(s.get("name") for s in exp.get("skills", []))])
     ten = exp.get("tenure", {}) or {}
     out.append(["Years of experience in your field", str(ten.get("years_of_experience") or "not set")])
@@ -53,9 +57,6 @@ def rows(root: Path, prof: dict, exp: dict) -> list[list[str]]:
     watched, _ = watched_boards(prof)
     out.append(["Companies to watch", _list(b["board"] for b in watched)])
     out.append(["Skills-based matching", TitleMatcher(prof, exp.get("skills", [])).skills.summary()])
-    kw = (settings.get("search") or {}).get("keywords") or []
-    if kw:
-        out.append(["Search words", _list(kw)])
     sz = search_size({"search_size": settings.get("search_size") or {}})
     out.append(["How many jobs to look through",
                 ("Recommended: " if sz == SEARCH_SIZE_DEFAULTS else "")

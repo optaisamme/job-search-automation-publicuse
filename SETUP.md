@@ -22,12 +22,9 @@ on. Everything is edited on the GitHub website.
 4. Choose **Private** so your profile stays private.
 5. Click **Create repository**.
 
-Every file you edit has **EDIT_ME** at the start of its name. Do not edit other files.
-The [EDIT_ME_JOB_SEARCH_SETTINGS folder page](EDIT_ME_JOB_SEARCH_SETTINGS) lists them.
+You never need to edit a file: all your settings are made with the setup questionnaire (Step 2).
 
 ## Step 2: Set your search rules (required)
-
-**Easiest: the setup questionnaire.**
 
 1. In **your copy**, click the **Issues** tab, then the green **New issue** button. A list of
    forms opens (or use this link while in your copy: [open the questionnaire list](../../issues/new/choose)).
@@ -44,73 +41,15 @@ The [EDIT_ME_JOB_SEARCH_SETTINGS folder page](EDIT_ME_JOB_SEARCH_SETTINGS) lists
    and tick **Issues**.
 6. Only you, and people you added as collaborators, can change your settings this way.
 
-**Or edit the settings file yourself** (EDIT ME file 1), as described below.
+Each search starts with a step called "Check settings files" that lists exactly what is ON and
+OFF. If no job titles are saved, the search stops there and says so.
 
-`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml` starts empty: no titles, no filters. You fill in the blanks: type
-between the quotes `""` or the brackets `[]` on lines that do NOT start with `#`.
-Lines starting with `#` are notes and examples; you never need to edit them.
+## Step 3: Add your experience (optional)
 
-A list is typed as items in quotes, separated by commas, inside brackets:
-`["Salesforce Administrator", "Salesforce Admin"]`
-
-1. In your new repository, open the `EDIT_ME_JOB_SEARCH_SETTINGS` folder, then `EDIT_ME_1_job_search_settings.toml`.
-2. Click the pencil icon (Edit).
-3. **Required, section 1:** in "Job title group 1", type at least one job title:
-
-```toml
-titles = ["Salesforce Administrator", "Salesforce Admin"]
-description_must_mention_one_of = []
-```
-
-   Use groups 2 and 3 for other kinds of jobs, or leave them empty.
-4. Optional, each off until you fill it in:
-   a. Section 2: remote jobs only (`remote_only = "yes"` to start; change to `"no"` to also
-      get hybrid and on-site jobs in your state), and your state (rejects jobs that exclude it).
-   b. Section 3: salary minimums (`0` = no minimum).
-   c. Section 4: words the description must mention, title words to skip (only the job
-      title is checked, never the rest of the posting), employers to skip, and the
-      certification check.
-   d. Section 5: requirement rules. Fill in a rule's name and terms, then change
-      `on = "no"` to `on = "yes"`:
-
-```toml
-name = "Security clearance"
-on = "yes"
-terms = ["security clearance", "TS/SCI"]
-reject_when = "mentioned"
-```
-
-      `reject_when = "required"` rejects a job only when it REQUIRES prior experience
-      with a term; `"mentioned"` rejects it whenever a term appears.
-   e. Section 6: search words (leave empty to search for your job titles).
-   f. Section 7: companies to watch. Paste links to employers' job pages on Greenhouse,
-      Lever, Ashby or SmartRecruiters. **Recommended:** the more companies you add, the more
-      jobs each search finds. The file explains how to find the link.
-   g. Section 8: skills-based matching (starts off). Also finds jobs with other titles when
-      the listing has your required keywords (for example `["Salesforce", "NPSP"]`) and at
-      least 3 of the skills in your experience file (Step 3). Change `on = "no"` to
-      `on = "yes"` and type your keywords.
-   h. Section 9: automatic weekly searches (see Step 6).
-   i. Section 10: how many jobs to read from Himalayas, The Muse and Jobicy. **We recommend
-      keeping these numbers for now.** Bigger numbers make each search take longer (GitHub
-      stops a search after 60 minutes). The questionnaire offers Recommended, Fewer or More.
-5. Click **Commit changes** (green button), then **Commit changes** again.
-6. Each search starts with a step called "Check settings files" that lists exactly what is
-   ON and OFF. If no job titles are set, the search stops there and says so.
-
-## Step 3: Add your experience (EDIT ME file 2, optional)
-
-`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml` also starts empty, with examples as notes.
-
-1. Open `EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml` and click the pencil icon.
-2. For each skill you have, copy the example block to the bottom of the file, remove
-   the `# ` marks, and fill in the skill, the words a job posting might use for it, and
-   where you did it.
-3. Include only things you have actually done. Do not add phone, email or address.
-4. Commit changes.
-
-Your profile never rejects a job. It is only used to explain how well each job fits you
-and which requirements are not yet in your profile. It can stay empty.
+In the questionnaire, Step 6 "About you": your skills, your years of experience and the
+certifications you hold. Include only things you have actually done; no phone, email or address.
+Your skills never remove a job. They show how well each job fits you, and skills-based matching
+uses them to find jobs with other titles. This step can stay empty.
 
 ## Step 4: Run your first search
 
@@ -141,7 +80,6 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 
 1. **Turn on automatic weekly searches (they start OFF):**
    a. In the setup questionnaire, choose **On** for "Automatic weekly searches" and pick a day.
-      Or, in settings file 1, section 9, set `on = "yes"` and `day = "Monday"` (any day).
    b. The search starts around 13:47 UTC on that day (about 6:47 AM Mountain in winter, 7:47 AM
       in summer).
    c. Once a day, GitHub starts a quick check to see whether today is your day. On other days,
@@ -184,8 +122,8 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 
 ## When you change your settings later
 
-1. Edit the EDIT_ME file and commit. Changes take effect on the next run (weekly if turned on, or start
-   one now with [HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md)).
+1. Answer the setup questionnaire again. Changes take effect on the next search (weekly if turned
+   on, one the questionnaire starts, or one you start with [HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md)).
 2. Jobs still listed online are re-checked: a job that now passes is shown as
    **Newly verified (seen before)**. A job that now fails one rule is listed under Near Misses
    in the next report; jobs that fail 2 or more rules are only counted in the totals. Jobs
@@ -201,7 +139,7 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
    The results page has one-click search links for them instead.
 3. It searches Himalayas, The Muse, Remote OK, Jobicy, We Work Remotely, Remotive,
    Hacker News "Who is hiring?", and the careers pages of companies you
-   add (settings section 7) or that it found earlier. It searches the wider web only if you
+   add in the questionnaire or that it found earlier. It searches the wider web only if you
    add the free Tavily key.
 4. Results come from text rules. When a posting is unclear, the job is listed under "Jobs
    that need checking" rather than guessed, so read each posting yourself before applying.

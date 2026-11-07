@@ -81,6 +81,17 @@ body:
       render: text
   - type: textarea
     attributes:
+      label: Words that rule out a job
+      description: "One per line. Jobs with these words are left out. Example: security clearance"
+      render: text
+  - type: dropdown
+    attributes:
+      label: Rule out a job when these words are…
+      options:
+        - Required by the job
+        - Mentioned anywhere in the posting
+  - type: textarea
+    attributes:
       label: Words the job description must mention
       description: One per line. A job must mention at least one of them, or it is left out.
       render: text

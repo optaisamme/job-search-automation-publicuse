@@ -1,5 +1,5 @@
 """Runtime hard-filter criteria. Everything is off until set in
-EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml (see from_settings)."""
+JOB_SEARCH_SETTINGS/job_search_settings.toml (see from_settings)."""
 from __future__ import annotations
 
 DEFAULTS = {
@@ -39,7 +39,7 @@ def _yes(v) -> bool:
 
 
 def from_settings(settings: dict) -> dict:
-    """Map the plain-language EDIT_ME_1 settings structure onto criteria keys."""
+    """Map the settings file (written by the questionnaire) onto criteria keys."""
     out: dict = {}
     w = settings.get("where_you_live", {})
     out["remote_only"] = _yes(w.get("remote_only", "yes"))

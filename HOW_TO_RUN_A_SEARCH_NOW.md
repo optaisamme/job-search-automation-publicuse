@@ -11,7 +11,7 @@ A search will **not** work until both are done:
 | | Must be done first | How |
 |---|---|---|
 | ☐ | **1. You made your own copy** of this project, and you are signed in to GitHub. You cannot run a search in the original shared project. | [SETUP.md](SETUP.md), Step 1 |
-| ☐ | **2. You saved at least one job title**, with the setup questionnaire or in your copy's settings file (`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml`, section 1). | [SETUP.md](SETUP.md), Step 2 |
+| ☐ | **2. You saved at least one job title** with the setup questionnaire. | [SETUP.md](SETUP.md), Step 2 |
 
 If you skip step 2, the search stops right away with the message **"NO JOB TITLES SET YET"**.
 
@@ -68,10 +68,10 @@ It opens the page in the picture below. Then do steps 3 and 4 in the picture.
 1. Click the line with the red X.
 2. Click the step with the red X next to it (usually **Check settings files**).
 3. Read the message. The most common ones:
-   a. **"NO JOB TITLES SET YET"**: open `EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml` and
-      type at least one job title in section 1 (see [EDIT_ME_JOB_SEARCH_SETTINGS/README.md](EDIT_ME_JOB_SEARCH_SETTINGS/README.md)).
-   b. **"SETTINGS PROBLEM: … line N"**: a typing mistake on that line of an EDIT_ME file,
-      usually a missing quote `"`, comma `,` or bracket `]`. Fix it and save.
+   a. **"NO JOB TITLES SET YET"**: answer the setup questionnaire (Issues tab, New issue,
+      Job search setup) with at least one job title.
+   b. **"SETTINGS PROBLEM"**: answer the setup questionnaire again; the message says which answer
+      to fix.
 4. After fixing, start again with the **START A SEARCH NOW** link above.
 
 ## If you don't see a "Run workflow" button

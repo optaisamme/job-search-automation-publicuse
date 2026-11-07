@@ -111,7 +111,7 @@ def section(titles: list[str], remote_only: bool, state: str = "") -> list[str]:
          "search for one of your job titles. Open them yourself, as often as you like.", ""]
     one = len(titles) == 1
     if not titles:
-        return L + ["Add a job title in settings section 1 to get links here.", ""]
+        return L + ["Add a job title (setup questionnaire) to get links here.", ""]
     head = "| Job board | What it is | " + ("Search" if one else "Search for each of your job titles") + " |"
     label = lambda t: t.replace("|", "/").replace("[", "(").replace("]", ")")
     for group, boards in GROUPS:

@@ -1,5 +1,5 @@
 # DO NOT EDIT. Built-in technical defaults used by the program.
-# Your own search settings go in EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml.
+# Your own search settings are in JOB_SEARCH_SETTINGS/job_search_settings.toml (set by the questionnaire).
 
 titles = []          # filled from your settings file
 

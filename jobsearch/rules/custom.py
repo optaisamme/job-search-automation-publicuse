@@ -1,4 +1,4 @@
-"""User-defined requirement rules from EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml ([[filters.requirement_rule]]).
+"""User-defined requirement rules from JOB_SEARCH_SETTINGS/job_search_settings.toml ([[filters.requirement_rule]]).
 
 Each rule: name, on (true/false), terms (list), reject_when:
   "required"  -> reject only when the posting REQUIRES prior experience with a term
