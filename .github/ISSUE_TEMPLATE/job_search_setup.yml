@@ -151,9 +151,10 @@ body:
     attributes:
       value: |
         ### Free web search key (optional, but recommended)
-        The search works fine without this. With a free key from Tavily (a web search service), it can also
-        search the whole web for each of your job titles, including companies' own careers pages. That finds
-        jobs that aren't posted on any of the 7 job sites this tool checks, and new companies to keep an eye on.
+        The search works without a key. But if you add a free key from Tavily, a web search service, the search
+        can also look across the whole web for each of your job titles, including companies' own careers pages.
+        This helps you find jobs that aren't on any of the 7 job sites this tool checks. It also adds new
+        companies for the tool to check.
 
         **It's free.** Tavily's free plan gives you 1,000 web searches a month. Each job search here uses 2 for
         each job title, so 5 job titles use 10.
