@@ -4,8 +4,8 @@ These two files hold your settings. **You do not need to edit them.** The setup 
 them in: in your copy, open the **Issues** tab, click **New issue**, then **Job search setup**
 ([open the questionnaire list](../../../issues/new/choose)).
 
-To change something, click **click here to change these settings** at the top of the **JOB_SEARCH_RESULTS**
-folder page. It opens the questionnaire with your current answers filled in.
+To change something, open the questionnaire again. After your first questionnaire it opens with your current
+answers already filled in.
 
 | File | What it holds |
 |---|---|

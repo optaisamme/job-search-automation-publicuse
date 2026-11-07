@@ -123,10 +123,10 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 
 ## When you change your settings later
 
-1. Open the **JOB_SEARCH_RESULTS** folder and click **click here to change these settings** (under
-   "Your settings"). The questionnaire opens with your current answers filled in, and each dropdown shows
-   your current choice. Change only what you want, then click **Create**. A text box left empty turns that
-   setting off. Changes take effect on the next search (weekly if turned on, one the questionnaire starts, or one you
+1. Open the questionnaire again (Step 2), or click **click here to change these settings** at the top of the
+   **JOB_SEARCH_RESULTS** folder page, then **Job search setup**. It opens with your current answers already
+   filled in. Change only what you want, then click **Create**. A text box left empty turns that setting off.
+   Changes take effect on the next search (weekly if turned on, one the questionnaire starts, or one you
    start with [HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md)).
 2. Jobs still listed online are re-checked: a job that now passes is shown as
    **Newly verified (seen before)**. A job that now fails one rule is listed under Near Misses

@@ -13,9 +13,8 @@ body:
         4. If a search started, the reply begins with a link to watch it. Any time, to see searches:
            click the **Actions** tab at the top of your copy, then **Run job search** on the left. A yellow dot means a search is running; a green check means it finished.
 
-        **Changing your settings:** open this questionnaire from **click here to change these settings** at the top
-        of the **JOB_SEARCH_RESULTS** folder page. Your current answers are then already filled in, and each
-        dropdown shows your current choice. Change only what you want. A text box left empty turns that setting off.
+        **Changing your settings:** after your first questionnaire, this form opens with your current answers
+        already filled in. Change only what you want. A text box left empty turns that setting off.
 
         For lists, put one item on each line. Only you (and collaborators you add) can change your settings.
 

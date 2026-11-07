@@ -84,10 +84,10 @@ Times are in UTC. Mountain Time is UTC minus 7 hours in winter and minus 6 in su
 All settings are made with the **[setup questionnaire](../../issues/new/choose)** (Issues tab, New issue,
 Job search setup). You never need to edit a file.
 
-To change something: open the **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)** folder and click **click here to
-change these settings** (under "Your settings"). The questionnaire opens with your current text answers
-filled in, and each dropdown shows your current choice. Change only what you want, then click **Create**.
-A text box left empty turns that setting off.
+To change something, open the questionnaire again (or, at the top of the **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)**
+folder page, click **click here to change these settings**, then **Job search setup**). After your first
+questionnaire it opens with your current answers already filled in. Change only what you want, then click
+**Create**. A text box left empty turns that setting off.
 
 It covers: job titles, remote only or not, your state, salary, title words to skip, words that rule
 out a job, employers to skip, certifications, your skills, companies to watch, skills-based matching,

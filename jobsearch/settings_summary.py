@@ -3,16 +3,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
-# Relative to JOB_SEARCH_RESULTS/REPORT_*.md on github.com: the questionnaire list in this copy
+# Relative to JOB_SEARCH_RESULTS/REPORT_*.md on github.com: the questionnaire list in this copy. The link carries no
+# answers: a questionnaire opened from a link with answers in it was saved with the link's answers, not the
+# user's edits (seen in a real copy on 2026-11-07). The current answers are written into the form itself instead.
 CHANGE_LINK = "../../../issues/new/choose"
 
 
-MAX_LINK_LENGTH = 7000   # GitHub refuses very long links ("414 URI Too Long")
-
-
 def prefill_answers(root: Path) -> dict:
-    """The current settings as questionnaire answers (text questions only; the form's dropdowns are preselected
-    with the current choices after each questionnaire)."""
+    """The current settings as questionnaire text answers, read from this copy's settings files."""
     import tomllib
     from .pipeline import SETTINGS_DIR
     try:
@@ -20,6 +18,11 @@ def prefill_answers(root: Path) -> dict:
         ex = tomllib.load(open(Path(root) / SETTINGS_DIR / "my_experience.toml", "rb"))
     except (OSError, ValueError):
         return {}
+    return answers_from_settings(st, ex)
+
+
+def answers_from_settings(st: dict, ex: dict) -> dict:
+    """The settings as answers to the questionnaire's text questions (dropdowns are handled separately)."""
     lines = lambda xs: "\n".join(str(x) for x in (xs or []) if str(x).strip())
     num = lambda n: str(n) if n else ""
     jt, w, sal, f = st.get("job_titles", {}), st.get("where_you_live", {}), st.get("salary", {}), st.get("filters", {})
@@ -43,18 +46,6 @@ def prefill_answers(root: Path) -> dict:
         "companies": lines((st.get("companies_to_watch") or {}).get("job_page_links")),
         "skills_min": num(sk.get("minimum_skills_matched")) if on(sk.get("on")) else "",
     }.items() if v}
-
-
-def change_link(root: Path, base: str = "../../../issues/new") -> str:
-    """A link that opens the questionnaire with the current answers filled in."""
-    from urllib.parse import urlencode
-    answers = prefill_answers(root)
-    for drop in ("", "my_skills", "companies"):   # very long answers would make the link too long for GitHub
-        answers.pop(drop, None)
-        link = f"{base}?" + urlencode({"template": "job_search_setup.yml", "title": "Job search setup", **answers})
-        if len(link) <= MAX_LINK_LENGTH:
-            return link
-    return CHANGE_LINK
 
 
 def _list(items) -> str:
@@ -122,7 +113,8 @@ def section(pairs: list[list[str]] | None, link: str = CHANGE_LINK, title: str =
     if not pairs:
         return []
     cell = lambda x: str(x).replace("|", "/").replace("\n", " ")
-    L = [f"## {title}", "", f"[click here to change these settings]({link})", "",
+    L = [f"## {title}", "", f"[click here to change these settings]({link}), then click **Job search setup**. "
+         "Your current answers are already filled in.", "",
          "| Setting | Your answer |", "|---|---|"]
     L += [f"| {cell(k)} | {cell(v)} |" for k, v in pairs]
     return L + [""]

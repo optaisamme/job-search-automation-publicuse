@@ -310,13 +310,25 @@ def test_privacy_warning_comes_before_the_first_question():
     assert "anyone can read them" in before and "Do not enter passwords" in before and "Tavily" in before
 
 
-def test_change_link_fills_in_current_answers_and_round_trips(tmp_path):
-    """'click here to change these settings' opens the questionnaire with the current answers; submitting it
-    unchanged (dropdowns left on None, which a link cannot fill in) keeps every setting."""
+def submitted(shown: dict, edits: dict | None = None) -> str:
+    """What GitHub writes when the form `shown` is submitted with `edits` typed over its filled-in answers."""
+    ids = {b["id"]: b for b in shown["body"] if "id" in b}
+    by_key = {v: k for k, v in q.LABELS.items()}
+    parts = []
+    for key in q.LABELS.values():
+        a = ids[key]["attributes"]
+        v = (edits or {}).get(key, a.get("value", "") if ids[key]["type"] != "dropdown" else a["options"][a["default"]])
+        if ids[key]["type"] == "textarea":
+            v = "```text\n" + v + "\n```"
+        parts += [f"### {by_key[key]}", "", v or "_No response_", ""]
+    return "\n".join(parts)
+
+
+def test_form_opens_with_current_answers_and_saves_your_edits(tmp_path, monkeypatch):
+    """After a questionnaire, the copy's form holds the current answers. Submitting it unchanged keeps every
+    setting; what the user erases is turned off and what they type is saved (the turbo-guacamole bug, 2026-11-07,
+    where a link with the answers in it saved the link's answers instead of the user's edits)."""
     import yaml
-    from urllib.parse import urlsplit, parse_qs
-    import sys
-    sys.path.insert(0, str(ROOT))
     from jobsearch import settings_summary
     full = form(titles_1="Program Manager\nCase Manager", remote_only="No, also hybrid and on-site jobs in my state",
                 state="New Mexico", state_abbreviation="NM", cities="Albuquerque", min_single="70000", min_range_start="65000",
@@ -324,31 +336,38 @@ def test_change_link_fills_in_current_answers_and_round_trips(tmp_path):
                 must_mention="nonprofit", cert_check="Yes", certs_allowed="CPR", skip_employers="Acme Staffing",
                 my_skills="Customer Relationship Management (CRM)\nData: data entry, spreadsheets", years="4", certs_held="CPR",
                 companies="https://job-boards.greenhouse.io/examplecompany", skills_on="On", skills_min="2",
-                skills_keywords="Salesforce", skills_rule="At least one keyword must appear", search_size="More (slower)",
-                weekly="On", weekly_day="Tuesday")
+                search_size="More (slower)", weekly="On", weekly_day="Tuesday")
     s, e, _, _ = q.build_settings(q.parse_issue_body(full))
-    (tmp_path / "JOB_SEARCH_SETTINGS").mkdir()
-    (tmp_path / "JOB_SEARCH_SETTINGS/job_search_settings.toml").write_text(s)
-    (tmp_path / "JOB_SEARCH_SETTINGS/my_experience.toml").write_text(e)
-    link = settings_summary.change_link(tmp_path)
-    assert link.startswith("../../../issues/new?template=job_search_setup.yml&title=Job+search+setup&")
-    filled = {k: v[0] for k, v in parse_qs(urlsplit(link).query).items() if k not in ("template", "title")}
-    # the form as it is in the copy after that questionnaire: dropdowns open on the current choices
-    shown = yaml.safe_load(q.form_with_choices(q.FORM.read_text(), q.current_choices(s)))
-    ids = {b["id"]: b for b in shown["body"] if "id" in b}
-    assert set(filled) <= {i for i, b in ids.items() if b["type"] in ("input", "textarea")}   # only text questions
-    # what GitHub writes when that form is submitted unchanged
-    by_key = {v: k for k, v in q.LABELS.items()}
-    parts = []
-    for key in q.LABELS.values():
-        v = filled.get(key, "")
-        if ids[key]["type"] == "dropdown":
-            v = ids[key]["attributes"]["options"][ids[key]["attributes"]["default"]]
-        elif ids[key]["type"] == "textarea":
-            v = "```text\n" + v + "\n```"
-        parts += [f"### {by_key[key]}", "", v or "_No response_", ""]
-    s2, e2, _, extras = q.build_settings(q.parse_issue_body("\n".join(parts)), s)
+    form_file, s_file, e_file = tmp_path / "form.yml", tmp_path / "s.toml", tmp_path / "e.toml"
+    form_file.write_text(q.FORM.read_text()); s_file.write_text(s); e_file.write_text(e)
+    for name, path in (("FORM", form_file), ("SETTINGS", s_file), ("EXPERIENCE", e_file)):
+        monkeypatch.setattr(q, name, path)
+    monkeypatch.setenv("GITHUB_REPOSITORY", "someone/my-job-search")
+    q.update_form()
+    shown = yaml.safe_load(form_file.read_text())
+    values = {b["id"]: b["attributes"].get("value") for b in shown["body"] if b["type"] in ("input", "textarea")}
+    assert values["titles_1"] == "Program Manager\nCase Manager" and values["state_abbreviation"] == "NM"
+    assert values["rule_words"] == "security clearance" and values["skills_min"] == "2"
+    # submitted unchanged: every setting is kept
+    s2, e2, _, _ = q.build_settings(q.parse_issue_body(submitted(shown)), s)
     assert tomllib.loads(s2) == tomllib.loads(s) and tomllib.loads(e2)["skills"] == tomllib.loads(e)["skills"]
+    # erase one answer and change another: the erased one is off, the typed one is saved
+    s3, _, _, _ = q.build_settings(q.parse_issue_body(submitted(shown, {"rule_words": "", "state": "Texas"})), s)
+    st3 = tomllib.loads(s3)
+    assert st3["where_you_live"]["state"] == "Texas"
+    assert not st3["filters"].get("requirement_rule") or st3["filters"]["requirement_rule"][0].get("on") == "no" \
+        or not st3["filters"]["requirement_rule"][0].get("terms")
+    # the results page links to the questionnaire list, with no answers in the link
+    assert settings_summary.CHANGE_LINK == "../../../issues/new/choose"
+    # an answer can never change the form's structure
+    template = (ROOT / ".github/ISSUE_TEMPLATE/job_search_setup.yml").read_text()
+    odd = q.form_with_choices(template, {}, {"state": 'Tex"as\n  - type: markdown\n    x: y', "cities": "A\\B"})
+    f = yaml.safe_load(odd)
+    assert [b["type"] for b in f["body"]] == [b["type"] for b in yaml.safe_load(template)["body"]]
+    assert next(b for b in f["body"] if b.get("id") == "state")["attributes"]["value"] == 'Tex"as\n  - type: markdown\n    x: y'
+    # the shared template never holds anyone's answers
+    assert not [b for b in yaml.safe_load((ROOT / ".github/ISSUE_TEMPLATE/job_search_setup.yml").read_text())["body"]
+                if b["type"] in ("input", "textarea") and "value" in b["attributes"]]
 
 
 def test_form_dropdowns_open_on_the_current_choices(tmp_path, monkeypatch):
@@ -392,7 +411,7 @@ def test_workflow_saves_the_preselected_form_without_risking_the_settings():
     wf = yaml.safe_load(open(ROOT / ".github/workflows/apply_setup_questionnaire.yml"))
     steps = wf["jobs"]["apply"]["steps"]
     names = [st.get("name") for st in steps]
-    i = names.index("Show your current choices in the questionnaire")
+    i = names.index("Fill in the questionnaire with your current answers")
     assert names.index("Save the settings") < i < names.index("Reply on the issue")
     step = steps[i]
     assert step["continue-on-error"] is True and "--update-form" in step["run"]

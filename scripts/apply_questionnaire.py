@@ -6,13 +6,12 @@ the settings, and writes a plain-language reply for the issue.
 
 Answers are untrusted text: they are only ever written into the settings as quoted values.
 Each questionnaire replaces all settings: answers are applied to the starting settings
-(jobsearch/defaults/), so a text question left blank is off or empty. The results page's change link
-fills in the current text answers, and after each questionnaire the form's dropdowns are set to open
-on the current choices (--update-form).
+(jobsearch/defaults/), so a text question left blank is off or empty. After each questionnaire the
+copy's form is updated (--update-form) so it opens with the current answers and choices filled in.
 
   python scripts/apply_questionnaire.py            read ISSUE_BODY, update settings, write out/questionnaire_reply.md
   python scripts/apply_questionnaire.py --reply    post the reply on the issue (and close it when everything worked)
-  python scripts/apply_questionnaire.py --update-form   make the form's dropdowns open on the current choices
+  python scripts/apply_questionnaire.py --update-form   fill in the copy's form with the current answers
 """
 from __future__ import annotations
 
@@ -392,14 +391,26 @@ def current_choices(settings_text: str) -> dict:
 
 FORM = ROOT / ".github" / "ISSUE_TEMPLATE" / "job_search_setup.yml"
 FORM_CHOICES = ("remote_only", "rule_when", "cert_check", "skills_on", "search_size", "weekly", "weekly_day")
+FORM_TEXT = ("titles_1", "state", "state_abbreviation", "cities", "min_single", "min_range_start", "range_end_above",
+             "skip_titles", "rule_words", "must_mention", "certs_allowed", "skip_employers", "my_skills", "years",
+             "certs_held", "companies", "skills_min")
 
 
-def form_with_choices(form_text: str, choices: dict) -> str:
-    """The questionnaire with each dropdown preselected on the current choice (its `default`), so it never opens on
-    "None". A choice that matches no option (for example search-size numbers changed by hand) is left unselected."""
+def form_with_choices(form_text: str, choices: dict, answers: dict | None = None) -> str:
+    """The questionnaire with the current settings in it: each dropdown preselected on the current choice (its
+    `default`), so it never opens on "None", and each text question filled in with the current answer (its `value`).
+    A choice that matches no option (for example search-size numbers changed by hand) is left unselected."""
     blocks = re.split(r"(?m)^(?=  - type: )", form_text)
     for n, block in enumerate(blocks):
         m = re.search(r"(?m)^    id: (\w+)\s*$", block)
+        if answers is not None and m and m.group(1) in FORM_TEXT and block.startswith(("  - type: input", "  - type: textarea")):
+            lines = [ln for ln in block.split("\n") if not re.match(r"^      value: ", ln)]
+            v = str(answers.get(m.group(1)) or "")
+            if v:   # one quoted line: JSON text is valid YAML, and the answer can never become form structure
+                at = next(i for i, ln in enumerate(lines) if ln.startswith("      label: "))
+                lines.insert(at + 1, "      value: " + json.dumps(v))
+            blocks[n] = "\n".join(lines)
+            continue
         if not block.startswith("  - type: dropdown") or not m or m.group(1) not in FORM_CHOICES:
             continue
         lines = [ln for ln in block.split("\n") if not re.match(r"^      default: ", ln)]
@@ -414,21 +425,25 @@ def form_with_choices(form_text: str, choices: dict) -> str:
 
 
 def update_form() -> int:
-    """After the settings are saved: make the form's dropdowns open on the current choices."""
+    """After the settings are saved: the questionnaire opens with the current answers and choices filled in.
+    Never in the shared template, which stays empty."""
     if os.environ.get("IS_TEMPLATE", "").lower() == "true" or os.environ.get("GITHUB_REPOSITORY") == TEMPLATE_REPO:
         return 0
+    from jobsearch.settings_summary import answers_from_settings
+    st_text = SETTINGS.read_text()
+    answers = answers_from_settings(tomllib.loads(st_text), tomllib.loads(EXPERIENCE.read_text()))
     old = FORM.read_text()
-    new = form_with_choices(old, current_choices(SETTINGS.read_text()))
+    new = form_with_choices(old, current_choices(st_text), answers)
     if new != old:
         FORM.write_text(new)
-        print("The questionnaire's dropdowns now open on your current choices.")
+        print("The questionnaire now opens with your current answers filled in.")
     return 0
 
 
 def build_settings(answers: dict, current_settings: str = "") -> tuple[str, str, list[str], dict]:
     """Every questionnaire replaces all settings: answers are applied to the starting settings, never to the
-    previous answers, so a text question left blank is off or empty. A dropdown left on "None" keeps its
-    current choice (the "change these settings" link fills in text answers, but cannot fill in dropdowns)."""
+    previous answers, so a text question left blank is off or empty. A dropdown left on "None" (only in a form
+    that was not yet updated by --update-form) keeps its current choice."""
     answers = dict(answers)
     for k, v in current_choices(current_settings).items():
         if not answers.get(k):
@@ -475,11 +490,14 @@ def main() -> int:
                              "Edit this issue to fix your answer (the **...** menu, then **Edit**); it is checked again when you save."]
                 else:
                     ok, changed_files = True, (new_s != old_s or new_e != old_e)
-                    reply = ["**Your settings are saved.**" if changed_files else "**Nothing changed:** every answer was blank or the same as before.",
-                             "", "What changed:", ""] + [f"{i}. {c}" for i, c in enumerate(changes, 1)] + \
-                            ["", "Your settings now:", "", "```text", check.stdout.strip()[-3000:], "```"]
-                    reply += ["", "To change something later, use **click here to change these settings** at the top of "
-                              "the JOB_SEARCH_RESULTS folder page: it opens this questionnaire with your current answers filled in."]
+                    if changed_files:
+                        reply = ["**Your settings are saved.**", "", "Your answers:", ""] + \
+                                [f"{i}. {c}" for i, c in enumerate(changes, 1)]
+                    else:
+                        reply = ["**Nothing changed:** every answer was the same as your current settings."]
+                    reply += ["", "Your settings now:", "", "```text", check.stdout.strip()[-3000:], "```"]
+                    reply += ["", "To change something later, open this questionnaire again (**Issues** tab, **New issue**, "
+                              "**Job search setup**). It opens with your current answers already filled in."]
                     run_now = extras["run_now"]
             except AnswerProblem as e:
                 reply = ["**Your settings were not saved.**", "", str(e), "",
