@@ -87,7 +87,7 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
       and while weekly searches are off, it stops after a few seconds without searching. The
       Actions tab shows those as short runs with the search skipped.
 2. **Free web search key (recommended).**
-   Without a key, every search already checks 7 job sites and company careers pages. Adding
+   Without a key, every search already checks 6 job sites and company careers pages. Adding
    one free key turns on a **web search**: for each of your job titles, the tool also searches
    the whole web, including company careers pages, and finds jobs that are on no job site. It
    also finds new companies to check. It is optional and stays off until you add the key.
@@ -141,7 +141,7 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 2. It does not search LinkedIn, Indeed, Handshake, Idealist and the other popular boards on
    the results page (no public data feed, sign-in required, or their terms do not allow it).
    The results page has one-click search links for them instead.
-3. It searches Himalayas, The Muse, Remote OK, Jobicy, We Work Remotely, Remotive,
+3. It searches Himalayas, The Muse, Remote OK, Jobicy, We Work Remotely,
    Hacker News "Who is hiring?", and the careers pages of companies you
    add in the questionnaire or that it found earlier. It searches the wider web only if you
    add the free Tavily key.

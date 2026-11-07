@@ -40,31 +40,6 @@ def search_words(ctx: dict) -> list[str]:
     return words
 
 
-class RemotiveAdapter(Adapter):
-    # https://remotive.com/api-documentation — please link back to Remotive; low request volume.
-    name = "remotive"
-
-    def search(self, status: SourceStatus) -> list[RawPosting]:
-        out, seen = [], set()
-        for q in search_words(self.ctx):
-            r = self.client.get("https://remotive.com/api/remote-jobs?" + urllib.parse.urlencode({"search": q, "limit": 100}))
-            if r.status >= 400:
-                status.errors.append(f"query {q!r}: HTTP {r.status}")
-                continue
-            for j in r.json().get("jobs", []):
-                if j.get("id") in seen:
-                    continue
-                seen.add(j.get("id"))
-                out.append(RawPosting(
-                    source="remotive", source_url=j.get("url", ""), employer=j.get("company_name", ""), title=j.get("title", ""),
-                    description_text=html_to_text(j.get("description")) + (f"\nSalary: {j.get('salary')}" if j.get("salary") else ""),
-                    location_text=j.get("candidate_required_location", ""), apply_url=j.get("url"),
-                    workplace_type="remote", employment_type=j.get("job_type"),
-                    extra={"third_party_salary": j.get("salary"), "third_party_published": j.get("publication_date")},
-                ))
-        return out
-
-
 class RemoteOKAdapter(Adapter):
     # https://remoteok.com/api — terms require attribution/link back to Remote OK.
     name = "remoteok"

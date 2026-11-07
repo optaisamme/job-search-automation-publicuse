@@ -113,7 +113,7 @@ how many jobs to look through, and automatic weekly searches (they start **off**
 
 ## Other optional edits: a free web search key
 
-Without a key, every search already checks 7 job sites and company careers pages. Adding
+Without a key, every search already checks 6 job sites and company careers pages. Adding
 one free key turns on a **web search**: for each of your job titles, the tool also searches
 the whole web, including company careers pages, and finds jobs that are on no job site. It
 also finds new companies to check. It is optional and stays off until you add the key.
@@ -163,7 +163,7 @@ links on the results page for those.
 
 1. **Checks your settings** and lists what is ON and OFF.
 2. **Collects public job listings** from these job sites:
-   a. **No setup needed:** Himalayas, The Muse, Remote OK, Jobicy, We Work Remotely, Remotive
+   a. **No setup needed:** Himalayas, The Muse, Remote OK, Jobicy, We Work Remotely
       and Hacker News "Who is hiring?" (mostly tech jobs). Several send their newest jobs
       whatever your job titles are (for example The Muse's newest 1,000 and all of Jobicy's US
       remote jobs; see "How many jobs to look through" in the questionnaire), so each search looks

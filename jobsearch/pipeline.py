@@ -12,7 +12,7 @@ from dataclasses import asdict
 import html as _html
 from pathlib import Path
 
-from .adapters.aggregators import (RemotiveAdapter, RemoteOKAdapter, HimalayasAdapter, TheMuseAdapter, JobicyAdapter,
+from .adapters.aggregators import (RemoteOKAdapter, HimalayasAdapter, TheMuseAdapter, JobicyAdapter,
                                    WeWorkRemotelyAdapter, 
                                    HackerNewsHiringAdapter)
 from .adapters.ats import AtsWatchlistAdapter, FETCHERS
@@ -33,7 +33,7 @@ from . import verify as verifymod
 log = logging.getLogger("jobsearch.pipeline")
 
 ADAPTERS = {  # order matters: web search first so newly discovered boards are scanned in the same run
-    "websearch": WebSearchAdapter, "ats_watchlist": AtsWatchlistAdapter, "remotive": RemotiveAdapter,
+    "websearch": WebSearchAdapter, "ats_watchlist": AtsWatchlistAdapter,
     "remoteok": RemoteOKAdapter, "himalayas": HimalayasAdapter, "themuse": TheMuseAdapter, "jobicy": JobicyAdapter,
     "weworkremotely": WeWorkRemotelyAdapter, "hackernews": HackerNewsHiringAdapter,
 }

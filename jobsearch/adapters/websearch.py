@@ -30,14 +30,14 @@ EXCLUDE_GROUPS = [
       "joinhandshake.com", "flexjobs.com", "virtualvocations.com", "diversityjobs.com", "techjobsforgood.com",
       "greenjobsboard.us", "remote100k.com", "conservationjobboard.com", "higheredjobs.com"]),
     ("Job sites this tool already reads directly",
-     ["himalayas.app", "remoteok.com", "remotive.com", "themuse.com", "jobicy.com", "weworkremotely.com",
+     ["himalayas.app", "remoteok.com", "themuse.com", "jobicy.com", "weworkremotely.com",
       "news.ycombinator.com"]),
     ("Other job sites (skipped because the web search is only for jobs on employers' own websites)",
      ["monster.com", "careerbuilder.com", "simplyhired.com", "simplyhired.co", "handshake.com", "wellfound.com",
       "dice.com", "hiring.cafe", "workingnomads.com", "jobspresso.co", "adzuna.com", "jooble.org", "jobgether.com",
       "talent.com", "lensa.com", "careerjet.com", "jobleads.com", "salary.com", "theladders.com", "roberthalf.com",
       "edtech.com", "recruit.net", "jobright.ai", "learn4good.com", "remote.co", "jobs.now", "remoterocketship.com",
-      "dailyremote.com", "cutshort.io"]),
+      "dailyremote.com", "cutshort.io", "remotive.com"]),
     ("Social media", ["facebook.com", "instagram.com", "x.com", "twitter.com", "reddit.com", "youtube.com"]),
 ]
 EXCLUDE_DOMAINS = [d for _, group in EXCLUDE_GROUPS for d in group]

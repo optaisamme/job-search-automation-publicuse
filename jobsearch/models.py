@@ -39,7 +39,7 @@ class RuleResult:
 @dataclass
 class RawPosting:
     """A posting as returned by an adapter, before rules are applied."""
-    source: str                    # adapter name, e.g. "greenhouse", "remotive"
+    source: str                    # adapter name, e.g. "greenhouse", "remoteok"
     source_url: str                # page where the posting was discovered
     employer: str
     title: str

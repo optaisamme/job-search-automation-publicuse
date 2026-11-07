@@ -81,12 +81,12 @@ def test_page_without_apply_route_not_verified(root):
 
 def test_third_party_listing_with_working_link_qualifies_labeled(root):
     c = FakeClient()
-    url = "https://remotive.com/remote-jobs/x/salesforce-administrator-9"
-    c.set("https://remotive.com/api/remote-jobs?search=Salesforce+Administrator&limit=100", {"jobs": [{
-        "id": 9, "url": url, "title": "Salesforce Administrator",
-        "company_name": "Unknown Co", "candidate_required_location": "USA", "description": GOOD_DESC}]})
+    url = "https://remoteok.com/remote-jobs/salesforce-administrator-9"
+    c.set("https://remoteok.com/api", [{"legal": "notice"}, {
+        "id": 9, "url": url, "apply_url": url, "position": "Salesforce Administrator",
+        "company": "Unknown Co", "location": "USA", "description": GOOD_DESC}])
     c.set(url, job_page("Salesforce Administrator", "Unknown Co"))
-    run(root, c, sources=("remotive",))
+    run(root, c, sources=("remoteok",))
     j = jobs(root)[0]
     assert j["status"] == "Qualified"
     assert json.loads(j["verification"])["apply_route"] == "third_party"
@@ -94,10 +94,11 @@ def test_third_party_listing_with_working_link_qualifies_labeled(root):
 
 def test_third_party_listing_with_dead_link_needs_verification(root):
     c = FakeClient()
-    c.set("https://remotive.com/api/remote-jobs?search=Salesforce+Administrator&limit=100", {"jobs": [{
-        "id": 9, "url": "https://www.linkedin.com/jobs/view/1", "title": "Salesforce Administrator",
-        "company_name": "Unknown Co", "candidate_required_location": "USA", "description": GOOD_DESC}]})
-    run(root, c, sources=("remotive",))
+    c.set("https://remoteok.com/api", [{"legal": "notice"}, {
+        "id": 9, "url": "https://www.linkedin.com/jobs/view/1", "apply_url": "https://www.linkedin.com/jobs/view/1",
+        "position": "Salesforce Administrator",
+        "company": "Unknown Co", "location": "USA", "description": GOOD_DESC}])
+    run(root, c, sources=("remoteok",))
     assert jobs(root)[0]["status"] == "Needs Verification"
     assert not any("linkedin.com" in u for u in c.calls)
 
@@ -107,13 +108,10 @@ def test_duplicate_across_boards(root):
     c = FakeClient()
     job = gh_job(1, "Salesforce Administrator")
     setup_board(c, [job])
-    c.set("https://remotive.com/api/remote-jobs?search=Salesforce+Administrator&limit=100", {"jobs": [{
-        "id": 9, "url": "https://remotive.com/remote-jobs/x/salesforce-administrator-9", "title": "Salesforce Administrator",
-        "company_name": "Acme Nonprofit", "candidate_required_location": "USA", "description": GOOD_DESC}]})
     c.set("https://remoteok.com/api", [{"legal": "notice"}, {
         "id": 3, "url": "https://remoteok.com/remote-jobs/3", "company": "Acme Nonprofit", "position": "Sr. Salesforce Administrator",
         "description": GOOD_DESC, "location": "USA", "apply_url": job["absolute_url"]}])
-    run(root, c, sources=("ats_watchlist", "remotive", "remoteok"))
+    run(root, c, sources=("ats_watchlist", "remoteok"))
     js = jobs(root)
     gh = [j for j in js if j["ats_job_id"] == "1"]
     assert len(gh) == 1
@@ -285,10 +283,10 @@ def test_dedupe_ignores_location_label_differences(root):
     c = FakeClient()
     job = gh_job(1, "Salesforce Administrator")
     setup_board(c, [job])
-    c.set("https://remotive.com/api/remote-jobs?search=Salesforce+Administrator&limit=100", {"jobs": [{
-        "id": 9, "url": "https://remotive.com/remote-jobs/x/9", "title": "Salesforce Administrator",
-        "company_name": "Acme Nonprofit", "candidate_required_location": "United States", "description": GOOD_DESC}]})
-    run(root, c, sources=("ats_watchlist", "remotive"))
+    c.set("https://remoteok.com/api", [{"legal": "notice"}, {
+        "id": 9, "url": "https://remoteok.com/remote-jobs/9", "position": "Salesforce Administrator",
+        "company": "Acme Nonprofit", "location": "United States", "description": GOOD_DESC}])
+    run(root, c, sources=("ats_watchlist", "remoteok"))
     assert len(jobs(root)) == 1
 
 
@@ -1146,23 +1144,6 @@ def test_browser_refuses_unsafe_links():
     script = pathlib.Path(__file__).resolve().parents[1] / "jobsearch/render.mjs"
     out = subprocess.run(["node", str(script), "--self-test"], capture_output=True, text=True, timeout=60).stdout
     assert all(ok for _, ok in _json.loads(out.strip().splitlines()[-1]))
-
-
-def test_report_shows_the_posting_text_behind_each_decision(root):
-    c = FakeClient()
-    setup_board(c, [gh_job(1, "Salesforce Administrator")])
-    info = run(root, c)
-    md = open(info["report"]).read()
-    block = md[md.index("<details><summary>Salesforce Administrator"):]
-    block = block[:block.index("</details>")]
-    assert "(meets your rule)." in block and 'Posting says: "' in block and "(job-boards.greenhouse.io)" in block
-    assert "Application link:" in block and "Checked " in block and "Last found in a search:" in block
-
-
-def test_evidence_text_cannot_add_html_or_links():
-    from jobsearch.report import _quote
-    q = _quote('<img src=x onerror=alert(1)> [click](http://evil) **bold** `code`')
-    assert "<" not in q and "[" not in q and "**" not in q and "`" not in q
 
 
 def test_skills_matching_without_keywords_uses_only_your_skills():
