@@ -352,7 +352,7 @@ def test_form_opens_with_current_answers_and_saves_your_edits(tmp_path, monkeypa
     s2, e2, _, _ = q.build_settings(q.parse_issue_body(submitted(shown)), s)
     assert tomllib.loads(s2) == tomllib.loads(s) and tomllib.loads(e2)["skills"] == tomllib.loads(e)["skills"]
     # erase one answer and change another: the erased one is off, the typed one is saved
-    s3, _, _, _ = q.build_settings(q.parse_issue_body(submitted(shown, {"rule_words": "", "state": "Texas"})), s)
+    s3, _, _, _ = q.build_settings(q.parse_issue_body(submitted(shown, {"rule_words": "", "state": "Texas", "state_abbreviation": "TX"})), s)
     st3 = tomllib.loads(s3)
     assert st3["where_you_live"]["state"] == "Texas"
     assert not st3["filters"].get("requirement_rule") or st3["filters"]["requirement_rule"][0].get("on") == "no" \
@@ -416,3 +416,12 @@ def test_workflow_saves_the_preselected_form_without_risking_the_settings():
     step = steps[i]
     assert step["continue-on-error"] is True and "--update-form" in step["run"]
     assert "git add .github/ISSUE_TEMPLATE/job_search_setup.yml" in step["run"] and "git add -A" not in step["run"]
+
+
+def test_state_is_saved_in_its_usual_spelling():
+    st = lambda **a: tomllib.loads(q.build_settings(q.parse_issue_body(form(titles_1="X", **a)))[0])["where_you_live"]
+    assert (st(state="texas", state_abbreviation="tx")["state"], st(state="texas")["state_abbreviation"]) == ("Texas", "TX")
+    assert st(state="NM")["state"] == "New Mexico" and st(state="new mexico")["state_abbreviation"] == "NM"
+    assert st(state="Puerto Rico", state_abbreviation="PR")["state"] == "Puerto Rico"   # not in the list: kept as typed
+    with pytest.raises(q.AnswerProblem):
+        st(state="Texas", state_abbreviation="NM")

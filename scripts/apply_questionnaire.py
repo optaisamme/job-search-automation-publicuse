@@ -226,12 +226,20 @@ def apply(answers: dict, settings_text: str, experience_text: str) -> tuple[str,
     r = as_choice(answers.get("remote_only", ""))
     if r:
         put("[where_you_live]", "remote_only", "yes" if r.startswith("yes") else "no", "Remote jobs only")
-    for k, key, label in (("state", "state", "Your state"), ("state_abbreviation", "state_abbreviation", "State abbreviation")):
-        v = as_text(answers.get(k, ""))
-        if v is not None:
-            if key == "state_abbreviation" and v and not re.fullmatch(r"[A-Za-z]{2}", v):
-                raise AnswerProblem(f'"Your state\'s two-letter abbreviation": type two letters, for example NM (you typed "{v}").')
-            put("[where_you_live]", key, v.upper() if key == "state_abbreviation" else v, label)
+    from jobsearch.rules.location import STATES
+    state, abbr = as_text(answers.get("state", "")), as_text(answers.get("state_abbreviation", ""))
+    if abbr and not re.fullmatch(r"[A-Za-z]{2}", abbr):
+        raise AnswerProblem(f'"Your state\'s two-letter abbreviation": type two letters, for example NM (you typed "{abbr}").')
+    known = next((a for a, n in STATES.items() if state and state.strip().lower() in (n.lower(), a.lower())), None)
+    if known:   # a US state: its usual spelling ("texas" -> "Texas", "TX" -> "Texas") and its abbreviation
+        if abbr and abbr.upper() != known:
+            raise AnswerProblem(f'"Your state" is {STATES[known]}, whose abbreviation is {known}, but '
+                                f'"Your state\'s two-letter abbreviation" says {abbr.upper()}. Fix one of them.')
+        state, abbr = STATES[known], known
+    if state is not None:
+        put("[where_you_live]", "state", state, "Your state")
+    if abbr is not None or known:
+        put("[where_you_live]", "state_abbreviation", (abbr or "").upper(), "State abbreviation")
     v = as_list(answers.get("cities", ""))
     if v is not None:
         put("[where_you_live]", "cities", v, "Cities")

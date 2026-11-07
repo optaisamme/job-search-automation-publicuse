@@ -29,6 +29,11 @@ def word_forms(w: str) -> str:
     return re.escape(w) + "s?"
 
 
+def _phrase(words: str) -> str:
+    """A whole word or phrase, each word singular or plural, any capitals (applied with re.I)."""
+    return r"(?<![A-Za-z0-9])" + r"\s+".join(word_forms(w) for w in words.split()) + r"(?![A-Za-z0-9])"
+
+
 class TitleMatcher:
     def __init__(self, profile: dict, skills: list[dict] | None = None):
         from .skills_match import SkillsMatcher
@@ -43,13 +48,18 @@ class TitleMatcher:
                 self.families.append({"track": t["track"], "family": t["family"], "include": pats,
                                       "require_any": [w.lower() for w in t.get("require_any", [])]})
         tr = profile.get("title_rules", {})
-        # title words to skip: whole words or phrases, title only (the posting text is never checked)
-        self.exclude = [_c(r"\b" + r"\s+".join(map(re.escape, w.split())) + r"\b")
-                        for w in tr.get("exclude_plain", []) if isinstance(w, str) and w.strip()]
-        self.must_mention = [w.lower() for w in tr.get("must_mention", [])]
+        # title words to skip: whole words or phrases (singular or plural), title only (the posting text is never checked)
+        self.exclude = [_c(_phrase(w)) for w in tr.get("exclude_plain", []) if isinstance(w, str) and w.strip()]
+        # words the description must mention: whole words or phrases, singular or plural ("art" is not found in "start")
+        self.must_mention = [w.lower() for w in tr.get("must_mention", []) if isinstance(w, str) and w.strip()]
+        self._must_res = [_c(_phrase(w)) for w in self.must_mention]
         # listings with one of the job titles that were left out only by "words the description must mention"
         # (a set, because the same listing can be checked more than once)
         self.left_out_must_mention: set[tuple[str, str]] = set()
+
+    def _mentions(self, title: str, low_text: str) -> bool:
+        both = f"{title}\n{low_text}"
+        return any(p.search(both) for p in self._must_res)
 
     def match_title(self, title: str) -> bool:
         """Title-only pre-screen (before the job description is downloaded)."""
@@ -67,7 +77,7 @@ class TitleMatcher:
             if not any(p.search(t) for p in f["include"]):
                 continue
             title_matched = True
-            if self.must_mention and not any(w in (t.lower() + " " + low_text) for w in self.must_mention):
+            if self.must_mention and not self._mentions(t, low_text):
                 self.left_out_must_mention.add((t.lower(), low_text[:300]))
                 continue
             if f["require_any"] and not any(w in low_text for w in f["require_any"]):
@@ -75,6 +85,6 @@ class TitleMatcher:
             return {"track": f["track"], "family": f["family"]}
         if title_matched:
             return None   # one of your titles, but a title condition failed: not a skills match either
-        if self.must_mention and not any(w in (t.lower() + " " + low_text) for w in self.must_mention):
+        if self.must_mention and not self._mentions(t, low_text):
             return None
         return self.skills.match(t, text)   # other titles: skills-based matching (when on)

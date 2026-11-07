@@ -50,7 +50,7 @@ def build_payload(row) -> dict:
 
 def render_item(p: dict, kind: str) -> str:
     label = {"new": "NEW", "newly_verified": "NEWLY VERIFIED (first seen earlier; not newly posted)",
-             "baseline": "ALREADY LISTED WHEN YOU STARTED"}.get(kind, kind.upper())
+             "baseline": "FOUND IN YOUR FIRST SEARCH"}.get(kind, kind.upper())
     lines = []
     head = f"[{label}] {p['title']} — {p['employer']}"
     lines.append(head)

@@ -1154,3 +1154,20 @@ def test_skills_matching_without_keywords_uses_only_your_skills():
     assert m.match("Coordinator", "Data entry and CRM updates.")["skills"] == ["Data", "CRM"]
     assert m.match("Coordinator", "Data entry only.") is None
     assert m.summary() == "ON: the listing mentions at least 2 of your 3 skills" and m.search_words() == ""
+
+
+def test_first_search_report_lists_its_matches_as_new(root):
+    """The first report never says "Nothing new ... already reported earlier" (seen in a real copy, 2026-11-07)."""
+    from jobsearch import results_folder
+    from jobsearch.report import new_in_run
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    run(root, c)                                                       # first search
+    st = Store(root / "data/jobs.sqlite")
+    first = st.db.execute("SELECT MAX(id) FROM runs").fetchone()[0]
+    assert len(new_in_run(st.db, first)[0]) == 1
+    out = results_folder.write(root)
+    rep = open(out["report"]).read()
+    assert "First search: 1 job that matches all your rules" in rep and "already reported earlier" not in rep
+    run(root, c)                                                       # second search: nothing new
+    assert new_in_run(Store(root / "data/jobs.sqlite").db, first + 1)[0] == []

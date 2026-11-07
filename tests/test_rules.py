@@ -542,3 +542,77 @@ def test_title_words_match_singular_and_plural():
     assert m.match("Senior Policies Analyst") and m.match("Case Managers")
     assert not m.match("Victimology Advocate") and not m.match("Policy Analytics Lead")
     assert not m.match("Advocate")                      # every word is still needed
+
+
+# Sentences measured on 2026-11-07: before the fix, 9 of 23 certification sentences and 6 of 15 rule sentences
+# came out wrong (for example "All information and credentials submitted ... must be truthful" failed a job, and
+# "Christian faith required" did not rule a job out).
+CERT_CASES = [
+    ("All information and credentials submitted in your application must be truthful and complete.", "pass"),
+    ("Bachelor's degree from an accredited university required.", "pass"),
+    ("Candidates must provide copies of degree certificates and transcripts.", "pass"),
+    ("Certificate of insurance required before start.", "pass"),
+    ("I certify that the information provided is true and complete.", "pass"),
+    ("Login credentials will be provided on your first day.", "pass"),
+    ("Must be able to obtain a security clearance; certification of eligibility required.", "pass"),
+    ("Proof of COVID-19 vaccination certificate is required.", "pass"),
+    ("Our hospital is accredited by the Joint Commission.", "pass"),
+    ("You must be authorized to work in the US; we will verify credentials during the background check.", "pass"),
+    ("Required: Bachelor's degree from an accredited university and 3 years of experience.", "pass"),
+    ("CPR certification required.", "fail"),
+    ("CPR Certification required.", "fail"),
+    ("Must hold an active PMP certification.", "fail"),
+    ("BLS certification required at hire.", "fail"),
+    ("Certified Archivist credential required.", "fail"),
+    ("Teaching certificate required.", "fail"),
+    ("Certification in Project Management required.", "fail"),
+    ("Must have current First Aid and CPR certifications.", "fail"),
+    ("Must obtain Salesforce Administrator certification within 6 months of hire.", "pass"),
+    ("PMP certification preferred.", "pass"),
+    ("Relevant professional certification required.", "unclear"),
+]
+
+
+@pytest.mark.parametrize("sentence,want", CERT_CASES)
+def test_certification_check_on_everyday_sentences(sentence, want):
+    from jobsearch import criteria
+    from jobsearch.rules import certs
+    from jobsearch.text import segment
+    criteria.configure({"cert_filter_on": True, "allowed_prehire_certs": []}, base=criteria.NEUTRAL)
+    try:
+        assert certs.evaluate(segment(sentence), "u", True, []).outcome == want
+    finally:
+        criteria.configure(None)
+
+
+RULE_CASES = [
+    ("We are a Christian organization serving families.", "pass"),
+    ("Applicants must be a committed Christian and sign our statement of faith.", "fail"),
+    ("Requirements: active security clearance.", "fail"),
+    ("Ability to obtain a security clearance is a plus.", "pass"),
+    ("We do not discriminate based on religion (including Christian, Jewish, Muslim).", "pass"),
+    ("Qualifications: 3 years experience. Christian faith required.", "fail"),
+    ("Security clearance not required.", "pass"),
+    ("Must have a valid driver's license.", "fail"),
+    ("A driver's license is preferred.", "pass"),
+    ("3+ years of HubSpot experience required.", "fail"),
+    ("You will use HubSpot to manage campaigns.", "pass"),
+    ("Experience with HubSpot or a similar CRM.", "pass"),
+    ("Occasional weekend work required.", "fail"),
+    ("No weekend work.", "pass"),
+    ("Our clients include Christian schools and public schools.", "pass"),
+]
+
+
+@pytest.mark.parametrize("sentence,want", RULE_CASES)
+def test_words_that_rule_out_a_job_when_required(sentence, want):
+    from jobsearch import criteria
+    from jobsearch.rules import custom
+    from jobsearch.text import segment
+    criteria.configure({"custom_rules": [{"name": "Words that rule out a job", "on": True, "reject_when": "required",
+                                          "terms": ["christian", "security clearance", "driver's license", "HubSpot", "weekend work"]}]},
+                       base=criteria.NEUTRAL)
+    try:
+        assert custom.evaluate_all(segment(sentence), "u", True)[0].outcome == want
+    finally:
+        criteria.configure(None)

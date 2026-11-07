@@ -20,6 +20,22 @@ from ..text import Segment, excerpt
 
 CERT_WORD = re.compile(r"\b(certif\w*|credential\w*|accredit\w*)\b", re.I)
 BENEFIT_CTX = re.compile(r"\b(reimburs\w*|we\s+(pay|cover|support|sponsor)|paid\s+for|stipend|budget|learning\s+(and|&)\s+development|professional\s+development\s+(fund|budget|opportunit)|opportunit(y|ies)\s+to\s+(earn|obtain|pursue))\b", re.I)
+# "certificate", "credential" or "accredited" used for a document or an institution, not a certification held by
+# the applicant: these words are removed before the sentence is checked.
+NOT_A_CERT = re.compile(
+    r"\b(degree|diploma|birth|marriage|gift|vaccination|vaccine|immunization|covid[\s-]?19|insurance|tax|training\s+completion)\s+certificat\w*"
+    r"|\bcertificat\w*\s+of\s+(insurance|completion|good\s+standing|occupancy|eligibility|vaccination|immunization|birth|"
+    r"employment|enrollment|incorporation|deposit|attendance|achievement|appreciation|participation|authority|formation|title|liability)\b"
+    r"|\baccredited\s+(college|colleges|university|universities|institution|institutions|school|schools|program|programs|degree|"
+    r"academic|educational|four[\s-]year|post[\s-]?secondary|higher\s+education)\b"
+    r"|\b(college|university|institution|school|program|hospital|facility|organization|agency|we)\s+(is\s+|are\s+)?accredited\b"
+    r"|\baccredited\s+by\b"
+    r"|\b(login|log[\s-]in|user|account|system|network|access|security|api|sso)\s+credentials?\b"
+    r"|\b(information|documents?|materials?|references|transcripts?)\s+(and|or|&)\s+credentials?\b"
+    r"|\bcredentials?\s+(submitted|provided|will\s+be\s+(verified|checked|provided))\b"
+    r"|\b(verify|verified|verifying|verification\s+of)\s+(your\s+|all\s+|any\s+)?credentials?\b"
+    r"|\bcertif(y|ies|ying)\b",
+    re.I)
 ORG_CERT = re.compile(r"\b(certified\s+b\s+corp|great\s+place\s+to\s+work|we\s+are\s+(a\s+)?certified|certified\s+(minority|woman|women)[\s-]owned)\b", re.I)
 
 PREFERRED = re.compile(r"\b(preferred|preferably|a\s+plus|nice[\s-]to[\s-]have|bonus|desired|desirable|ideal(ly)?|optional|helpful|advantage(ous)?|beneficial|welcome|not\s+required|appreciated|big\s+plus)\b", re.I)
@@ -66,9 +82,12 @@ _LEAD_WORDS = {"must", "required", "requires", "require", "a", "an", "the", "val
                "applicable", "related", "any", "all", "necessary", "needed", "such", "industry", "recognized",
                "pass", "get", "complete", "maintain", "this", "that", "these", "your", "our", "to", "in", "for", "other",
                "additional", "specific", "certain", "accredited", "approved", "equivalent", "similar", "one", "two"}
-_NAME_BEFORE = re.compile(r"((?:[A-Za-z0-9][\w'’/&+.\-]*\s+){0,4}[A-Za-z0-9][\w'’/&+.\-]*)\s+(?:certification|certificate|credential)s?\b")
+_NAME_BEFORE = re.compile(r"((?:[A-Za-z0-9][\w'’/&+.\-]*\s+){0,4}[A-Za-z0-9][\w'’/&+.\-]*)\s+(?i:certification|certificate|credential)s?\b")
 _NAME_CERTIFIED = re.compile(r"\bCertified\s+((?:[A-Z0-9][\w'’/&+.\-]*\s*){1,5})")
-_NAME_AFTER = re.compile(r"\b(?:certification|certificate|credential)\s+(?:in|as\s+an?|as)\s+((?:[A-Z0-9][\w'’/&+.\-]*\s*){1,5})")
+_NAME_AFTER = re.compile(r"\b(?i:certification|certificate|credential)\s+(?i:in|as\s+an?|as)\s+((?:[A-Z0-9][\w'’/&+.\-]*\s*){1,5})")
+# words that never name a certification on their own ("information and credentials", "proof of ... certificate")
+_NOT_A_NAME = {"information", "document", "documents", "materials", "application", "applications", "submitted", "proof",
+               "copy", "copies", "official", "academic", "educational", "your", "their", "its", "and", "or", "&", "of"}
 
 
 def extract_cert_name(s: str) -> str | None:
@@ -80,6 +99,10 @@ def extract_cert_name(s: str) -> str | None:
         words = m.group(1).split()
         while words and words[0].lower().strip(".,:;") in _LEAD_WORDS:
             words.pop(0)
+        while words and words[-1].lower().strip(".,:;") in ("and", "or", "&", "of", "the", "a", "an"):
+            words.pop()
+        if words and all(w.lower().strip(".,:;") in _NOT_A_NAME for w in words):
+            continue
         if words:
             name = " ".join(words).strip(" .,:;")
             return name + (" certification" if pat is _NAME_BEFORE else "") if pat is not _NAME_CERTIFIED else "Certified " + name
@@ -98,7 +121,7 @@ def evaluate(segments: list[Segment], url: str | None, authoritative: bool,
     disallowed_prehire, unclear, post_hire, allowed_prehire, preferred, ev = [], [], [], [], [], []
 
     for seg in segments:
-        s = seg.text
+        s = NOT_A_CERT.sub(" ", seg.text)   # documents and institutions, not certifications
         if not CERT_WORD.search(s) or ORG_CERT.search(s):
             continue
         if seg.section == "benefits" or BENEFIT_CTX.search(s):

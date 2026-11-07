@@ -325,7 +325,7 @@ def _html(md: str, title: str) -> str:
     return f"<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>{html.escape(title)}</title><style>{css}</style></head><body>{joined}</body></html>"
 
 
-NEW_KIND = {"new": "New", "newly_verified": "Newly verified (seen before)", "baseline": "Already listed when you started"}
+NEW_KIND = {"new": "New", "newly_verified": "Newly verified (seen before)", "baseline": "Found in your first search"}
 
 
 def new_jobs_table(db, notification_ids) -> list[str]:
@@ -349,7 +349,9 @@ def new_in_run(db, run_id) -> tuple[list[int], int]:
     """From the saved job database: (new matching-job alert ids, number of new near misses) for one search.
     Uses only saved data, so the results page is the same wherever it is rebuilt."""
     rows = db.execute("SELECT id, kind, status FROM notifications WHERE run_id = ?", (run_id,)).fetchall()
-    ids = [r["id"] for r in rows if r["kind"] != "near_miss" and r["status"] not in ("cancelled", "held", "suppressed_baseline")]
-    run = db.execute("SELECT started_at FROM runs WHERE id = ?", (run_id,)).fetchone()
+    run = db.execute("SELECT started_at, is_baseline FROM runs WHERE id = ?", (run_id,)).fetchone()
+    # the first search records its matches as "first search" (suppressed_baseline): they are all new to the user
+    skip = ("cancelled", "held") if run and run["is_baseline"] else ("cancelled", "held", "suppressed_baseline")
+    ids = [r["id"] for r in rows if r["kind"] != "near_miss" and r["status"] not in skip]
     near = sum(1 for r in near_misses(db) if run and (r["first_seen"] or "") >= (run["started_at"] or ""))
     return ids, near

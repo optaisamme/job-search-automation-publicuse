@@ -189,8 +189,11 @@ def write(root: Path) -> dict:
         R += ["## New in this search", ""]
         from .report import new_in_run, new_jobs_table
         ids, near_new = new_in_run(db, last["id"])
-        if ids:
-            R.append(f"**{len(ids)} new job{'s' if len(ids) != 1 else ''} that match all your rules**")
+        if ids and last["is_baseline"]:
+            R.append(f"**First search: {len(ids)} job{'s that match' if len(ids) != 1 else ' that matches'} all your rules**")
+            R += [""] + new_jobs_table(db, ids)
+        elif ids:
+            R.append(f"**{len(ids)} new job{'s that match' if len(ids) != 1 else ' that matches'} all your rules**")
             R += [""] + new_jobs_table(db, ids)
         elif near_new:
             R += ["No new jobs match all your rules. New near misses are in the near-miss table below.", ""]

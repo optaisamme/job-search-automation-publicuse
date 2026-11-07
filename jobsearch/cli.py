@@ -124,9 +124,11 @@ def main(argv=None) -> int:
                                       else "OFF (hybrid and on-site jobs are kept" + (f" in {C['home_state']})" if C.get("home_state") else ")")))
         print(f"Home state check: {C['home_state'] + ' (' + (C.get('home_state_abbr') or '-') + ')' if C.get('home_state') else 'OFF (no state set)'}")
         if C["single_min"] or C["range_lower_min"] or C["range_upper_gt"]:
-            money = lambda n: f"${n:,}" if n else "no minimum"
-            print(f"Salary: one salary at least {money(C['single_min'])}; a range must start at {money(C['range_lower_min'])} "
-                  f"or more and end above {money(C['range_upper_gt'])}")
+            parts = [f"one salary at least ${C['single_min']:,}" if C["single_min"] else "one salary: no minimum"]
+            rng = ([f"start at ${C['range_lower_min']:,} or more"] if C["range_lower_min"] else []) + \
+                  ([f"end above ${C['range_upper_gt']:,}"] if C["range_upper_gt"] else [])
+            parts.append("a range must " + " and ".join(rng) if rng else "a range: no minimum")
+            print("Salary: " + "; ".join(parts))
         else:
             print("Salary minimum: OFF")
         if C.get("cert_filter_on", True):
@@ -177,7 +179,7 @@ def main(argv=None) -> int:
             print("In the questionnaire's 'Companies to watch', each link must be a company's job page on one of these sites: "
                   f"{SUPPORTED_JOB_PAGES}. Fix or delete the link above and save.")
             return 1
-        print(f"Experience profile: {len(exp.get('skills', []))} skills, {len(exp.get('gaps', []))} gap areas")
+        print(f"Your skills: {len(exp.get('skills', []))} listed")
         if not prof["titles"]:
             print("NO JOB TITLES SET YET. Answer the setup questionnaire (Issues tab, New issue, Job search setup). "
                   "Nothing will be searched until you save at least one job title.")

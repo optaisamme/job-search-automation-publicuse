@@ -3,7 +3,8 @@
 Used by requirement rules (rules/custom.py) with reject_when = "required":
   * preferred / optional / "a plus" / "nice to have"     -> acceptable
   * a duty after hire ("maintain X", "work with X")       -> acceptable
-  * required qualification, or a duty demanding prior expertise -> required
+  * required qualification, plain required wording ("must have", "required"),
+    or a duty demanding prior expertise                    -> required
   * genuinely ambiguous wording                           -> ambiguous (Needs Verification)
 """
 from __future__ import annotations
@@ -17,7 +18,10 @@ NEGATED_REQ = re.compile(r"\b(not\s+(required|necessary|a\s+requirement)|no\s+(p
 REQUIRED_CUE = re.compile(r"\b(required|requires?|must|minimum|at\s+least|\d+\+?\s*(\+|plus)?\s*years?|proven|demonstrated|strong|extensive|deep|expert|expertise|hands[\s-]on|solid|significant|essential|mandatory|necessary|need\s+to\s+have|you\s+have|you\s+bring|you('|’)ve)\b", re.I)
 EXPERIENCE_WORD = re.compile(r"\b(experience[ds]?|expertise|expert|knowledge|knowledgeable|proficien\w*|background|familiar\w*|worked\s+with|hands[\s-]on|track\s+record|understanding|skilled|mastery|fluency)\b", re.I)
 EXAMPLE_CUE = re.compile(r"\b(such\s+as|e\.g\.|for\s+example|like)\b", re.I)
-ALTERNATIVE_ANY = re.compile(r"\b(or\s+(similar|equivalent|comparable|other)|or\s+another\s+(crm|platform))\b", re.I)
+ALTERNATIVE_ANY = re.compile(r"\b(or\s+(an?\s+)?(similar|equivalent|comparable|other)|or\s+another\s+(crm|platform))\b", re.I)
+# plain required wording: makes a term required even when it is not experience (a license, a clearance, a faith
+# statement, weekend work)
+STRICT_REQ = re.compile(r"\b(required|requires?|requirements?|must|mandatory|essential|need\s+to\s+have|is\s+a\s+must)\b", re.I)
 PRIOR_IN_DUTY = re.compile(r"\b(leverage|apply|bring|use|using)\s+(your\s+)?(?:[\w'-]+\s+){0,3}(experience|expertise|knowledge)\b|\byour\s+(prior\s+)?(experience|expertise)\b|\bas\s+an?\s+(expert|seasoned)\b", re.I)
 
 
@@ -52,6 +56,8 @@ def classify_mention(seg: Segment, name: str) -> tuple[str, str]:
         return "ambiguous", "sentence mixes required and preferred wording"
     if seg_pref:
         return "preferred", "preferred/optional wording"
+    if STRICT_REQ.search(clause) or (STRICT_REQ.search(s) and seg.section != "responsibilities"):
+        return "required", "required wording"
     if seg.section == "responsibilities":
         if PRIOR_IN_DUTY.search(s):
             return "required", "responsibility explicitly demands prior expertise"
