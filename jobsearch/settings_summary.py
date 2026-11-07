@@ -24,8 +24,9 @@ def rows(root: Path, prof: dict, exp: dict) -> list[list[str]]:
     except (OSError, ValueError):
         settings = {}
     out = []
-    for t in prof.get("titles", []):
-        out.append([f"Job titles ({t['family']})", _list(t.get("plain_titles"))])
+    titles = prof.get("titles", [])
+    for t in titles:
+        out.append([f"Job titles ({t['family']})" if len(titles) > 1 else "Job titles", _list(t.get("plain_titles"))])
     if not prof.get("titles"):
         out.append(["Job titles", "none"])
     out.append(["Remote jobs only?", "Yes" if C.get("remote_only", True) else "No, also hybrid and on-site jobs in my state"])

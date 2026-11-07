@@ -32,7 +32,7 @@ def test_form_labels_match_the_script():
 
 
 def test_full_answers_update_both_files():
-    body = form(titles_1="Program Manager\nProgram Director", titles_2="Data Analyst",
+    body = form(titles_1="Program Manager\nProgram Director\nData Analyst",
                 remote_only="No, also hybrid and on-site jobs in my state", state="New Mexico", state_abbreviation="nm",
                 cities="Albuquerque\nSanta Fe", min_single="$100,000", min_range_start="90000", range_end_above="100000",
                 skip_titles="Intern\nMajor Gifts", cert_check="Yes", certs_allowed="CPR",
@@ -44,7 +44,7 @@ def test_full_answers_update_both_files():
     s, e, changes, extras = q.apply(answers, SETTINGS, EXPERIENCE)
     st, ex = tomllib.loads(s), tomllib.loads(e)
     g = st["job_titles"]["group"]
-    assert g[0]["titles"] == ["Program Manager", "Program Director"] and g[1]["titles"] == ["Data Analyst"] and g[2]["titles"] == []
+    assert g[0]["titles"] == ["Program Manager", "Program Director", "Data Analyst"] and g[1]["titles"] == [] and g[2]["titles"] == []
     w = st["where_you_live"]
     assert (w["remote_only"], w["state"], w["state_abbreviation"], w["cities"]) == ("no", "New Mexico", "NM", ["Albuquerque", "Santa Fe"])
     assert st["salary"] == {"minimum_single_salary": 100000, "minimum_range_start": 90000, "range_end_must_be_above": 100000}

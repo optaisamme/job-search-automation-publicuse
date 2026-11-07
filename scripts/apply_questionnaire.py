@@ -32,8 +32,6 @@ MAX_ITEMS, MAX_LEN = 40, 200
 # question label (exactly as in .github/ISSUE_TEMPLATE/job_search_setup.yml) -> answer key
 LABELS = {
     "Job titles to look for": "titles_1",
-    "More job titles: a second kind of job": "titles_2",
-    "More job titles: a third kind of job": "titles_3",
     "Remote jobs only?": "remote_only",
     "Your state": "state",
     "Your state's two-letter abbreviation": "state_abbreviation",
@@ -189,7 +187,7 @@ def apply(answers: dict, settings_text: str, experience_text: str) -> tuple[str,
         shown = ", ".join(value) if isinstance(value, list) else value
         changed.append(f"{label}: {shown if shown not in ('', []) else 'cleared'}")
 
-    for n, k in enumerate(("titles_1", "titles_2", "titles_3")):
+    for n, k in enumerate(("titles_1",)):
         v = as_list(answers.get(k, ""))
         if v is not None:
             put("[[job_titles.group]]", "titles", v, f"Job titles, group {n + 1}", n)

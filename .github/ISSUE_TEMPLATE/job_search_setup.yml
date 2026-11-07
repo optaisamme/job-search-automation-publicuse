@@ -19,23 +19,14 @@ body:
   - type: textarea
     attributes:
       label: Job titles to look for
-      description: "One title per line. Senior, Sr. and Lead versions are found too, and the words can be in any order."
+      description: "Put all your job titles in this box, one per line, as many as you like. Senior, Sr. and Lead versions are found too, and the words can be in any order."
       placeholder: |
         Program Manager
         Program Director
+        Data Analyst
       render: text
     validations:
       required: true
-  - type: textarea
-    attributes:
-      label: "More job titles: a second kind of job"
-      description: Optional. One title per line.
-      render: text
-  - type: textarea
-    attributes:
-      label: "More job titles: a third kind of job"
-      description: Optional. One title per line.
-      render: text
 
   - type: markdown
     attributes:
