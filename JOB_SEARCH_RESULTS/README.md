@@ -8,5 +8,5 @@ To start one: **[START A SEARCH NOW](../../../actions/workflows/run_job_search.y
 
 These boards cannot be searched by this tool (no public data feed, sign-in required, or their terms do not allow automated searching). Each link opens that board's search for one of your job titles. Open them yourself, as often as you like.
 
-Add a job title in settings section 1 to get links here.
+Add a job title (setup questionnaire, or settings section 1) to get links here.
 

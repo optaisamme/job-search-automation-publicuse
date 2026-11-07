@@ -11,7 +11,7 @@ A search will **not** work until both are done:
 | | Must be done first | How |
 |---|---|---|
 | ☐ | **1. You made your own copy** of this project, and you are signed in to GitHub. You cannot run a search in the original shared project. | [SETUP.md](SETUP.md), Step 1 |
-| ☐ | **2. You typed at least one job title** in your copy's settings file, `EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml`, section 1, and saved it. | [SETUP.md](SETUP.md), Step 2 |
+| ☐ | **2. You saved at least one job title**, with the setup questionnaire or in your copy's settings file (`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml`, section 1). | [SETUP.md](SETUP.md), Step 2 |
 
 If you skip step 2, the search stops right away with the message **"NO JOB TITLES SET YET"**.
 

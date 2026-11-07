@@ -74,13 +74,13 @@ Only files whose names start with **EDIT_ME**. Do not change any other file.
 | [`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml`](EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml) | **Yes:** type at least one job title | Which jobs are found and which are left out: job titles, remote only or not, your state, salary, certifications, your own rules, employers to skip, companies to watch, skills-based matching, how many jobs to look through |
 | [`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml`](EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml) | No | Your skills, used to show how well each job fits you. It never removes a job. With skills-based matching on (file 1, section 8), it also finds jobs with other titles |
 
-Both settings files start **empty**: nothing is searched or filtered until you fill them in.
+Both settings files start with no job titles and no skills, so nothing is searched until you add a job title. Remote-only is on to start; the other filters are off until you fill them in.
 
 **Also optional:** a free web search key. It is added in **Settings**, not in a file. See [Other optional edits: a free web search key](#other-optional-edits-a-free-web-search-key).
 
 **Easier than editing files:** the [setup questionnaire](../../issues/new/choose) fills in files 1 and 2 for you
-(Issues tab, New issue, Job search setup). Blank answers keep your current settings; type `none`
-to clear one. Submit it again any time to change something.
+(Issues tab, New issue, Job search setup). A blank answer, or a dropdown left on "None", keeps
+your current setting; type `none` in a text box to clear one. Submit it again any time to change something.
 
 **Automatic weekly searches are OFF to start.** A search only runs when you start one
 yourself. To have one run by itself every week, choose **On** and a day in the questionnaire, or
@@ -113,7 +113,7 @@ set section 9 of file 1 (`[automatic_weekly_search]`: `on = "yes"`, `day = "Frid
 ## Other optional edits: a free web search key
 
 Without a key, every search already checks 7 job sites and company careers pages. Adding
-one free key turns on a **web search**: for each of your job titles, the tool also searches
+one free key turns on a **web search**: for up to 4 of your job titles, the tool also searches
 the whole web, including company careers pages, and finds jobs that are on no job site. It
 also finds new companies to check. It is optional and stays off until you add the key.
 
@@ -166,7 +166,7 @@ links on the results page for those.
       whatever your search words are (for example The Muse's newest 1,000 and all of Jobicy's US
       remote jobs, set in section 10), so each search looks at a few thousand listings.
    b. **Web search (free key, recommended, see SETUP.md Step 6):** searches the whole web for
-      each of your job titles, finding jobs that are on no job site above. For each title it
+      up to 4 of your job titles, finding jobs that are on no job site above. For each title it
       runs 2 searches: one across company careers pages (Greenhouse, Lever, Ashby,
       SmartRecruiters, Workday) and one across the rest of the web. Every result is checked
       like any other job.
@@ -179,7 +179,7 @@ links on the results page for those.
    your skills (from your experience file). Those are marked "(skills match)".
 4. **Applies your rules**: remote only (on unless you turn it off), your state, salary,
    certifications, your own rules. When a
-   posting is unclear, the job is marked **Needs Verification** instead of guessed.
+   posting is unclear, the job is listed under **Jobs that need checking** instead of guessed.
 5. **Checks the application link** to make sure the job is still open.
    Himalayas blocks automated link checks. A Himalayas job counts as open when Himalayas'
    own job feed listed it during the search and its closing date has not passed. These

@@ -17,7 +17,10 @@ def main() -> int:
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
         base = f"{os.environ.get('GITHUB_SERVER_URL', 'https://github.com')}/{os.environ.get('GITHUB_REPOSITORY', '')}/blob/main/{results_folder.FOLDER}/"
-        text = out["text"].replace("](REPORT_", "](" + base + "REPORT_")
+        repo_url = f"{os.environ.get('GITHUB_SERVER_URL', 'https://github.com')}/{os.environ.get('GITHUB_REPOSITORY', '')}/"
+        # links on the results page are relative to the folder; on the Actions page they must be full links
+        text = (out["text"].replace("](REPORT_", "](" + base + "REPORT_")
+                .replace("](../../../", "](" + repo_url).replace("](../", "](" + repo_url + "blob/main/"))
         with open(summary, "a") as f:
             f.write(text + f"\n\nAll results: {base}README.md\n")
     print(f"Updated {results_folder.FOLDER}: {out['report'] or 'no search yet'}")

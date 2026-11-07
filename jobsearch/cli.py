@@ -2,7 +2,7 @@
 
   python -m jobsearch run [--dry-run] [--sources a,b] [--no-render]
   python -m jobsearch outbox prepare            # re-verify pending alerts, write out/outbox.json
-  python -m jobsearch outbox mark --ids 1,2 --status delivered|failed --channel gmail_draft --ref <id> [--error msg]
+  python -m jobsearch outbox mark --ids 1,2 --status delivered|failed --channel results_page --ref <id> [--error msg]
   python -m jobsearch outbox list
   python -m jobsearch report
   python -m jobsearch boards add --ats greenhouse --board <token> --employer "<name>"
@@ -46,7 +46,7 @@ def main(argv=None) -> int:
     o.add_argument("action", choices=["prepare", "mark", "list"])
     o.add_argument("--ids", default="")
     o.add_argument("--status", choices=["delivered", "failed"], default=None)
-    o.add_argument("--channel", default="gmail_draft")
+    o.add_argument("--channel", default="results_page")
     o.add_argument("--ref", default=None)
     o.add_argument("--error", default=None)
     o.add_argument("--no-render", action="store_true")
@@ -124,7 +124,9 @@ def main(argv=None) -> int:
                                       else "OFF (hybrid and on-site jobs are kept" + (f" in {C['home_state']})" if C.get("home_state") else ")")))
         print(f"Home state check: {C['home_state'] + ' (' + (C.get('home_state_abbr') or '-') + ')' if C.get('home_state') else 'OFF (no state set)'}")
         if C["single_min"] or C["range_lower_min"] or C["range_upper_gt"]:
-            print(f"Salary: single >= ${C['single_min']:,}; range start >= ${C['range_lower_min']:,} and end > ${C['range_upper_gt']:,}")
+            money = lambda n: f"${n:,}" if n else "no minimum"
+            print(f"Salary: one salary at least {money(C['single_min'])}; a range must start at {money(C['range_lower_min'])} "
+                  f"or more and end above {money(C['range_upper_gt'])}")
         else:
             print("Salary minimum: OFF")
         if C.get("cert_filter_on", True):
@@ -141,7 +143,7 @@ def main(argv=None) -> int:
         if "employer_rules" in prof:
             print(f"Employers to skip: {', '.join(prof['employer_rules']['exclude']) or 'OFF (none)'}")
         for t in prof["titles"]:
-            print(f"Job title {t['family']}: {', '.join(t.get('plain_titles') or [])}")
+            print(f"Job titles{' (' + t['family'] + ')' if len(prof['titles']) > 1 else ''}: {', '.join(t.get('plain_titles') or [])}")
         watched, bad = pipeline.watched_boards(prof)
         from .titles import TitleMatcher
         sm = TitleMatcher(prof, exp.get("skills", [])).skills
@@ -165,7 +167,7 @@ def main(argv=None) -> int:
         except (OSError, ValueError):
             sz = dict(SEARCH_SIZE_DEFAULTS)
         print(f"How many jobs to look through (section 10): {sz['newest_jobs_per_site']:,} newest jobs per site, "
-              f"{sz['jobs_per_search_word']:,} for each search word, Jobicy up to {sz['jobicy_max_jobs']:,}"
+              f"{sz['jobs_per_search_word']:,} for each job title, Jobicy up to {sz['jobicy_max_jobs']:,}"
               + (" (Recommended)" if sz == SEARCH_SIZE_DEFAULTS else ""))
         print("Automatic weekly searches (section 9): " + (f"ON, every {str(wk.get('day', 'Friday')).capitalize()}" if wk_on else "OFF"))
         print(f"Companies to watch (section 7): {', '.join(b['board'] for b in watched) or 'none added (optional: only for companies whose careers page runs on Greenhouse, Lever, Ashby or SmartRecruiters; all job sites are still searched)'}")
@@ -177,8 +179,9 @@ def main(argv=None) -> int:
             return 1
         print(f"Experience profile: {len(exp.get('skills', []))} skills, {len(exp.get('gaps', []))} gap areas")
         if not prof["titles"]:
-            print("NO JOB TITLES SET YET: open EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml, go to section 1, type at least one job title "
-                  "inside the brackets of a group, for example  titles = [\"Data Analyst\"],  and save. "
+            print("NO JOB TITLES SET YET. Easiest: answer the setup questionnaire (Issues tab, New issue, Job search setup). "
+                  "Or open EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml, go to section 1, type at least one job title "
+                  "inside the brackets, for example  titles = [\"Data Analyst\"],  and save. "
                   "Nothing will be searched until then.")
             return 1
         print("Settings OK.")

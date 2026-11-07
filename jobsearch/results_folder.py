@@ -137,10 +137,10 @@ def _companies(root: Path) -> list[str]:
     rows += [(b["board"], names.get(b["ats"], b["ats"]), "you added it (section 7)", "never removed") for b in added]
     L = ["## Companies checked every search", "",
          "The tool reads every open job on these companies' careers pages each search. Companies are found "
-         "automatically when a matching job's apply link leads to a careers page on Greenhouse, Lever, Ashby "
-         "or SmartRecruiters, or you can add them in settings section 7.", "",
+         "automatically when a matching job leads to a careers page on Greenhouse, Lever, Ashby or SmartRecruiters "
+         "(through a job site or the web search), or you can add them in settings section 7.", "",
          f"A company found automatically is removed after more than {M} searches in a row with no job matching "
-         "your titles. It is added again if a matching job shows up later. Companies you added are never removed.", ""]
+         "your job titles or skills. It is added again if a matching job shows up later. Companies you added are never removed.", ""]
     if not rows:
         return L + ["None yet.", ""]
     L += ["| Company | Careers page runs on | How it was added | Searches in a row without a matching job |",
@@ -197,7 +197,7 @@ def write(root: Path) -> dict:
                   "**None of the listings matched your job titles.** To find more:", "",
                   "1. Use shorter, common titles. For example, \"Data Analyst\" also finds \"Senior Data Analyst\" "
                   "and \"Analyst, Data\", but \"Data Analyst for Nonprofit Programs\" finds almost nothing.",
-                  "2. Add other names for the same job in the same group, for example "
+                  "2. Add other names for the same job, for example "
                   "`[\"Program Manager\", \"Program Director\", \"Program Lead\"]`.",
                   "3. Leave `description_must_mention_one_of` and \"Description must mention\" empty to start; "
                   "add them later if you get too many jobs.",

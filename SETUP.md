@@ -33,8 +33,8 @@ The [EDIT_ME_JOB_SEARCH_SETTINGS folder page](EDIT_ME_JOB_SEARCH_SETTINGS) lists
    forms opens (or use this link while in your copy: [open the questionnaire list](../../issues/new/choose)).
    Click **Job search setup**. If a blank "Create new issue" page opens instead, click
    **Choose a different template** near the top, then **Job search setup**.
-2. Answer the questions. Only "Job titles to look for" is required. Leave a question empty to
-   keep the current setting; type `none` to clear one.
+2. Answer the questions. Only "Job titles to look for" is required. Leave a question empty, or
+   a dropdown on "None", to keep the current setting; type `none` in a text box to clear one.
 3. Click **Create** (on some screens it says **Submit new issue**). Within a minute or two, a reply on the issue lists what was saved,
    or explains what to fix (edit the issue to fix it; it is checked again).
 4. If there is no **Issues** tab: click **Settings**, then **General**, scroll to **Features**,
@@ -92,8 +92,8 @@ reject_when = "mentioned"
       keeping these numbers for now.** Bigger numbers make each search take longer (GitHub
       stops a search after 60 minutes). The questionnaire offers Recommended, Fewer or More.
 5. Click **Commit changes** (green button), then **Commit changes** again.
-6. The first step of every run ("Check settings files") lists exactly what is ON and
-   OFF. If no job titles are set, the run stops there and says so.
+6. Each search starts with a step called "Check settings files" that lists exactly what is
+   ON and OFF. If no job titles are set, the search stops there and says so.
 
 ## Step 3: Add your experience (EDIT ME file 2, optional)
 
@@ -113,7 +113,7 @@ and which requirements are not yet in your profile. It can stay empty.
 
 Only after Steps 1 and 2 are done (your own copy, and at least one job title saved), follow
 **[HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md)** once. Enabling the
-workflow there (its Step 3) lets you start searches. Use the same guide any time you want
+workflow there (its step 2) lets you start searches. Use the same guide any time you want
 new results.
 
 **Automatic weekly searches stay OFF** until you turn them on (Step 6, item 1).
@@ -146,7 +146,7 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
       Actions tab shows those as short runs with the search skipped.
 2. **Free web search key (recommended).**
    Without a key, every search already checks 7 job sites and company careers pages. Adding
-   one free key turns on a **web search**: for each of your job titles, the tool also searches
+   one free key turns on a **web search**: for up to 4 of your job titles, the tool also searches
    the whole web, including company careers pages, and finds jobs that are on no job site. It
    also finds new companies to check. It is optional and stays off until you add the key.
 
@@ -199,8 +199,8 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
    Hacker News "Who is hiring?", and the careers pages of companies you
    add (settings section 7) or that it found earlier. It searches the wider web only if you
    add the free Tavily key.
-4. Results come from text rules. When a posting is unclear, the job is marked "Needs
-   Verification" rather than guessed, so read each posting yourself before applying.
+4. Results come from text rules. When a posting is unclear, the job is listed under "Jobs
+   that need checking" rather than guessed, so read each posting yourself before applying.
 
 ## Running it on your own computer instead (optional)
 

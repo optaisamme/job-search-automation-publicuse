@@ -26,7 +26,6 @@ LINK_NOTE = {"blocked": "site blocks automated checks", "unverified": "not check
 SHORTER = [("No employer-advertised salary found", "no salary listed"),
            (" (per third-party listing; employer posting not confirmed)", " (job site's copy)"),
            ("Remote, but country/state eligibility not stated", "remote, but which states can apply is not stated"),
-           ("Remote, but New Mexico / state eligibility not explicitly stated", "remote, but which states can apply is not stated"),
            ("Salary seen only on a third-party source; not confirmed on employer posting", "salary only on a job site's copy"),
            ("posting content not confirmed on employer/ATS source", "Posting only seen on a job site"),
            ("Required vs preferred unclear for", "unclear whether required:")]

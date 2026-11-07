@@ -3,8 +3,9 @@
 #
 # When the owner of this copy (or a collaborator) submits or edits the questionnaire, this:
 #   1. reads the answers and updates EDIT_ME_JOB_SEARCH_SETTINGS (settings and experience files),
-#   2. checks the settings, saves them, and replies on the issue with what changed,
-#   3. starts a search if you asked for one.
+#   2. checks and saves the settings,
+#   3. starts a search if you asked for one,
+#   4. replies on the issue with what changed and a link to the search.
 # Answers from anyone else are ignored, so strangers cannot change your settings.
 name: Apply setup questionnaire
 

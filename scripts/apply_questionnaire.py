@@ -208,7 +208,7 @@ def apply(answers: dict, settings_text: str, experience_text: str) -> tuple[str,
     for n, k in enumerate(("titles_1",)):
         v = as_list(answers.get(k, ""))
         if v is not None:
-            put("[[job_titles.group]]", "titles", v, f"Job titles, group {n + 1}", n)
+            put("[[job_titles.group]]", "titles", v, "Job titles", n)
 
     r = as_choice(answers.get("remote_only", ""))
     if r:

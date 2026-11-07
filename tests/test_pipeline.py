@@ -1027,6 +1027,6 @@ def test_report_starts_with_your_settings_and_change_link(root):
     rep = sorted((root / "JOB_SEARCH_RESULTS").glob("REPORT_*.md"))[-1].read_text()
     assert "[click here to change these settings](../../../issues/new/choose)" in rep
     assert rep.index("## Your settings for this search") < rep.index("## New in this search")
-    for label in ("| Remote jobs only? |", "| Lowest single salary |", "| How many jobs to look through |",
+    for label in ("| Remote jobs only? |", "| Lowest single salary you would accept |", "| How many jobs to look through |",
                   "| Automatic weekly searches |", "| Skills-based matching |"):
         assert label in rep, label

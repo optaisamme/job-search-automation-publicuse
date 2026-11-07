@@ -34,8 +34,8 @@ def rows(root: Path, prof: dict, exp: dict) -> list[list[str]]:
     if not C.get("remote_only", True):
         out.append(["Cities where you could work on site", _list(C.get("home_cities"))])
     money = lambda n: f"${n:,}" if n else "no minimum"
-    out.append(["Lowest single salary", money(C.get("single_min", 0))])
-    out.append(["Lowest start of a salary range", money(C.get("range_lower_min", 0))])
+    out.append(["Lowest single salary you would accept", money(C.get("single_min", 0))])
+    out.append(["Lowest acceptable start of a salary range", money(C.get("range_lower_min", 0))])
     out.append(["A salary range must end above", money(C.get("range_upper_gt", 0))])
     tr = prof.get("title_rules", {})
     out.append(["Title words to skip", _list(tr.get("exclude_plain"))])

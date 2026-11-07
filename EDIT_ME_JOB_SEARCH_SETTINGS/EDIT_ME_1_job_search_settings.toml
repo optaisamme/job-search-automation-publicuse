@@ -1,9 +1,12 @@
 # =====================================================================
-#  EDIT ME  (file 1 of 3): YOUR JOB SEARCH SETTINGS
+#  EDIT ME  (file 1 of 2): YOUR JOB SEARCH SETTINGS
 # =====================================================================
 #  WHAT THIS FILE DOES
-#    Decides which jobs are found and which are rejected. It starts EMPTY:
-#    nothing is searched or filtered until you fill it in.
+#    Decides which jobs are found and which are left out. It starts with no
+#    job titles, so nothing is searched until you add one. Remote-only is on
+#    to start; everything else is off until you fill it in.
+#    Easier: the setup questionnaire (Issues tab, New issue, Job search setup)
+#    fills in this file for you.
 #
 #  HOW TO EDIT IT (on the GitHub website)
 #    1. Click the pencil icon (top right of this file).
@@ -15,18 +18,19 @@
 #    4. Click "Commit changes" (green button), then "Commit changes" again.
 #
 #  WHAT YOU MUST FILL IN:  section 1 (at least one job title).
-#  EVERYTHING ELSE IS OPTIONAL and stays OFF until you fill it in.
+#  EVERYTHING ELSE IS OPTIONAL. Remote-only starts on; the rest starts off.
 #
 #  WHAT HAPPENS AFTER YOU SAVE
 #    - Your changes are used on the NEXT run (right away if you press "Run
 #      workflow" on the Actions tab, or the weekly run if you turned it on).
-#    - The first step of every run, "Check settings files", lists exactly
-#      what is ON and OFF. If something is typed wrong, the run stops there
-#      and names the line to fix.
+#    - Each search starts with a step called "Check settings files" that
+#      lists exactly what is ON and OFF. If something is typed wrong, the
+#      search stops there and names the line to fix.
 #    - Jobs still listed online are re-checked against your new settings.
-#      A job that now passes is posted as "NEWLY VERIFIED". A job that now
-#      fails is moved to "Rejected" in the report. A job already posted to
-#      you is never posted again.
+#      A job that now passes is shown as "Newly verified (seen before)". A
+#      job that now fails one rule is listed under Near Misses in the next
+#      report; jobs that fail 2 or more rules are only counted in the totals.
+#      A job already shown as new is never shown as new again.
 # =====================================================================
 
 
@@ -48,7 +52,6 @@
 #  titles = the job titles to look for
 #  description_must_mention_one_of = optional extra condition: the job
 #           description must also mention one of these words. [] = off.
-#  Results show which group a job came from: Group 1, Group 2 or Group 3.
 
 # ---- Job title group 1 ----
 [[job_titles.group]]
@@ -225,7 +228,8 @@ keywords = []
 #  WHAT HAPPENS WHEN YOU ADD A COMPANY:
 #    1. Every search opens that company's careers page.
 #    2. It reads every job open there, not only jobs that reached a job site.
-#    3. Jobs whose title matches your job titles (section 1) are checked
+#    3. Jobs matching your job titles (section 1), or your skills with
+#       skills-based matching on (section 8), are checked
 #       against all your rules, like any other job.
 #    4. Matches show in your results with an Apply link to the employer's
 #       own posting.
@@ -233,8 +237,8 @@ keywords = []
 #       it will check. A link it cannot use stops the search and says why.
 #
 #  ALSO AUTOMATIC: HOW THE TOOL FINDS COMPANIES BY ITSELF
-#    1. A job site (for example Remote OK or Jobicy) lists a job whose title
-#       matches your job titles.
+#    1. A job site (for example Remote OK or Jobicy) lists a job matching
+#       your job titles (or your skills, with skills-based matching on).
 #    2. The tool opens that job's "apply" link, the one the job site gives.
 #    3. If the link leads to a job posting on a careers page that runs on
 #       Greenhouse, Lever, Ashby or SmartRecruiters, the tool:
@@ -247,7 +251,7 @@ keywords = []
 #       finds matching jobs on careers pages directly, and those companies are
 #       remembered the same way.
 #    6. A remembered company is removed after more than 5 searches in a row
-#       with no job matching your titles. It comes back if a matching job
+#       with no job matching your job titles or skills. It comes back if a matching job
 #       shows up again. Companies you type in this section are never removed.
 #    7. The list of remembered companies changes a little with each search.
 #       Your results page lists them under "Companies checked every search."
@@ -328,10 +332,9 @@ day = "Friday"
 #  10. HOW MANY JOBS TO LOOK THROUGH  (optional: we recommend keeping these)
 # ---------------------------------------------------------------------
 #  Some job sites offer more jobs than they send at once. These numbers
-#  say how many to read. Bigger numbers find a few more jobs but make each
-#  search take longer (GitHub stops a search after 60 minutes). Most of
-#  your matches come from searches by your job titles, not from the
-#  newest-jobs lists, so we recommend keeping these numbers for now.
+#  say how many to read. Bigger numbers make each search take longer
+#  (GitHub stops a search after 60 minutes), so we recommend keeping these
+#  numbers for now.
 #  You can also choose Recommended, Fewer or More in the questionnaire.
 #    newest_jobs_per_site = newest jobs (any title) read from Himalayas and
 #                           The Muse. 20 to 5000. Recommended: 1000

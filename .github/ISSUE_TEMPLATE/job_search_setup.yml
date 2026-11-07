@@ -11,7 +11,8 @@ body:
         3. Wait 1 to 2 minutes. A reply appears on this page saying what was saved, or what to fix.
            If you chose to start a search, the reply has a link to it.
 
-        **Good to know:** leave a question empty to keep your current setting. Type `none` to clear one.
+        **Good to know:** leave a question empty, or a dropdown on "None", to keep your current setting.
+        Type `none` in a text box to clear it.
         For lists, put one item on each line. Only you (and collaborators you add) can change your settings.
 
   - type: markdown
@@ -201,6 +202,8 @@ body:
   - type: dropdown
     attributes:
       label: Start a search right after saving?
+      description: Yes starts a search as soon as your settings are saved. The reply on this page links to it.
       options:
         - "Yes"
         - "No"
+      default: 0
