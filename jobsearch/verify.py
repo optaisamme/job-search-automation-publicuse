@@ -84,6 +84,11 @@ def render_env(user_agent: str | None = None) -> dict:
 
 
 def render(url: str, timeout: int = 75, user_agent: str | None = None) -> dict | None:
+    from .http import check_url, UnsafeURL
+    try:
+        check_url(url)
+    except UnsafeURL as e:
+        return {"error": str(e)}
     script = Path(__file__).with_name("render.mjs")
     try:
         cp = subprocess.run(["node", str(script), url], capture_output=True, text=True, timeout=timeout,

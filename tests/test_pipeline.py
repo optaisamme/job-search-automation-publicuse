@@ -1118,3 +1118,31 @@ def test_new_jobs_stay_new_if_the_results_page_was_not_written(root):
     # the results page failed here, so nothing was recorded as shown; the next preparation still has the job
     second = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
     assert first["match_ids"] and second["match_ids"] == first["match_ids"]
+
+
+def test_unsafe_links_are_refused():
+    import pytest
+    from jobsearch.http import check_url, UnsafeURL, _RedirectRecorder
+    public = lambda host, port: [(2, 1, 6, "", ("93.184.216.34", 0))]
+    internal = lambda host, port: [(2, 1, 6, "", ("10.0.0.5", 0))]
+    for bad in ("file:///etc/passwd", "ftp://example.com/x", "javascript:alert(1)", "http://localhost/", "http://127.0.0.1/",
+                "http://169.254.169.254/latest/meta-data/", "http://10.1.2.3/", "http://192.168.1.1/", "http://[::1]/",
+                "http://[::ffff:127.0.0.1]/", "http://printer.local/", "https://example.com:8443/", "http://0.0.0.0/"):
+        with pytest.raises(UnsafeURL):
+            check_url(bad, resolve=public)
+    with pytest.raises(UnsafeURL):
+        check_url("https://jobs.example.com/1", resolve=internal)          # a public-looking name that points inside
+    check_url("https://jobs.example.com/1", resolve=public)                 # normal web address: allowed
+    rec = _RedirectRecorder(lambda u: check_url(u, resolve=public))
+    with pytest.raises(UnsafeURL):
+        rec.check("http://127.0.0.1/admin")                                 # redirects are checked too
+    assert _RedirectRecorder.max_redirections == 5
+
+
+def test_browser_refuses_unsafe_links():
+    import shutil, subprocess, json as _json, pathlib, pytest
+    if not shutil.which("node"):
+        pytest.skip("node is not installed")
+    script = pathlib.Path(__file__).resolve().parents[1] / "jobsearch/render.mjs"
+    out = subprocess.run(["node", str(script), "--self-test"], capture_output=True, text=True, timeout=60).stdout
+    assert all(ok for _, ok in _json.loads(out.strip().splitlines()[-1]))
