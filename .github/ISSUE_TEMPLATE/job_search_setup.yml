@@ -142,6 +142,10 @@ body:
       options:
         - "Off"
         - "On"
+  - type: input
+    attributes:
+      label: How many of your skills must the listing mention?
+      description: "A number. 3 is a good start."
   - type: textarea
     attributes:
       label: Keywords the listing must include
@@ -153,10 +157,6 @@ body:
       options:
         - All of them
         - At least one
-  - type: input
-    attributes:
-      label: How many of your skills must the listing mention?
-      description: "A number. 3 is a good start."
 
   - type: markdown
     attributes:
