@@ -848,7 +848,8 @@ def test_results_are_never_posted_as_issues(root):
         if "jobsearch run" in text:   # workflows that search for jobs
             assert "issues: write" not in text and "publish_github_issue" not in text, wf.name
     for f in list((repo / "jobsearch").rglob("*.py")) + list((repo / "scripts").glob("*.py")):
-        if f.name != "apply_questionnaire.py":   # the questionnaire only replies on its own settings issue
+        # the questionnaire only replies on its own settings issue; the settings summary only links to the questionnaire
+        if f.name not in ("apply_questionnaire.py", "settings_summary.py"):
             assert "/issues" not in f.read_text(), f
 
 
@@ -987,7 +988,7 @@ def test_employers_to_skip_are_never_shown(root):
     assert js and all(j["closed_at"] for j in js)                    # the saved job is no longer shown
     md = open(info["report"]).read()
     assert "Employers you skip: Acme Nonprofit" in md
-    assert "| Salesforce Administrator" not in md
+    assert not any(l.startswith("| Salesforce Administrator") for l in md.splitlines())   # no job row
 
 
 def _skip_employer(root, name):
@@ -1012,3 +1013,20 @@ def test_questionnaire_saves_employers_to_skip():
     s, _, changes, _ = q.apply(q.parse_issue_body(body), settings, "")
     assert tomllib.loads(s)["filters"]["exclude_employers"] == ["Acme Staffing", "Example Corp"]
     assert "Employers to skip: Acme Staffing, Example Corp" in changes
+
+
+def test_report_starts_with_your_settings_and_change_link(root):
+    from jobsearch import results_folder
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    info = run(root, c)
+    st = Store(root / "data/jobs.sqlite")
+    used = json.loads(st.db.execute("SELECT counts FROM runs ORDER BY id DESC LIMIT 1").fetchone()["counts"])["settings_used"]
+    assert ["Employers to skip", "none"] in used                       # saved with the search
+    results_folder.write(root)
+    rep = sorted((root / "JOB_SEARCH_RESULTS").glob("REPORT_*.md"))[-1].read_text()
+    assert "[click here to change these settings](../../../issues/new/choose)" in rep
+    assert rep.index("## Your settings for this search") < rep.index("## New in this search")
+    for label in ("| Remote jobs only? |", "| Lowest single salary |", "| How many jobs to look through |",
+                  "| Automatic weekly searches |", "| Skills-based matching |"):
+        assert label in rep, label

@@ -413,6 +413,11 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
                 log["matches"] = sum(1 for u in urls if web_outcome.get(u) == QUALIFIED)
                 log["others"] = log["kept"] - log["matches"]
     counts["employers_skipped"] = employers_skipped
+    try:
+        from .settings_summary import rows as settings_rows
+        counts["settings_used"] = settings_rows(root, prof, exp)   # shown at the top of this search's report
+    except Exception as e:  # noqa: BLE001 — never stop a search over the summary
+        errors.append(f"settings summary: {e}")
     src_dicts = [asdict(s) for s in statuses]
     # record which company careers pages this search read (shown in each report)
     scanned = {(e.get("employer") or e["board"]) for lst in ctx["boards"].values() for e in lst}
