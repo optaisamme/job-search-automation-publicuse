@@ -45,10 +45,10 @@ LABELS = {
     "Check certification requirements?": "cert_check",
     "Certifications you have, or could get before being hired": "certs_allowed",
     "Companies to watch": "companies",
-    "Skills-based matching": "skills_on",
-    "Skills-based matching: required keywords": "skills_keywords",
-    "Skills-based matching: how many keywords must appear?": "skills_rule",
-    "Skills-based matching: how many of your skills must the posting mention?": "skills_min",
+    "Turn on skills-based matching?": "skills_on",
+    "Keywords the listing must include": "skills_keywords",
+    "All keywords, or at least one?": "skills_rule",
+    "How many of your skills must the listing mention?": "skills_min",
     "Your skills": "my_skills",
     "Years of experience in your field": "years",
     "Certifications you hold": "certs_held",
@@ -67,6 +67,17 @@ SEARCH_SIZES = {
 }
 
 
+# question labels used by earlier versions of the form, so an older questionnaire issue can still be edited
+OLD_LABELS = {
+    "Skills-based matching": "skills_on",
+    "Skills-based matching: required keywords": "skills_keywords",
+    "Skills-based matching: how many keywords must appear?": "skills_rule",
+    "Skills-based matching: how many of your skills must the posting mention?": "skills_min",
+    "More job titles: a second kind of job": None,
+    "More job titles: a third kind of job": None,
+}
+
+
 class AnswerProblem(ValueError):
     """An answer that cannot be used; the message is shown to the user."""
 
@@ -77,12 +88,13 @@ def parse_issue_body(body: str) -> dict:
     answers, current, lines = {}, None, []
 
     def flush():
-        if current in LABELS:
+        key = LABELS.get(current) or OLD_LABELS.get(current)
+        if key:
             text = "\n".join(lines).strip()
             m = re.fullmatch(r"(`{3,})[\w-]*\n(.*?)\n?\1", text, re.S)   # answers from plain text boxes come as a code block
             if m:
                 text = m.group(2).strip()
-            answers[LABELS[current]] = "" if text in ("", "_No response_") else text
+            answers[key] = "" if text in ("", "_No response_") else text
 
     for line in (body or "").replace("\r\n", "\n").split("\n"):
         m = re.match(r"^###\s+(.+?)\s*$", line)
@@ -243,7 +255,7 @@ def apply(answers: dict, settings_text: str, experience_text: str) -> tuple[str,
     if c:
         put("[skills_matching]", "required_keywords_rule", "any" if c.startswith("at least one") else "all",
             "Skills-matching keyword rule", append_block=sk_block)
-    v = as_number(answers.get("skills_min", ""), "Skills-based matching: how many of your skills")
+    v = as_number(answers.get("skills_min", ""), "How many of your skills must the listing mention?")
     if v is not None:
         put("[skills_matching]", "minimum_skills_matched", v, "Skills-matching minimum skills", append_block=sk_block)
 

@@ -144,3 +144,8 @@ def test_search_size_numbers_are_kept_within_limits():
     sz = search_size({"search_size": {"newest_jobs_per_site": 999999, "jobs_per_search_word": 1, "jobicy_max_jobs": "x"}})
     assert sz == {"newest_jobs_per_site": 5000, "jobs_per_search_word": 20, "jobicy_max_jobs": 5000}
     assert (_pages(1000, 20), _pages(30, 20), _pages(5000, 100)) == (50, 2, 50)
+
+
+def test_older_question_labels_are_still_read():
+    a = q.parse_issue_body("### Skills-based matching\n\nOn\n\n### More job titles: a second kind of job\n\nData Analyst\n")
+    assert a == {"skills_on": "On"}          # old title boxes are ignored; one box for all titles now

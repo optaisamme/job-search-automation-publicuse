@@ -131,27 +131,31 @@ body:
       label: Companies to watch
       description: "Links to company job pages on Greenhouse, Lever, Ashby or SmartRecruiters, one per line. Every job there is checked. Example: https://job-boards.greenhouse.io/examplecompany"
       render: text
+  - type: markdown
+    attributes:
+      value: |
+        ### Skills-based matching
+        Also finds jobs with other titles, when the listing includes your keywords and enough of your skills (Step 6).
   - type: dropdown
     attributes:
-      label: Skills-based matching
-      description: "On = also find jobs with OTHER titles, when the listing has your keywords (next question) and enough of your skills (Step 6)."
+      label: Turn on skills-based matching?
       options:
         - "Off"
         - "On"
   - type: textarea
     attributes:
-      label: "Skills-based matching: required keywords"
-      description: "One per line. These words must appear in the job listing. Example: Salesforce"
+      label: Keywords the listing must include
+      description: "One per line. Example: Salesforce"
       render: text
   - type: dropdown
     attributes:
-      label: "Skills-based matching: how many keywords must appear?"
+      label: All keywords, or at least one?
       options:
-        - All keywords must appear
-        - At least one keyword must appear
+        - All of them
+        - At least one
   - type: input
     attributes:
-      label: "Skills-based matching: how many of your skills must the posting mention?"
+      label: How many of your skills must the listing mention?
       description: "A number. 3 is a good start."
 
   - type: markdown
