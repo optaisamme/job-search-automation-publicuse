@@ -204,7 +204,7 @@ def _publish_first_run(root, c):
     out = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
     st = Store(root / "data/jobs.sqlite")
     for nid in out["notification_ids"]:
-        st.mark_notification(nid, "delivered", channel="github_issue", ref="1")
+        st.mark_notification(nid, "delivered", channel="results_page", ref="JOB_SEARCH_RESULTS")
     return out
 
 
@@ -229,6 +229,9 @@ def test_notification_retry_without_duplicates(root):
     out = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
     assert len(out["notification_ids"]) == 1 and out["draft"]["subject"].startswith("Job search results: 1 matching job")
     nid = out["notification_ids"][0]
+    out_again = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
+    assert out_again["notification_ids"] == [nid]   # results page not written yet: still waiting to be shown
+    assert pipeline.record_shown(root / "data/jobs.sqlite", [nid]) == 1
     out2 = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
     assert out2["notification_ids"] == [] and out2["draft"] is None   # recorded as shown once; never repeated
     st = Store(root / "data/jobs.sqlite")
@@ -842,6 +845,7 @@ def test_results_are_never_posted_as_issues(root):
     run(root, c)
     out = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
     assert out["match_ids"] and out["near_miss_ids"] and "issue_draft" not in out
+    pipeline.record_shown(root / "data/jobs.sqlite", out["notification_ids"])
     st = Store(root / "data/jobs.sqlite")
     shown = st.db.execute("SELECT DISTINCT channel FROM notifications WHERE status='delivered'").fetchall()
     assert {r["channel"] for r in shown} == {"results_page"}
@@ -1069,3 +1073,48 @@ def test_report_says_when_must_mention_words_left_out_every_job(root):
     results_folder.write(root)
     rep = sorted((root / "JOB_SEARCH_RESULTS").glob("REPORT_*.md"))[-1].read_text()
     assert "did not mention any of these words: nsps" in rep and "None of the listings matched your job titles" not in rep
+
+
+
+def test_company_is_not_dropped_because_its_page_could_not_be_read():
+    from jobsearch.pipeline import age_boards, MAX_SEARCHES_WITHOUT_MATCH
+    boards = {"greenhouse": [{"board": "acme", "searches_without_match": 2}, {"board": "beta", "searches_without_match": 2}]}
+    for _ in range(MAX_SEARCHES_WITHOUT_MATCH + 3):   # acme's page fails every time; beta is read and has no match
+        dropped = age_boards(boards, found=set(), failed={("greenhouse", "acme")})
+    assert [b["board"] for b in boards["greenhouse"]] == ["acme"] and boards["greenhouse"][0]["searches_without_match"] == 2
+
+
+def test_failed_careers_page_read_is_recorded(root):
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    c.set("https://boards-api.greenhouse.io/v1/boards/acme/jobs?content=true", {"error": "down"}, status=500)
+    info = run(root, c, sources=("ats_watchlist",))
+    ats = next(s for s in info["sources"] if s["name"] == "ats_watchlist")
+    assert "greenhouse:acme" in ats["boards_failed"]
+
+
+def test_jobs_from_a_site_that_failed_in_the_first_search_are_new_later(root):
+    """A partial first search marks only the jobs it found as 'already listed'; jobs found later are new."""
+    from jobsearch.report import new_in_run
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    run(root, c)                                                       # first search: job 1 only
+    setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Salesforce Business Systems Analyst")])
+    run(root, c)                                                       # job 2 appears later
+    st = Store(root / "data/jobs.sqlite")
+    last = st.db.execute("SELECT MAX(id) FROM runs").fetchone()[0]
+    rows = st.db.execute("SELECT j.title, n.kind FROM notifications n JOIN jobs j ON j.id=n.job_id WHERE n.run_id=?", (last,)).fetchall()
+    assert [(r["title"], r["kind"]) for r in rows if r["kind"] != "near_miss"] == [("Salesforce Business Systems Analyst", "new")]
+
+
+def test_new_jobs_stay_new_if_the_results_page_was_not_written(root):
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    run(root, c)
+    _publish_first_run(root, c)
+    setup_board(c, [gh_job(1, "Salesforce Administrator"), gh_job(2, "Salesforce Business Systems Analyst")])
+    run(root, c)
+    first = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
+    # the results page failed here, so nothing was recorded as shown; the next preparation still has the job
+    second = pipeline.prepare_outbox(root, root / "data/jobs.sqlite", client=c, use_renderer=False)
+    assert first["match_ids"] and second["match_ids"] == first["match_ids"]

@@ -119,10 +119,11 @@ def with_watched(boards: dict, watched: list[dict]) -> dict:
 MAX_SEARCHES_WITHOUT_MATCH = 5   # a company found by the search is dropped after more than this many
 
 
-def age_boards(boards: dict, found: set[tuple[str, str]]) -> list[dict]:
+def age_boards(boards: dict, found: set[tuple[str, str]], failed: set[tuple[str, str]] | None = None) -> list[dict]:
     """Companies the search found by itself (data/boards.json) are dropped after more than
     MAX_SEARCHES_WITHOUT_MATCH searches in a row in which their careers page had no job matching
     your titles. Companies added in the questionnaire ("Companies to watch") are not in this file and are never dropped.
+    A careers page that could not be read this search ("failed") does not count either way.
     Returns the dropped companies."""
     dropped = []
     for ats, lst in boards.items():
@@ -130,6 +131,8 @@ def age_boards(boards: dict, found: set[tuple[str, str]]) -> list[dict]:
         for b in lst:
             if (ats, b["board"].lower()) in found:
                 b["searches_without_match"] = 0
+            elif (ats, b["board"].lower()) in (failed or set()):
+                pass   # unknown this time: the page could not be read
             else:
                 b["searches_without_match"] = int(b.get("searches_without_match", 0)) + 1
             if b["searches_without_match"] > MAX_SEARCHES_WITHOUT_MATCH:
@@ -444,10 +447,12 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
     dropped_boards: list[dict] = []
     if not dry_run:
         aged = False
-        if any(s.name == "ats_watchlist" for s in statuses):   # count only searches that read careers pages
+        ats_status = next((s for s in statuses if s.name == "ats_watchlist"), None)
+        if ats_status is not None and ats_status.state == "ok":   # count only searches that read careers pages
             found = {(p.ats, (p.ats_board or "").lower()) for p, _ in matched if p.ats and p.ats_board}
             found |= {(b["ats"], b["board"].lower()) for b in new_boards}
-            dropped_boards = age_boards(boards, found)
+            failed = {tuple(k.split(":", 1)) for k in ats_status.boards_failed}
+            dropped_boards = age_boards(boards, found, failed)
             aged = True
         save_boards(root, boards, [b for b in new_boards if not block.blocked(b.get("employer"), b.get("board"))],
                     aged=aged or boards_trimmed)
@@ -463,6 +468,20 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
     if tmpdir:
         shutil.rmtree(tmpdir, ignore_errors=True)
     return run_info
+
+
+def record_shown(db_path: Path, ids: list[int]) -> int:
+    """After the results page is written: record these new jobs and near misses as shown there."""
+    store = Store(db_path)
+    n = 0
+    for nid in ids:
+        row = store.db.execute("SELECT status FROM notifications WHERE id=?", (nid,)).fetchone()
+        if row and row["status"] in ("pending", "failed", "suppressed_baseline"):
+            store.mark_notification(nid, "delivered", channel="results_page", ref="JOB_SEARCH_RESULTS")
+            n += 1
+    store.commit()
+    store.db.close()
+    return n
 
 
 def prepare_outbox(root: Path, db_path: Path, client: HttpClient | None = None, use_renderer: bool = True) -> dict:
@@ -517,9 +536,8 @@ def prepare_outbox(root: Path, db_path: Path, client: HttpClient | None = None, 
         payload = build_payload(store.job(row["id"]))
         items.append((n["kind"], payload))
         ids.append(n["id"])
-    # record new jobs and near misses as shown on the results page
-    for nid in ids + near_ids:
-        store.mark_notification(nid, "delivered", channel="results_page", ref="JOB_SEARCH_RESULTS")
+    # Jobs are recorded as shown only after the results page is written (record_shown), so a failed
+    # results page never hides a new job.
     store.commit()
     from .notify import render_digest
     out = {"notification_ids": ids + near_ids, "match_ids": ids, "near_miss_ids": near_ids, "held": held,

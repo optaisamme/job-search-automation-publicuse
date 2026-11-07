@@ -14,6 +14,12 @@ from jobsearch import results_folder  # noqa: E402
 
 def main() -> int:
     out = results_folder.write(ROOT)
+    # only now, with the page written, are this search's new jobs recorded as shown
+    outbox_p = ROOT / "out/outbox.json"
+    if outbox_p.exists() and (ROOT / "data/jobs.sqlite").exists():
+        import json
+        from jobsearch.pipeline import record_shown
+        record_shown(ROOT / "data/jobs.sqlite", json.loads(outbox_p.read_text()).get("notification_ids", []))
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
         base = f"{os.environ.get('GITHUB_SERVER_URL', 'https://github.com')}/{os.environ.get('GITHUB_REPOSITORY', '')}/blob/main/{results_folder.FOLDER}/"

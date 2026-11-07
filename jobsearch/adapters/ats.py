@@ -241,9 +241,11 @@ class AtsWatchlistAdapter(Adapter):
                     per[key] = "ok"
                 except AccessBlocked as e:
                     per[key] = f"blocked: {e}"
+                    status.boards_failed.append(f"{ats}:{slug.lower()}")
                 except Exception as e:  # noqa: BLE001
                     per[key] = f"error: {type(e).__name__}: {e}"
                     status.errors.append(f"{key}: {e}")
+                    status.boards_failed.append(f"{ats}:{slug.lower()}")
         status.detail = f"{len(per)} boards scanned; " + ", ".join(f"{k}={v}" for k, v in list(per.items())[:20])
         if per and all(v.startswith("blocked") for v in per.values()):
             status.state = "blocked"

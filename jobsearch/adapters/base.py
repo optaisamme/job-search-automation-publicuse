@@ -71,6 +71,7 @@ class SourceStatus:
     errors: list[str] = field(default_factory=list)
     searches: list[dict] = field(default_factory=list)   # web search: each search's words and settings
     limit: str = ""   # how much of the site this search read (shown in the report)
+    boards_failed: list[str] = field(default_factory=list)   # careers pages that could not be read ("ats:board")
 
 
 class Adapter:
