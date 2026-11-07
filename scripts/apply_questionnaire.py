@@ -48,7 +48,7 @@ LABELS = {
     "Certifications you have, or could get before being hired": "certs_allowed",
     "Companies to watch": "companies",
     "Turn on skills-based matching?": "skills_on",
-    "Keywords the listing must include": "skills_keywords",
+    "Skills-based matching: keywords the listing must include": "skills_keywords",
     "All keywords, or at least one?": "skills_rule",
     "How many of your skills must the listing mention?": "skills_min",
     "Your skills": "my_skills",
@@ -73,6 +73,7 @@ SEARCH_SIZES = {
 OLD_LABELS = {
     "Skills-based matching": "skills_on",
     "Skills-based matching: required keywords": "skills_keywords",
+    "Keywords the listing must include": "skills_keywords",
     "Skills-based matching: how many keywords must appear?": "skills_rule",
     "Skills-based matching: how many of your skills must the posting mention?": "skills_min",
     "More job titles: a second kind of job": None,

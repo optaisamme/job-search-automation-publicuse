@@ -120,6 +120,11 @@ body:
   - type: markdown
     attributes:
       value: "## Step 6 of 9: About you (optional: shows how well each job fits you)"
+  - type: markdown
+    attributes:
+      value: |
+        **Ideas for your skills:** on LinkedIn, the Skills section of your profile shows skills
+        "Suggested based on your profile". Use them as ideas, and add here only the skills you have actually used.
   - type: textarea
     attributes:
       label: Your skills
@@ -184,8 +189,8 @@ body:
       description: "A number. 3 is a good start."
   - type: textarea
     attributes:
-      label: Keywords the listing must include
-      description: "One per line. Example: Salesforce"
+      label: "Skills-based matching: keywords the listing must include"
+      description: "One per line. Used only for skills-based matching: a job with a title that is not one of yours counts only if its listing includes these words (and enough of your skills). Example: Salesforce"
       render: text
   - type: dropdown
     attributes:
