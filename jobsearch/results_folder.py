@@ -50,14 +50,17 @@ def _current_sections(db) -> list[str]:
     from .report import _label, _salary_cell, near_miss_reason, unchecked_note, near_miss_link
     from .skills_match import SKILLS_FAMILY
 
-    def match_rows(rows):
-        out = ["| Job | Company | Salary | Location | Apply | First found |", "|---|---|---|---|---|---|"]
+    def match_rows(rows, skills=False):
+        from .report import skills_matched_cell
+        out = ["| Job | Company |" + (" Skills matched |" if skills else "") + " Salary | Location | Apply | First found |",
+               "|---|---|" + ("---|" if skills else "") + "---|---|---|---|"]
         for r in rows:
             ver = _j(r["verification"], {}) or {}
             link = ver.get("apply_url") or r["apply_url"] or r["canonical_url"] or ""
             route = (" (third-party site, link not checked)" if (ver.get("detail") or "").startswith("Listed in the Himalayas job feed")
                      else " (third-party site)" if ver.get("apply_route") == "third_party" else "")
-            out.append(f"| {_cell(_label(r))} | {_cell(r['employer'])} | {_cell(_salary_cell(r))} | "
+            sk = f"{_cell(skills_matched_cell(r))} | " if skills else ""
+            out.append(f"| {_cell(_label(r))} | {_cell(r['employer'])} | {sk}{_cell(_salary_cell(r))} | "
                        f"{_cell(r['location_text'])} | [Apply]({link}){route} | {(r['first_seen'] or '')[:10]} |")
         return out
 
@@ -68,7 +71,7 @@ def _current_sections(db) -> list[str]:
     if by_skills:
         L += ["", f"### Matches by skills (other titles) ({len(by_skills)})", "",
               "Their title is not one of yours, but the listing has your required keywords and enough of your skills.", ""]
-        L += match_rows(by_skills)
+        L += match_rows(by_skills, skills=True)
     L += ["", f"## Near Misses: Jobs that did not match one of your rules ({len(near)})", ""]
     if near:
         from .sources_summary import found_by

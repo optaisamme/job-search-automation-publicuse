@@ -149,13 +149,19 @@ def _fit_cell(r) -> str:
     return "; ".join(parts)
 
 
-def _match_table(rows) -> list[str]:
-    """Jobs that match all rules: one short row each, easy to skim."""
+def skills_matched_cell(r) -> str:
+    """The skills from your experience file that a skills-matched job's listing mentions."""
+    got = (_j(r, "fit", {}) or {}).get("skills_matched")
+    return ", ".join(got) if got else "not recorded"
+
+
+def _match_table(rows, skills: bool = False) -> list[str]:
+    """Jobs that match all rules: one short row each, easy to skim. skills=True adds the skills matched."""
     if not rows:
         return ["None.", ""]
     cell = lambda x: str(x or "").replace("|", "/").replace("\n", " ")
-    L = ["| Job | Company | Salary | Location | Fit with your experience | Link | First found |",
-         "|---|---|---|---|---|---|---|"]
+    L = ["| Job | Company |" + (" Skills matched |" if skills else "") + " Salary | Location | Fit with your experience | Link | First found |",
+         "|---|---|" + ("---|" if skills else "") + "---|---|---|---|---|"]
     for r in rows:
         ver = _j(r, "verification", {}) or {}
         loc = (_rule(r, "location") or {}).get("reason", "")
@@ -165,7 +171,8 @@ def _match_table(rows) -> list[str]:
             loc = "remote, US"
         else:
             loc = _short(loc, 60) if loc else cell(r["location_text"])
-        L.append(f"| {cell(_label(r))} | {cell(r['employer'])} | {_salary_cell(r)} | {cell(loc)} | {cell(_fit_cell(r))} | "
+        L.append(f"| {cell(_label(r))} | {cell(r['employer'])} | " + (f"{cell(skills_matched_cell(r))} | " if skills else "")
+                 + f"{_salary_cell(r)} | {cell(loc)} | {cell(_fit_cell(r))} | "
                  f"{_link_cell(r, ver)} | {(r['first_seen'] or '')[:10]} |")
     return L + [""]
 
@@ -245,7 +252,7 @@ def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report"
     if q_skills:
         md += ["### Matches by skills (other titles)", "",
                "Their title is not one of yours, but the listing has your required keywords and enough of your skills.", ""]
-        md += _match_table(q_skills)
+        md += _match_table(q_skills, skills=True)
     md += ["## Jobs that need checking", ""]
     md += _check_table(nv)
     md += ["## Hourly or contract jobs", "",

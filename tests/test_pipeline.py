@@ -732,6 +732,11 @@ def test_skills_match_is_kept_marked_and_listed_separately(root):
     assert "Development Operations Coordinator" in md and "(skills match)" in md
     row = next(l for l in md.splitlines() if l.startswith("| Company careers pages |"))
     assert "| Matched your skills |" in md and row.rstrip().endswith("| 1 |")   # one skills match from this source
+    # the skills list shows which of your skills the listing mentions
+    assert "| Job | Company | Skills matched | Salary |" in md
+    sk = next(l for l in md.splitlines() if l.startswith("| Development Operations Coordinator"))
+    assert "NPSP, Reports, Data quality, Training" in sk, sk
+    assert json.loads(j["fit"])["skills_matched"] == ["NPSP", "Reports", "Data quality", "Training"]
 
 
 def _enable_skills_matching(root):
