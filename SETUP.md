@@ -149,7 +149,7 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
       Actions tab shows those as short runs with the search skipped.
 2. **Free web search key (recommended).**
    Without a key, every search already checks 7 job sites and company careers pages. Adding
-   one free key turns on a **web search**: for up to 4 of your job titles, the tool also searches
+   one free key turns on a **web search**: for each of your job titles, the tool also searches
    the whole web, including company careers pages, and finds jobs that are on no job site. It
    also finds new companies to check. It is optional and stays off until you add the key.
 
@@ -157,9 +157,10 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 |---|---|---|---|
 | **Tavily** (web search) | Searches the whole web for each of your job titles, including company careers pages | https://app.tavily.com: on the log-in page that opens, click **Sign up** (or continue with a Google, GitHub, LinkedIn or Microsoft account). After signing in, copy your API key from your Tavily account page (it starts with `tvly-`) | `TAVILY_API_KEY` |
 
-   **Free plan:** 1,000 web searches a month. This tool uses 2 web searches per job title, for
-   up to 4 titles, plus 2 for skills-based matching when it is on: at most 10 per search,
-   about 45 a month with weekly searches.
+   **Free plan:** 1,000 web searches a month. This tool uses 2 web searches for each of your job
+   titles, plus 2 for skills-based matching when it is on. For example, 5 job titles use 10 web
+   searches per search, about 45 a month with weekly searches. If the free searches run out, the
+   rest of each search still runs.
 
    **How to add the key:**
 

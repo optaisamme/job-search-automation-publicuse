@@ -117,7 +117,7 @@ def _manual_boards(root: Path) -> list[str]:
         prof, _ = pipeline.load_config(root)
     except Exception:  # noqa: BLE001 — settings problems are reported by the settings check
         return []
-    titles = [t for g in prof.get("titles", []) for t in (g.get("plain_titles") or [])[:1]]
+    titles = [t for g in prof.get("titles", []) for t in (g.get("plain_titles") or [])]   # every job title
     return manual_boards.section(titles, CRITERIA.get("remote_only", True), CRITERIA.get("home_state", ""))
 
 

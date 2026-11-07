@@ -111,7 +111,6 @@ def _clean_title(title: str, url: str) -> tuple[str, str]:
 class WebSearchAdapter(Adapter):
     name = "websearch"
     env_keys = ("TAVILY_API_KEY",)
-    MAX_TITLES = 4
 
     def search(self, status: SourceStatus) -> list[RawPosting]:
         from ..criteria import CRITERIA
@@ -119,7 +118,7 @@ class WebSearchAdapter(Adapter):
         matcher = self.ctx.get("title_matcher")
         remote = CRITERIA.get("remote_only", True)
         where = "remote" if remote else (CRITERIA.get("home_state") or "")
-        titles = list(dict.fromkeys(self.ctx.get("queries", [])))[: self.MAX_TITLES]
+        titles = list(dict.fromkeys(self.ctx.get("queries", [])))   # every job title (search word)
         out, seen, searches = [], set(), 0
         terms = [f'"{t}"' for t in titles]
         kw = self.ctx.get("skill_keywords") or []

@@ -113,7 +113,7 @@ set section 9 of file 1 (`[automatic_weekly_search]`: `on = "yes"`, `day = "Frid
 ## Other optional edits: a free web search key
 
 Without a key, every search already checks 7 job sites and company careers pages. Adding
-one free key turns on a **web search**: for up to 4 of your job titles, the tool also searches
+one free key turns on a **web search**: for each of your job titles, the tool also searches
 the whole web, including company careers pages, and finds jobs that are on no job site. It
 also finds new companies to check. It is optional and stays off until you add the key.
 
@@ -121,9 +121,10 @@ also finds new companies to check. It is optional and stays off until you add th
 |---|---|---|---|
 | **Tavily** (web search) | Searches the whole web for each of your job titles, including company careers pages | https://app.tavily.com: on the log-in page that opens, click **Sign up** (or continue with a Google, GitHub, LinkedIn or Microsoft account). After signing in, copy your API key from your Tavily account page (it starts with `tvly-`) | `TAVILY_API_KEY` |
 
-**Free plan:** 1,000 web searches a month. This tool uses 2 web searches per job title, for
-up to 4 titles, plus 2 for skills-based matching when it is on: at most 10 per search, about 45 a
-month with weekly searches.
+**Free plan:** 1,000 web searches a month. This tool uses 2 web searches for each of your job
+titles, plus 2 for skills-based matching when it is on. For example, 5 job titles use 10 web
+searches per search, about 45 a month with weekly searches. If the free searches run out, the rest
+of each search still runs.
 
 ### How to add the key
 
@@ -166,7 +167,7 @@ links on the results page for those.
       whatever your search words are (for example The Muse's newest 1,000 and all of Jobicy's US
       remote jobs, set in section 10), so each search looks at a few thousand listings.
    b. **Web search (free key, recommended, see SETUP.md Step 6):** searches the whole web for
-      up to 4 of your job titles, finding jobs that are on no job site above. For each title it
+      each of your job titles, finding jobs that are on no job site above. For each title it
       runs 2 searches: one across company careers pages (Greenhouse, Lever, Ashby,
       SmartRecruiters, Workday) and one across the rest of the web. Every result is checked
       like any other job.

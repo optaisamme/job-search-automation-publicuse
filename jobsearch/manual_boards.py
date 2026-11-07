@@ -103,18 +103,20 @@ BOARDS = [b for _, boards in GROUPS for b in boards]
 
 
 def section(titles: list[str], remote_only: bool, state: str = "") -> list[str]:
-    """Markdown lines: one table per group, one row per board, one link per job title (up to 3 titles)."""
-    titles = [t for t in dict.fromkeys(t.strip() for t in titles) if t][:3]
+    """Markdown lines: one table per group, one row per board, one search link for each of your job titles."""
+    titles = [t for t in dict.fromkeys(t.strip() for t in titles) if t]
     L = ["## Popular job boards to search yourself", "",
          "These boards cannot be searched by this tool (no public data feed, sign-in required, blocked to "
          "automated requests, or their terms do not allow automated searching). Each link opens that board's "
          "search for one of your job titles. Open them yourself, as often as you like.", ""]
+    one = len(titles) == 1
     if not titles:
         return L + ["Add a job title in settings section 1 to get links here.", ""]
-    head = "| Job board | What it is | " + " | ".join(f"Search: {t.replace('|', '/')}" for t in titles) + " |"
+    head = "| Job board | What it is | " + ("Search" if one else "Search for each of your job titles") + " |"
+    label = lambda t: t.replace("|", "/").replace("[", "(").replace("]", ")")
     for group, boards in GROUPS:
-        L += [f"### {group}", "", head, "|---|---|" + "---|" * len(titles)]
+        L += [f"### {group}", "", head, "|---|---|---|"]
         for name, what, link in boards:
-            L.append(f"| {name} | {what} | " + " | ".join(f"[Open]({link(t, remote_only, state)})" for t in titles) + " |")
+            L.append(f"| {name} | {what} | " + " · ".join(f"[{label(t)}]({link(t, remote_only, state)})" for t in titles) + " |")
         L.append("")
     return L
