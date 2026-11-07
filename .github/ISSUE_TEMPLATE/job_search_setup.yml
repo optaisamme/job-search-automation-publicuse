@@ -150,24 +150,25 @@ body:
   - type: markdown
     attributes:
       value: |
-        ### Free web search key (optional, recommended)
-        **What it is:** a free key from Tavily, a web search service. You do not need it; the search works without it.
+        ### Free web search key (optional, but recommended)
+        The search works fine without this. With a free key from Tavily (a web search service), it can also
+        search the whole web for each of your job titles, including companies' own careers pages. That finds
+        jobs that aren't posted on any of the 7 job sites this tool checks, and new companies to keep an eye on.
 
-        **What it adds:** for each of your job titles, the search also looks across the whole web, including
-        employers' own careers pages, and finds jobs that are on none of the 7 job sites this tool reads.
-        It also finds new companies to check. Without a key, the web search is skipped.
+        **It's free.** Tavily's free plan gives you 1,000 web searches a month. Each job search here uses 2 for
+        each job title, so 5 job titles use 10.
 
-        **Cost:** free. The free plan includes 1,000 web searches a month; each search here uses 2 for each job title.
+        **To get a key:** sign up at https://app.tavily.com (you can use your Google, GitHub, LinkedIn or
+        Microsoft account), then copy your API key. It starts with `tvly-`.
 
-        **How to get it:** go to https://app.tavily.com, click **Sign up** (or continue with a Google, GitHub,
-        LinkedIn or Microsoft account), then copy your API key. It starts with `tvly-`.
+        **To add the key to your copy:**
+        1. Click **Settings** (the last tab at the top of your copy).
+        2. Click **Secrets and variables**, then **Actions**.
+        3. Click the green **New repository secret** button.
+        4. For **Name**, type `TAVILY_API_KEY`. For **Secret**, paste your key. Then click **Add secret**.
 
-        **How to add it (not in this form):** in your copy, click **Settings** (top row of tabs, far right),
-        then **Secrets and variables**, then **Actions**, then the green **New repository secret** button.
-        Type `TAVILY_API_KEY` as the **Name**, paste the key as the **Secret**, and click **Add secret**.
-
-        **Do not paste the key into this form.** Everything typed here is saved in the issue, where anyone who
-        can see your copy can read it. A secret stays hidden, and only your searches can use it.
+        **Please don't paste your key into this form.** Anything you type here is saved in the issue, and anyone
+        who can see your copy can read it. Saved as a secret, it stays hidden and only your searches can use it.
   - type: textarea
     attributes:
       label: Companies to watch

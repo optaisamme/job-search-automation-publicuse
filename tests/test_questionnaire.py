@@ -257,7 +257,7 @@ def test_form_explains_the_web_search_key_but_never_asks_for_it():
     import yaml
     f = yaml.safe_load(open(ROOT / ".github/ISSUE_TEMPLATE/job_search_setup.yml"))
     text = "\n".join(b["attributes"].get("value", "") for b in f["body"] if b["type"] == "markdown")
-    assert "TAVILY_API_KEY" in text and "New repository secret" in text and "Do not paste the key into this form" in text
+    assert "TAVILY_API_KEY" in text and "New repository secret" in text and "don't paste your key into this form" in text
     for b in f["body"]:
         if b["type"] in ("input", "textarea"):
             assert "key" not in b["attributes"]["label"].lower() or "keyword" in b["attributes"]["label"].lower()
