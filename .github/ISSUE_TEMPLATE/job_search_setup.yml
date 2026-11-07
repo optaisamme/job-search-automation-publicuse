@@ -44,7 +44,7 @@ body:
   - type: input
     attributes:
       label: Your state
-      description: "Full name. Jobs that cannot hire in your state are left out. Example: New Mexico"
+      description: "Full state name. Jobs that cannot hire in your state are left out. Example: New Mexico"
   - type: input
     attributes:
       label: Your state's two-letter abbreviation

@@ -206,9 +206,10 @@ def write(root: Path) -> dict:
         else:
             R += ["Nothing new in this search."
                   + (" The jobs below were already reported earlier." if c.get("qualified") or c.get("needs_verification") else ""), ""]
-        R += current
         full_p = root / "out/full_report.md"
-        if full_p.exists():
+        if not full_p.exists():   # no full report from this search: show the current lists instead
+            R += current
+        else:   # each job is listed once, in the full report (the current lists are on the folder's main page)
             full = full_p.read_text()
             full = re.sub(r"^# .*\n", "", full, count=1)
             full = re.sub(r"(?m)^### ", "#### ", full)

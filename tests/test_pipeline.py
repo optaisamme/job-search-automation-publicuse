@@ -344,7 +344,9 @@ def test_results_folder_numbered_reports(root):
     assert index.startswith("# JOB SEARCH RESULTS") and names[1] in index and "Salesforce Administrator" in index
     assert index.index(names[1]) < index.rindex(names[0])  # newest first
     rep = (folder / names[1]).read_text()
-    assert "Full report: jobs found in this search" in rep and "Jobs that match all your rules (1)" in rep
+    assert "Full report: jobs found in this search" in rep and "### Jobs that match all your rules" in rep
+    # each job is listed once in the report (the current lists are on the folder's main page)
+    assert sum(1 for l in rep.splitlines() if l.startswith("| Salesforce Administrator")) == 1, rep
 
 
 def test_plain_language_link_messages():
