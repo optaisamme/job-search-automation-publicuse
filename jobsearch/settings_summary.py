@@ -11,7 +11,8 @@ MAX_LINK_LENGTH = 7000   # GitHub refuses very long links ("414 URI Too Long")
 
 
 def prefill_answers(root: Path) -> dict:
-    """The current settings as questionnaire answers (text questions only: a link cannot fill in dropdowns)."""
+    """The current settings as questionnaire answers (text questions only; the form's dropdowns are preselected
+    with the current choices after each questionnaire)."""
     import tomllib
     from .pipeline import SETTINGS_DIR
     try:
@@ -41,7 +42,6 @@ def prefill_answers(root: Path) -> dict:
         "years": num(ten.get("years_of_experience")), "certs_held": lines(ten.get("certifications_held")),
         "companies": lines((st.get("companies_to_watch") or {}).get("job_page_links")),
         "skills_min": num(sk.get("minimum_skills_matched")) if on(sk.get("on")) else "",
-        "skills_keywords": lines(sk.get("required_keywords")),
     }.items() if v}
 
 

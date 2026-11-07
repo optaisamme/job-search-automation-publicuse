@@ -42,9 +42,9 @@ grey **Run workflow** button and the green **Run workflow** button.
 3. Changing an answer does not erase the old one: GitHub keeps the history of the questionnaire issue and of
    your settings files. Deleting the issue removes it; removing old settings from the files' history takes
    extra steps (GitHub's guide: "Removing sensitive data from a repository").
-4. What leaves your copy: your job titles (and skills-based matching keywords, if on) are sent to job sites as
-   search words. With the free web search key, your job titles, your state (or "remote") and those keywords are
-   also sent to Tavily. Nothing else from your answers is sent anywhere.
+4. What leaves your copy: your job titles are sent to job sites as search words. With the free web search key,
+   your job titles and your state (or "remote") are also sent to Tavily. Nothing else from your answers is sent
+   anywhere.
 
 ---
 
@@ -86,10 +86,8 @@ Job search setup). You never need to edit a file.
 
 To change something: open the **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)** folder and click **click here to
 change these settings** (under "Your settings"). The questionnaire opens with your current text answers
-filled in. Change only what you want, then click **Create**.
-
-1. A text box left empty turns that setting off.
-2. A dropdown left on "None" keeps its current choice.
+filled in, and each dropdown shows your current choice. Change only what you want, then click **Create**.
+A text box left empty turns that setting off.
 
 It covers: job titles, remote only or not, your state, salary, title words to skip, words that rule
 out a job, employers to skip, certifications, your skills, companies to watch, skills-based matching,
@@ -125,7 +123,7 @@ also finds new companies to check. It is optional and stays off until you add th
 | **Tavily** (web search) | Searches the whole web for each of your job titles, including company careers pages | https://app.tavily.com: on the log-in page that opens, click **Sign up** (or continue with a Google, GitHub, LinkedIn or Microsoft account). After signing in, copy your API key from your Tavily account page (it starts with `tvly-`) | `TAVILY_API_KEY` |
 
 **Free plan:** 1,000 web searches a month. This tool uses 2 web searches for each of your job
-titles, plus 2 for skills-based matching when it is on. For example, 5 job titles use 10 web
+titles. For example, 5 job titles use 10 web
 searches per search, about 45 a month with weekly searches. If the free searches run out, the rest
 of each search still runs.
 
@@ -180,8 +178,8 @@ links on the results page for those.
       every open job there is then read each search. It is dropped after more than 5 searches
       in a row with no matching job. Companies you add in the questionnaire are always read.
 3. **Keeps jobs with your job titles.** With skills-based matching on (questionnaire), it
-   also keeps jobs with other titles whose listing has your required keywords and enough of
-   your skills (from the questionnaire). Those are marked "(skills match)".
+   also keeps jobs with other titles whose listing mentions enough of your skills (from the
+   questionnaire). Those are marked "(skills match)".
 4. **Applies your rules**: remote only (on unless you turn it off), your state, salary,
    certifications, your own rules. When a
    posting is unclear, the job is listed under **Jobs that need checking** instead of guessed.

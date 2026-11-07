@@ -5,7 +5,7 @@ them in: in your copy, open the **Issues** tab, click **New issue**, then **Job 
 ([open the questionnaire list](../../../issues/new/choose)).
 
 To change something, click **click here to change these settings** at the top of the **JOB_SEARCH_RESULTS**
-folder page. It opens the questionnaire with your current text answers filled in.
+folder page. It opens the questionnaire with your current answers filled in.
 
 | File | What it holds |
 |---|---|

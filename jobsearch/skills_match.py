@@ -1,6 +1,7 @@
 """Skills-based matching: find jobs whose title is not one of your job titles but whose posting
 still fits. A listing is kept when
-  1. the required keywords appear in the listing (all of them, or at least one: your choice), and
+  1. the required keywords, if any, appear in the listing (all of them, or at least one). The questionnaire no
+     longer asks for keywords, so they are empty unless an older questionnaire set them, and
   2. the posting mentions at least `minimum_skills_matched` of the skills in your experience file.
 Kept listings then go through every normal rule (salary, location, and so on).
 Your title exclusions still apply."""
@@ -69,7 +70,8 @@ class SkillsMatcher:
     def summary(self) -> str:
         if not self.active:
             return "OFF"
-        joined = (" and " if self.rule != "any" else " or ").join(f'"{k}"' for k in self.required) or "none"
-        return (f"ON: keywords {joined} must appear"
-                f"{'' if self.rule != 'any' else ' (at least one)'}, and at least {self.minimum} of your "
-                f"{len(self.skills)} skills")
+        skills = f"at least {self.minimum} of your {len(self.skills)} skills"
+        if not self.required:
+            return f"ON: the listing mentions {skills}"
+        joined = (" and " if self.rule != "any" else " or ").join(f'"{k}"' for k in self.required)
+        return f"ON: keywords {joined} must appear{'' if self.rule != 'any' else ' (at least one)'}, and {skills}"

@@ -320,7 +320,7 @@ def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report"
     q_skills = [r for r in q if r["family"] == SKILLS_FAMILY]
     if q_skills:
         md += ["### Matches by skills (other titles)", "",
-               "Their title is not one of yours, but the listing has your required keywords and enough of your skills.", ""]
+               "Their title is not one of yours, but the listing mentions enough of your skills.", ""]
         md += _match_table(q_skills, skills=True)
         md += evidence_section(q_skills)
     md += ["## Jobs that need checking", ""]

@@ -1163,3 +1163,13 @@ def test_evidence_text_cannot_add_html_or_links():
     from jobsearch.report import _quote
     q = _quote('<img src=x onerror=alert(1)> [click](http://evil) **bold** `code`')
     assert "<" not in q and "[" not in q and "**" not in q and "`" not in q
+
+
+def test_skills_matching_without_keywords_uses_only_your_skills():
+    from jobsearch.skills_match import SkillsMatcher
+    skills = [{"name": "Data", "keywords": ["data entry"]}, {"name": "CRM", "keywords": ["crm"]},
+              {"name": "Outreach", "keywords": ["community outreach"]}]
+    m = SkillsMatcher({"on": "yes", "required_keywords": [], "minimum_skills_matched": 2}, skills)
+    assert m.match("Coordinator", "Data entry and CRM updates.")["skills"] == ["Data", "CRM"]
+    assert m.match("Coordinator", "Data entry only.") is None
+    assert m.summary() == "ON: the listing mentions at least 2 of your 3 skills" and m.search_words() == ""

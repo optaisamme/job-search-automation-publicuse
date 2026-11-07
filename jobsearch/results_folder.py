@@ -70,7 +70,7 @@ def _current_sections(db) -> list[str]:
     L += match_rows(by_title) if by_title else ["None right now." if not by_skills else "None with your job titles right now."]
     if by_skills:
         L += ["", f"### Matches by skills (other titles) ({len(by_skills)})", "",
-              "Their title is not one of yours, but the listing has your required keywords and enough of your skills.", ""]
+              "Their title is not one of yours, but the listing mentions enough of your skills.", ""]
         L += match_rows(by_skills, skills=True)
     L += ["", f"## Near Misses: Jobs that did not match one of your rules ({len(near)})", ""]
     if near:

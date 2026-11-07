@@ -37,8 +37,7 @@ def test_full_answers_update_both_files():
                 cities="Albuquerque\nSanta Fe", min_single="$100,000", min_range_start="90000", range_end_above="100000",
                 skip_titles="Intern\nMajor Gifts", cert_check="Yes", certs_allowed="CPR",
                 companies="https://job-boards.greenhouse.io/examplecompany",
-                skills_on="On", skills_keywords="Salesforce\nNPSP", skills_rule="At least one keyword must appear",
-                skills_min="3", my_skills="Reports and dashboards: report, dashboard\nData cleanup: data quality, dedup",
+                skills_on="On", skills_min="3", my_skills="Reports and dashboards: report, dashboard\nData cleanup: data quality, dedup",
                 years="4", certs_held="CPR", weekly="On", weekly_day="Monday", run_now="Yes")
     answers = q.parse_issue_body(body)
     s, e, changes, extras = q.apply(answers, SETTINGS, EXPERIENCE)
@@ -49,8 +48,9 @@ def test_full_answers_update_both_files():
     assert st["salary"] == {"minimum_single_salary": 100000, "minimum_range_start": 90000, "range_end_must_be_above": 100000}
     assert st["filters"]["exclude_titles_containing"] == ["Intern", "Major Gifts"] and st["filters"]["check_certifications"] == "yes"
     assert st["companies_to_watch"]["job_page_links"] == ["https://job-boards.greenhouse.io/examplecompany"]
-    assert st["skills_matching"] == {"on": "yes", "required_keywords": ["Salesforce", "NPSP"],
-                                     "required_keywords_rule": "any", "minimum_skills_matched": 3}
+    # the form no longer asks for keywords: skills-based matching uses only "Your skills"
+    assert st["skills_matching"] == {"on": "yes", "required_keywords": [], "required_keywords_rule": "all",
+                                     "minimum_skills_matched": 3}
     assert st["automatic_weekly_search"] == {"on": "yes", "day": "Monday"}
     assert ex["tenure"]["years_of_experience"] == 4 and ex["tenure"]["certifications_held"] == ["CPR"]
     assert [k["name"] for k in ex["skills"]] == ["Reports and dashboards", "Data cleanup"]
@@ -121,8 +121,8 @@ def test_search_size_choice_is_saved_and_recommended_is_the_default():
     import yaml
     f = yaml.safe_load(open(ROOT / ".github/ISSUE_TEMPLATE/job_search_setup.yml"))
     dd = next(b for b in f["body"] if b["attributes"].get("label") == "How many jobs to look through")
-    # no preselected choice: "None" keeps the current choice, and a new copy starts with Recommended
-    assert "default" not in dd["attributes"] and dd["attributes"]["options"][0].startswith("Recommended")
+    # a new copy opens on Recommended (never "None"); after each questionnaire it opens on the current choice
+    assert dd["attributes"]["default"] == 0 and dd["attributes"]["options"][0].startswith("Recommended")
     assert tomllib.loads(q.build_settings(q.parse_issue_body(form(titles_1="X")))[0])["search_size"] == q.SEARCH_SIZES["recommended"]
     assert "recommend keeping" in yaml.safe_dump(f).lower()
     # the recommended choice equals the numbers the settings file starts with and the search uses by default
@@ -150,6 +150,11 @@ def test_search_size_numbers_are_kept_within_limits():
 def test_older_question_labels_are_still_read():
     a = q.parse_issue_body("### Skills-based matching\n\nOn\n\n### More job titles: a second kind of job\n\nData Analyst\n")
     assert a == {"skills_on": "On"}          # old title boxes are ignored; one box for all titles now
+    # an older questionnaire issue with the removed keyword questions still works when edited
+    a = q.parse_issue_body("### Skills-based matching: keywords the listing must include\n\nSalesforce\n\n"
+                           "### All keywords, or at least one?\n\nAt least one\n")
+    s, _, _, _ = q.apply(a, SETTINGS, EXPERIENCE)
+    assert tomllib.loads(s)["skills_matching"]["required_keywords"] == ["Salesforce"]
 
 
 def test_unanswered_dropdowns_keep_settings():
@@ -157,7 +162,7 @@ def test_unanswered_dropdowns_keep_settings():
     import yaml
     f = yaml.safe_load(open(ROOT / ".github/ISSUE_TEMPLATE/job_search_setup.yml"))
     dropdown_keys = {q.LABELS[b["attributes"]["label"]] for b in f["body"] if b["type"] == "dropdown"}
-    assert dropdown_keys == q.DROPDOWNS
+    assert dropdown_keys | {"skills_rule"} == q.DROPDOWNS   # skills_rule: only in older questionnaires
     body = form(titles_1="Abortion Advocate\nDomestic Violence Advocate", remote_only="None", cert_check="None",
                 skills_on="None", skills_rule="None", weekly="None", weekly_day="None", run_now="Yes")
     s, _, changes, extras = q.apply(q.parse_issue_body(body), SETTINGS, EXPERIENCE)
@@ -328,7 +333,9 @@ def test_change_link_fills_in_current_answers_and_round_trips(tmp_path):
     link = settings_summary.change_link(tmp_path)
     assert link.startswith("../../../issues/new?template=job_search_setup.yml&title=Job+search+setup&")
     filled = {k: v[0] for k, v in parse_qs(urlsplit(link).query).items() if k not in ("template", "title")}
-    ids = {b["id"]: b for b in yaml.safe_load(open(ROOT / ".github/ISSUE_TEMPLATE/job_search_setup.yml"))["body"] if "id" in b}
+    # the form as it is in the copy after that questionnaire: dropdowns open on the current choices
+    shown = yaml.safe_load(q.form_with_choices(q.FORM.read_text(), q.current_choices(s)))
+    ids = {b["id"]: b for b in shown["body"] if "id" in b}
     assert set(filled) <= {i for i, b in ids.items() if b["type"] in ("input", "textarea")}   # only text questions
     # what GitHub writes when that form is submitted unchanged
     by_key = {v: k for k, v in q.LABELS.items()}
@@ -336,9 +343,57 @@ def test_change_link_fills_in_current_answers_and_round_trips(tmp_path):
     for key in q.LABELS.values():
         v = filled.get(key, "")
         if ids[key]["type"] == "dropdown":
-            v = "None"
+            v = ids[key]["attributes"]["options"][ids[key]["attributes"]["default"]]
         elif ids[key]["type"] == "textarea":
             v = "```text\n" + v + "\n```"
         parts += [f"### {by_key[key]}", "", v or "_No response_", ""]
     s2, e2, _, extras = q.build_settings(q.parse_issue_body("\n".join(parts)), s)
     assert tomllib.loads(s2) == tomllib.loads(s) and tomllib.loads(e2)["skills"] == tomllib.loads(e)["skills"]
+
+
+def test_form_dropdowns_open_on_the_current_choices(tmp_path, monkeypatch):
+    """No dropdown ever opens on "None": the copy's form is preselected with the current choices."""
+    import yaml
+    form_text = q.FORM.read_text()
+    start = q.current_choices(q.DEFAULT_SETTINGS.read_text())
+    assert q.form_with_choices(form_text, start) == form_text          # a new copy opens on the starting settings
+    dropdowns = [b for b in yaml.safe_load(form_text)["body"] if b["type"] == "dropdown"]
+    assert all("default" in b["attributes"] for b in dropdowns)
+    changed = dict(start, remote_only="no", cert_check="yes", rule_when="mentioned", skills_on="on",
+                   search_size="fewer", weekly="on", weekly_day="Tuesday")
+    shown = {b["id"]: b["attributes"]["options"][b["attributes"]["default"]]
+             for b in yaml.safe_load(q.form_with_choices(form_text, changed))["body"] if b["type"] == "dropdown"}
+    assert shown == {"remote_only": "No, also hybrid and on-site jobs in my state", "rule_when": "Mentioned anywhere in the posting",
+                     "cert_check": "Yes", "skills_on": "On", "search_size": shown["search_size"],
+                     "weekly": "On", "weekly_day": "Tuesday", "run_now": "Yes"}
+    assert shown["search_size"].startswith("Fewer")
+    # search-size numbers that match no choice: no preselection, so "None" keeps them
+    custom = dict(start); custom.pop("search_size")
+    f = yaml.safe_load(q.form_with_choices(form_text, custom))
+    assert "default" not in next(b for b in f["body"] if b.get("id") == "search_size")["attributes"]
+    # --update-form writes the copy's form from its saved settings, and never changes the shared template
+    form_file, settings_file = tmp_path / "form.yml", tmp_path / "s.toml"
+    form_file.write_text(form_text)
+    s, _, _, _ = q.build_settings(q.parse_issue_body(form(titles_1="X", weekly="On", weekly_day="Sunday")))
+    settings_file.write_text(s)
+    monkeypatch.setattr(q, "FORM", form_file)
+    monkeypatch.setattr(q, "SETTINGS", settings_file)
+    monkeypatch.setenv("GITHUB_REPOSITORY", q.TEMPLATE_REPO)
+    q.update_form()
+    assert form_file.read_text() == form_text
+    monkeypatch.setenv("GITHUB_REPOSITORY", "someone/my-job-search")
+    q.update_form()
+    days = next(b for b in yaml.safe_load(form_file.read_text())["body"] if b.get("id") == "weekly_day")["attributes"]
+    assert days["options"][days["default"]] == "Sunday"
+
+
+def test_workflow_saves_the_preselected_form_without_risking_the_settings():
+    import yaml
+    wf = yaml.safe_load(open(ROOT / ".github/workflows/apply_setup_questionnaire.yml"))
+    steps = wf["jobs"]["apply"]["steps"]
+    names = [st.get("name") for st in steps]
+    i = names.index("Show your current choices in the questionnaire")
+    assert names.index("Save the settings") < i < names.index("Reply on the issue")
+    step = steps[i]
+    assert step["continue-on-error"] is True and "--update-form" in step["run"]
+    assert "git add .github/ISSUE_TEMPLATE/job_search_setup.yml" in step["run"] and "git add -A" not in step["run"]

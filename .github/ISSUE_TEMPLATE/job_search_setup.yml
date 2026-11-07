@@ -14,10 +14,8 @@ body:
            click the **Actions** tab at the top of your copy, then **Run job search** on the left. A yellow dot means a search is running; a green check means it finished.
 
         **Changing your settings:** open this questionnaire from **click here to change these settings** at the top
-        of the **JOB_SEARCH_RESULTS** folder page. Your current text answers are then already filled in; change
-        only what you want.
-        1. A text box left empty turns that setting off.
-        2. A dropdown left on "None" keeps its current choice. Pick a choice only to change it.
+        of the **JOB_SEARCH_RESULTS** folder page. Your current answers are then already filled in, and each
+        dropdown shows your current choice. Change only what you want. A text box left empty turns that setting off.
 
         For lists, put one item on each line. Only you (and collaborators you add) can change your settings.
 
@@ -32,9 +30,9 @@ body:
         2. Changing an answer later does not erase the old one. GitHub keeps the history of this issue and of your
            settings files. To remove something completely, delete the issue (at the bottom of its right-hand
            column), and ask for help removing it from the history of your settings files.
-        3. What leaves your copy: your job titles (and skills-based matching keywords, if on) are sent to job
-           sites as search words. If you add the free web search key, your job titles, your state (or "remote")
-           and those keywords are also sent to Tavily. Nothing else from your answers is sent anywhere.
+        3. What leaves your copy: your job titles are sent to job sites as search words. If you add the free web
+           search key, your job titles and your state (or "remote") are also sent to Tavily. Nothing else from your
+           answers is sent anywhere.
 
   - type: markdown
     attributes:
@@ -62,6 +60,7 @@ body:
       options:
         - Yes, remote jobs only
         - No, also hybrid and on-site jobs in my state
+      default: 0
   - type: input
     id: state
     attributes:
@@ -120,6 +119,7 @@ body:
       options:
         - Required by the job
         - Mentioned anywhere in the posting
+      default: 0
   - type: textarea
     id: must_mention
     attributes:
@@ -134,6 +134,7 @@ body:
       options:
         - "No"
         - "Yes"
+      default: 0
   - type: textarea
     id: certs_allowed
     attributes:
@@ -217,7 +218,7 @@ body:
     attributes:
       value: |
         ### Skills-based matching
-        Also finds jobs with other titles, when the listing includes your keywords and enough of your skills (Step 6).
+        Also finds jobs with other titles, when the listing mentions enough of your skills (Step 6).
   - type: dropdown
     id: skills_on
     attributes:
@@ -225,24 +226,12 @@ body:
       options:
         - "Off"
         - "On"
+      default: 0
   - type: input
     id: skills_min
     attributes:
       label: How many of your skills must the listing mention?
       description: "A number. 3 is a good start."
-  - type: textarea
-    id: skills_keywords
-    attributes:
-      label: "Skills-based matching: keywords the listing must include"
-      description: "One per line. Used only for skills-based matching: a job with a title that is not one of yours counts only if its listing includes these words (and enough of your skills). Example: Salesforce"
-      render: text
-  - type: dropdown
-    id: skills_rule
-    attributes:
-      label: All keywords, or at least one?
-      options:
-        - All of them
-        - At least one
 
   - type: markdown
     attributes:
@@ -260,6 +249,7 @@ body:
         - "Recommended: 1,000 newest jobs per site, 200 for each job title, Jobicy up to 5,000"
         - "Fewer (faster): 200 newest jobs per site, 100 for each job title, Jobicy up to 500"
         - "More (slower): 2,000 newest jobs per site, 400 for each job title, Jobicy up to 10,000"
+      default: 0
 
   - type: markdown
     attributes:
@@ -272,6 +262,7 @@ body:
       options:
         - "Off"
         - "On"
+      default: 0
   - type: dropdown
     id: weekly_day
     attributes:
@@ -285,6 +276,7 @@ body:
         - Friday
         - Saturday
         - Sunday
+      default: 4
   - type: dropdown
     id: run_now
     attributes:

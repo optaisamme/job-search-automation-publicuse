@@ -5,7 +5,8 @@
 #   1. reads the answers and updates JOB_SEARCH_SETTINGS (settings and experience files),
 #   2. checks and saves the settings,
 #   3. starts a search if you asked for one,
-#   4. replies on the issue with what changed and a link to the search.
+#   4. makes the questionnaire's dropdowns open on your current choices,
+#   5. replies on the issue with what changed and a link to the search.
 # Answers from anyone else are ignored, so strangers cannot change your settings.
 name: Apply setup questionnaire
 
@@ -76,6 +77,27 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: python scripts/apply_questionnaire.py --start-search
+
+      - name: Show your current choices in the questionnaire
+        if: steps.apply.outputs.ok == 'yes'
+        continue-on-error: true   # your settings are already saved; this only preselects the form's dropdowns
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IS_TEMPLATE: ${{ github.event.repository.is_template }}
+        run: |
+          python scripts/apply_questionnaire.py --update-form
+          git diff --quiet -- .github/ISSUE_TEMPLATE/job_search_setup.yml && exit 0
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git config user.name "job-search-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/ISSUE_TEMPLATE/job_search_setup.yml
+          git commit -m "Questionnaire: dropdowns open on your current choices"
+          for attempt in 1 2 3 4; do
+            git push && exit 0
+            sleep $((attempt * 5))
+            git pull --rebase --no-edit origin "${GITHUB_REF_NAME}" || git rebase --abort
+          done
+          exit 1
 
       - name: Reply on the issue
         if: always() && steps.apply.outcome == 'success'

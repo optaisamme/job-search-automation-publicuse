@@ -6,11 +6,13 @@ the settings, and writes a plain-language reply for the issue.
 
 Answers are untrusted text: they are only ever written into the settings as quoted values.
 Each questionnaire replaces all settings: answers are applied to the starting settings
-(jobsearch/defaults/), so a text question left blank is off or empty. A dropdown left on "None"
-keeps its current choice. The results page's change link fills in the current text answers.
+(jobsearch/defaults/), so a text question left blank is off or empty. The results page's change link
+fills in the current text answers, and after each questionnaire the form's dropdowns are set to open
+on the current choices (--update-form).
 
   python scripts/apply_questionnaire.py            read ISSUE_BODY, update settings, write out/questionnaire_reply.md
   python scripts/apply_questionnaire.py --reply    post the reply on the issue (and close it when everything worked)
+  python scripts/apply_questionnaire.py --update-form   make the form's dropdowns open on the current choices
 """
 from __future__ import annotations
 
@@ -52,8 +54,6 @@ LABELS = {
     "Certifications you have, or could get before being hired": "certs_allowed",
     "Companies to watch": "companies",
     "Turn on skills-based matching?": "skills_on",
-    "Skills-based matching: keywords the listing must include": "skills_keywords",
-    "All keywords, or at least one?": "skills_rule",
     "How many of your skills must the listing mention?": "skills_min",
     "Your skills": "my_skills",
     "Years of experience in your field": "years",
@@ -77,6 +77,8 @@ SEARCH_SIZES = {
 OLD_LABELS = {
     "Skills-based matching": "skills_on",
     "Skills-based matching: required keywords": "skills_keywords",
+    "Skills-based matching: keywords the listing must include": "skills_keywords",
+    "All keywords, or at least one?": "skills_rule",
     "Keywords the listing must include": "skills_keywords",
     "Skills-based matching: how many keywords must appear?": "skills_rule",
     "Skills-based matching: how many of your skills must the posting mention?": "skills_min",
@@ -388,6 +390,41 @@ def current_choices(settings_text: str) -> dict:
     return out
 
 
+FORM = ROOT / ".github" / "ISSUE_TEMPLATE" / "job_search_setup.yml"
+FORM_CHOICES = ("remote_only", "rule_when", "cert_check", "skills_on", "search_size", "weekly", "weekly_day")
+
+
+def form_with_choices(form_text: str, choices: dict) -> str:
+    """The questionnaire with each dropdown preselected on the current choice (its `default`), so it never opens on
+    "None". A choice that matches no option (for example search-size numbers changed by hand) is left unselected."""
+    blocks = re.split(r"(?m)^(?=  - type: )", form_text)
+    for n, block in enumerate(blocks):
+        m = re.search(r"(?m)^    id: (\w+)\s*$", block)
+        if not block.startswith("  - type: dropdown") or not m or m.group(1) not in FORM_CHOICES:
+            continue
+        lines = [ln for ln in block.split("\n") if not re.match(r"^      default: ", ln)]
+        opts = [i for i, ln in enumerate(lines) if ln.startswith("        - ")]
+        want = str(choices.get(m.group(1)) or "").strip().lower()
+        texts = [lines[i][len("        - "):].strip().strip('"').lower() for i in opts]
+        pick = next((k for k, t in enumerate(texts) if want and t.startswith(want)), None)
+        if pick is not None:
+            lines.insert(opts[-1] + 1, f"      default: {pick}")
+        blocks[n] = "\n".join(lines)
+    return "".join(blocks)
+
+
+def update_form() -> int:
+    """After the settings are saved: make the form's dropdowns open on the current choices."""
+    if os.environ.get("IS_TEMPLATE", "").lower() == "true" or os.environ.get("GITHUB_REPOSITORY") == TEMPLATE_REPO:
+        return 0
+    old = FORM.read_text()
+    new = form_with_choices(old, current_choices(SETTINGS.read_text()))
+    if new != old:
+        FORM.write_text(new)
+        print("The questionnaire's dropdowns now open on your current choices.")
+    return 0
+
+
 def build_settings(answers: dict, current_settings: str = "") -> tuple[str, str, list[str], dict]:
     """Every questionnaire replaces all settings: answers are applied to the starting settings, never to the
     previous answers, so a text question left blank is off or empty. A dropdown left on "None" keeps its
@@ -539,4 +576,5 @@ def post_reply() -> int:
 
 if __name__ == "__main__":
     sys.path.insert(0, str(ROOT))
-    raise SystemExit(post_reply() if "--reply" in sys.argv else start_search() if "--start-search" in sys.argv else main())
+    raise SystemExit(post_reply() if "--reply" in sys.argv else start_search() if "--start-search" in sys.argv
+                     else update_form() if "--update-form" in sys.argv else main())

@@ -97,7 +97,7 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 | **Tavily** (web search) | Searches the whole web for each of your job titles, including company careers pages | https://app.tavily.com: on the log-in page that opens, click **Sign up** (or continue with a Google, GitHub, LinkedIn or Microsoft account). After signing in, copy your API key from your Tavily account page (it starts with `tvly-`) | `TAVILY_API_KEY` |
 
    **Free plan:** 1,000 web searches a month. This tool uses 2 web searches for each of your job
-   titles, plus 2 for skills-based matching when it is on. For example, 5 job titles use 10 web
+   titles. For example, 5 job titles use 10 web
    searches per search, about 45 a month with weekly searches. If the free searches run out, the
    rest of each search still runs.
 
@@ -124,11 +124,9 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 ## When you change your settings later
 
 1. Open the **JOB_SEARCH_RESULTS** folder and click **click here to change these settings** (under
-   "Your settings"). The questionnaire opens with your current text answers filled in. Change only what
-   you want, then click **Create**:
-   a. A text box left empty turns that setting off.
-   b. A dropdown left on "None" keeps its current choice.
-   Changes take effect on the next search (weekly if turned on, one the questionnaire starts, or one you
+   "Your settings"). The questionnaire opens with your current answers filled in, and each dropdown shows
+   your current choice. Change only what you want, then click **Create**. A text box left empty turns that
+   setting off. Changes take effect on the next search (weekly if turned on, one the questionnaire starts, or one you
    start with [HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md)).
 2. Jobs still listed online are re-checked: a job that now passes is shown as
    **Newly verified (seen before)**. A job that now fails one rule is listed under Near Misses
