@@ -141,6 +141,27 @@ body:
   - type: markdown
     attributes:
       value: "## Step 7 of 9: More ways to find jobs (optional)"
+  - type: markdown
+    attributes:
+      value: |
+        ### Free web search key (optional, recommended)
+        **What it is:** a free key from Tavily, a web search service. You do not need it; the search works without it.
+
+        **What it adds:** for each of your job titles, the search also looks across the whole web, including
+        employers' own careers pages, and finds jobs that are on none of the 7 job sites this tool reads.
+        It also finds new companies to check. Without a key, the web search is skipped.
+
+        **Cost:** free. The free plan includes 1,000 web searches a month; each search here uses 2 for each job title.
+
+        **How to get it:** go to https://app.tavily.com, click **Sign up** (or continue with a Google, GitHub,
+        LinkedIn or Microsoft account), then copy your API key. It starts with `tvly-`.
+
+        **How to add it (not in this form):** in your copy, click **Settings** (top row of tabs, far right),
+        then **Secrets and variables**, then **Actions**, then the green **New repository secret** button.
+        Type `TAVILY_API_KEY` as the **Name**, paste the key as the **Secret**, and click **Add secret**.
+
+        **Do not paste the key into this form.** Everything typed here is saved in the issue, where anyone who
+        can see your copy can read it. A secret stays hidden, and only your searches can use it.
   - type: textarea
     attributes:
       label: Companies to watch
