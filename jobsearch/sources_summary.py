@@ -92,7 +92,7 @@ def section(sources: list[dict], started_at: str | None = None, finished_at: str
         from .adapters.websearch import CAREERS_DOMAINS, EXCLUDE_GROUPS
         rows = ws.get("searches") or []
         if rows:
-            L += ["| # | Search words | Where | Pages dated within | Links returned | Matches | Others |",
+            L += ["| # | Search words | Where | Pages dated within | Links returned | Matches | Other postings (not a full match) |",
                   "|---|---|---|---|---|---|---|"]
             old = False
             for i, r in enumerate(rows, 1):
@@ -109,10 +109,11 @@ def section(sources: list[dict], started_at: str | None = None, finished_at: str
                   "are job postings. The rest are pages listing many jobs, sites this tool already reads, or "
                   "links an earlier search in the table already found.",
                   "3. **Matches:** job postings from those links that match all your rules.",
-                  "4. **Others:** the other job postings from those links: a different job title, a rule not met, "
+                  "4. **Other postings (not a full match):** job postings from those links that did not match all your "
+                  "rules: a different job title, a rule not met, "
                   "or a link that still needs checking."]
             if old:
-                L.append("5. Searches before 2026-11-07 did not record Matches and Others.")
+                L.append("5. Searches before 2026-11-07 did not record Matches or Other postings.")
         else:
             L.append(_cell(ws.get("detail")) or "No searches were recorded.")
         L += ["", "Company careers pages searched: " + ", ".join(CAREERS_DOMAINS) + ".", "",
