@@ -82,7 +82,7 @@ body:
   - type: textarea
     attributes:
       label: Words that rule out a job
-      description: "One per line. Jobs with these words are left out. Example: security clearance"
+      description: "One per line. Jobs with these words in the description are left out. Example: security clearance"
       render: text
   - type: dropdown
     attributes:
