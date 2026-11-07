@@ -1051,3 +1051,21 @@ def test_results_main_page_starts_with_your_settings(root):
     assert "## Your settings for the latest search" in index
     assert "[click here to change these settings](../../../issues/new/choose)" in index
     assert index.index("## Your settings for the latest search") < index.index("## Jobs that match all your rules")
+
+
+def test_report_says_when_must_mention_words_left_out_every_job(root):
+    from jobsearch import results_folder
+    s = root / "config/settings.toml"
+    text = s.read_text()
+    text = text.replace("description_must_mention = []", 'description_must_mention = ["nsps"]') if "description_must_mention = []" in text \
+        else text + '\n[filters]\ndescription_must_mention = ["nsps"]\n'
+    s.write_text(text)
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    info = run(root, c)
+    assert info["counts"]["left_out_must_mention"] == 1 and info["counts"]["title_matched"] == 0
+    md = open(info["report"]).read()
+    assert "1 listing had one of your job titles but was left out, because the description did not mention any of these words: nsps." in md
+    results_folder.write(root)
+    rep = sorted((root / "JOB_SEARCH_RESULTS").glob("REPORT_*.md"))[-1].read_text()
+    assert "did not mention any of these words: nsps" in rep and "None of the listings matched your job titles" not in rep

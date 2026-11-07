@@ -426,6 +426,8 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
                 log["matches"] = sum(1 for u in urls if web_outcome.get(u) == QUALIFIED)
                 log["others"] = log["kept"] - log["matches"]
     counts["employers_skipped"] = employers_skipped
+    counts["left_out_must_mention"] = len(matcher.left_out_must_mention)   # had a job title, but none of the words
+    counts["must_mention_words"] = list(matcher.must_mention)
     try:
         from .settings_summary import rows as settings_rows
         counts["settings_used"] = settings_rows(root, prof, exp)   # shown at the top of this search's report

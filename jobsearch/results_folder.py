@@ -184,6 +184,8 @@ def write(root: Path) -> dict:
             except Exception:  # noqa: BLE001
                 used = None
         R += settings_section(used)
+        from .report import must_mention_note
+        R += must_mention_note(c)
         R += ["## New in this search", ""]
         from .report import new_in_run, new_jobs_table
         ids, near_new = new_in_run(db, last["id"])
@@ -192,6 +194,9 @@ def write(root: Path) -> dict:
             R += [""] + new_jobs_table(db, ids)
         elif near_new:
             R += ["No new jobs match all your rules. New near misses are in the near-miss table below.", ""]
+        elif c.get("title_matched", 0) == 0 and not c.get("skills_matched") and c.get("left_out_must_mention"):
+            R += ["Nothing new in this search. Jobs with your titles were found, but all were left out by "
+                  "\"Words the job description must mention\" (see the note above).", ""]
         elif c.get("title_matched", 0) == 0 and not c.get("skills_matched"):
             R += ["Nothing new in this search.", "",
                   "**None of the listings matched your job titles.** To find more:", "",

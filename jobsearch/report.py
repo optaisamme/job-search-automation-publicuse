@@ -189,6 +189,17 @@ def _unchecked_rules(row) -> list[str]:
     return [f'Your rule "{n[6:]}"' if n.startswith("rule: ") else RULE_LABELS.get(n, n.capitalize()) for n in names]
 
 
+def must_mention_note(c: dict) -> list[str]:
+    """Say how many listings had a job title but were left out by "Words the job description must mention"."""
+    n = c.get("left_out_must_mention") or 0
+    if not n:
+        return []
+    words = ", ".join(c.get("must_mention_words") or [])
+    return [f"**{n} listing{'s' if n != 1 else ''} had one of your job titles but {'were' if n != 1 else 'was'} left out, "
+            f"because the description did not mention any of these words: {words}.** If that is not what you want, "
+            "change \"Words the job description must mention\" in the setup questionnaire (check the spelling, or type `none`).", ""]
+
+
 def unchecked_note(row) -> str:
     """' (other rules could not be checked: Salary)' when other rules could not be checked."""
     unchecked = _unchecked_rules(row)
@@ -245,6 +256,7 @@ def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report"
            f"did not match {len(rej)} ({len(near)} near misses listed; {len(rej) - len(near)} failed 2 or more rules) | "
            f"no longer open {len(closed)}",
            ""]
+    md += must_mention_note(run_info.get("counts") or {})
     if run_info.get("employers_to_skip"):
         md += [f"Employers you skip: {', '.join(run_info['employers_to_skip'])} "
                f"({run_info.get('employers_skipped', 0)} listings skipped in this search).", ""]

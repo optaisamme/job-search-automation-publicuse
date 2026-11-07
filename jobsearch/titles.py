@@ -47,6 +47,9 @@ class TitleMatcher:
         self.exclude = [_c(r"\b" + r"\s+".join(map(re.escape, w.split())) + r"\b")
                         for w in tr.get("exclude_plain", []) if isinstance(w, str) and w.strip()]
         self.must_mention = [w.lower() for w in tr.get("must_mention", [])]
+        # listings with one of the job titles that were left out only by "words the description must mention"
+        # (a set, because the same listing can be checked more than once)
+        self.left_out_must_mention: set[tuple[str, str]] = set()
 
     def match_title(self, title: str) -> bool:
         """Title-only pre-screen (before the job description is downloaded)."""
@@ -65,6 +68,7 @@ class TitleMatcher:
                 continue
             title_matched = True
             if self.must_mention and not any(w in (t.lower() + " " + low_text) for w in self.must_mention):
+                self.left_out_must_mention.add((t.lower(), low_text[:300]))
                 continue
             if f["require_any"] and not any(w in low_text for w in f["require_any"]):
                 continue
