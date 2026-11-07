@@ -1040,3 +1040,14 @@ def test_html_codes_in_job_names_are_decoded():
     assert plain_name("hims &amp;#038; hers") == "hims & hers"
     assert plain_name("Senior Program Manager &amp;#8211; Privacy &amp; Data") == "Senior Program Manager – Privacy & Data"
     assert plain_name("Acme  Corp ") == "Acme Corp" and plain_name(None) is None
+
+
+def test_results_main_page_starts_with_your_settings(root):
+    from jobsearch import results_folder
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    run(root, c)
+    index = results_folder.write(root)["text"]
+    assert "## Your settings for the latest search" in index
+    assert "[click here to change these settings](../../../issues/new/choose)" in index
+    assert index.index("## Your settings for the latest search") < index.index("## Jobs that match all your rules")

@@ -226,6 +226,15 @@ def write(root: Path) -> dict:
     if last:
         I += [f"**Latest search:** {last['finished_at'][:16].replace('T', ' ')} UTC. "
               f"Full details: [{reports[0].name}]({reports[0].name})" if reports else "", ""]
+        from .settings_summary import section as settings_section, rows as settings_rows
+        used = _j(last["counts"], {}).get("settings_used")
+        if not used:   # searches before 2026-11-07 did not save their settings: show the current ones
+            try:
+                from .pipeline import load_config
+                used = settings_rows(root, *load_config(root))
+            except Exception:  # noqa: BLE001
+                used = None
+        I += settings_section(used, title="Your settings for the latest search")
     I += current
     I += [""] + _manual_boards(root)
     I += _companies(root)

@@ -67,11 +67,11 @@ def rows(root: Path, prof: dict, exp: dict) -> list[list[str]]:
     return out
 
 
-def section(pairs: list[list[str]] | None, link: str = CHANGE_LINK) -> list[str]:
+def section(pairs: list[list[str]] | None, link: str = CHANGE_LINK, title: str = "Your settings for this search") -> list[str]:
     if not pairs:
         return []
     cell = lambda x: str(x).replace("|", "/").replace("\n", " ")
-    L = ["## Your settings for this search", "", f"[click here to change these settings]({link})", "",
+    L = [f"## {title}", "", f"[click here to change these settings]({link})", "",
          "| Setting | Your answer |", "|---|---|"]
     L += [f"| {cell(k)} | {cell(v)} |" for k, v in pairs]
     return L + [""]
