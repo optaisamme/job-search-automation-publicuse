@@ -1030,3 +1030,10 @@ def test_report_starts_with_your_settings_and_change_link(root):
     for label in ("| Remote jobs only? |", "| Lowest single salary you would accept |", "| How many jobs to look through |",
                   "| Automatic weekly searches |", "| Skills-based matching |"):
         assert label in rep, label
+
+
+def test_html_codes_in_job_names_are_decoded():
+    from jobsearch.pipeline import plain_name
+    assert plain_name("hims &amp;#038; hers") == "hims & hers"
+    assert plain_name("Senior Program Manager &amp;#8211; Privacy &amp; Data") == "Senior Program Manager – Privacy & Data"
+    assert plain_name("Acme  Corp ") == "Acme Corp" and plain_name(None) is None

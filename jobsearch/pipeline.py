@@ -9,6 +9,7 @@ import shutil
 import tempfile
 import tomllib
 from dataclasses import asdict
+import html as _html
 from pathlib import Path
 
 from .adapters.aggregators import (RemotiveAdapter, RemoteOKAdapter, HimalayasAdapter, TheMuseAdapter, JobicyAdapter,
@@ -156,6 +157,18 @@ def save_boards(root: Path, boards: dict, added: list[dict], aged: bool = False)
     return changed
 
 
+def plain_name(s: str | None) -> str | None:
+    """'hims &amp;#038; hers' -> 'hims & hers' (codes are sometimes encoded twice)."""
+    if not s:
+        return s
+    for _ in range(3):
+        t = _html.unescape(s)
+        if t == s:
+            break
+        s = t
+    return re.sub(r"\s+", " ", s).strip()
+
+
 def _record(p: RawPosting, match: dict, ev: dict, ver: Verification | None, status: str, reasons: list[str]) -> dict:
     rules = [r.to_dict() for r in ev["rules"]]
     sal = next(r for r in ev["rules"] if r.rule == "salary")
@@ -165,7 +178,7 @@ def _record(p: RawPosting, match: dict, ev: dict, ver: Verification | None, stat
     if p.extra.get("discovered_via"):
         srcs.append(p.extra["discovered_via"])
     return {
-        "employer": p.employer, "title": p.title, "track": match["track"], "family": match["family"],
+        "employer": plain_name(p.employer), "title": plain_name(p.title), "track": match["track"], "family": match["family"],
         "norm_key": norm_key(p.employer, p.title, p.location_text), "ats": p.ats, "ats_board": p.ats_board,
         "ats_job_id": p.ats_job_id, "requisition_id": p.requisition_id, "canonical_url": p.canonical_url,
         "apply_url": (ver.apply_url if ver and ver.status == "verified" else None) or p.apply_url,
@@ -237,6 +250,8 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
         kept = [p for p in raw if not block.blocked(p.employer, p.ats_board)]
         employers_skipped += len(raw) - len(kept)
         raw = kept
+    for p in raw:   # some sites send names with HTML codes, e.g. "hims &amp;#038; hers"
+        p.title, p.employer = plain_name(p.title), plain_name(p.employer)
     # title match (pre-screen on discovery content)
     matched: list[tuple[RawPosting, dict]] = []
     for p in raw:

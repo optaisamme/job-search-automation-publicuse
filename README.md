@@ -12,11 +12,6 @@ my search the way I wanted, or did not search a wide enough variety of job board
 this tool to meet the needs of the students I work with, and I am sharing it for anyone else
 it can help.
 
-**Already set up?** Open your copy, then click
-**[START A SEARCH NOW](../../actions/workflows/run_job_search.yml)**, then click the
-grey **Run workflow** button and the green **Run workflow** button.
-[Picture of where to click](HOW_TO_RUN_A_SEARCH_NOW.md#the-picture-where-to-click)
-
 ---
 
 ## Your 4 steps
@@ -31,6 +26,11 @@ grey **Run workflow** button and the green **Run workflow** button.
 Do the steps **in order**. A search cannot run until you have your own copy (step 1) and at
 least one job title in your settings (step 2). First time? Start with **[SETUP.md](SETUP.md)**;
 it walks you through steps 1 to 4.
+
+**Already set up?** Open your copy, then click
+**[START A SEARCH NOW](../../actions/workflows/run_job_search.yml)**, then click the
+grey **Run workflow** button and the green **Run workflow** button.
+[Picture of where to click](HOW_TO_RUN_A_SEARCH_NOW.md#the-picture-where-to-click)
 
 ---
 
