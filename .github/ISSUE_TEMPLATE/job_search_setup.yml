@@ -23,7 +23,7 @@ body:
   - type: textarea
     attributes:
       label: Job titles to look for
-      description: "Put all your job titles in this box, one per line, as many as you like. Senior, Sr. and Lead versions are found too, and the words can be in any order."
+      description: "Put all your job titles in this box, one per line, as many as you like. Senior, Sr. and Lead versions are found too, the words can be in any order, and each word can be singular or plural."
       placeholder: |
         Program Manager
         Program Director

@@ -8,14 +8,36 @@ def _c(p: str) -> re.Pattern:
     return re.compile(p, re.I)
 
 
+def word_forms(w: str) -> str:
+    """A title word that also matches its singular or plural: "victims" also finds "Victim",
+    "advocate" also finds "Advocates", "policy" also finds "Policies"."""
+    low = w.lower()
+    if len(low) <= 3 or not low[-1].isalpha():
+        return re.escape(w)
+    if low.endswith("ies"):
+        return re.escape(w[:-3]) + "(?:y|ies)"
+    if low.endswith("ss"):
+        return re.escape(w) + "(?:es)?"
+    if low.endswith(("ches", "shes", "xes", "sses")):
+        return re.escape(w[:-2]) + "(?:es)?"
+    if low.endswith("s"):
+        return re.escape(w[:-1]) + "s?"
+    if low.endswith("y") and low[-2] not in "aeiou":
+        return re.escape(w[:-1]) + "(?:y|ies)"
+    if low.endswith(("ch", "sh", "x")):
+        return re.escape(w) + "(?:es)?"
+    return re.escape(w) + "s?"
+
+
 class TitleMatcher:
     def __init__(self, profile: dict, skills: list[dict] | None = None):
         from .skills_match import SkillsMatcher
         self.skills = SkillsMatcher(profile.get("skills_matching"), skills)
         self.families = []
         for t in profile.get("titles", []):
-            # all of the title's words, in any order: "Data Analyst" also finds "Analyst, Data" and "Senior Data Analyst"
-            pats = [_c("".join(r"(?=.*\b" + re.escape(w) + r"(?!\w))" for w in pt.split()))
+            # all of the title's words, in any order: "Data Analyst" also finds "Analyst, Data" and "Senior Data Analyst";
+            # each word also matches its singular or plural ("Victims Advocate" finds "Victim Advocate")
+            pats = [_c("".join(r"(?=.*\b" + word_forms(w) + r"(?!\w))" for w in pt.split()))
                     for pt in t.get("plain_titles", []) if pt.split()]
             if pats:
                 self.families.append({"track": t["track"], "family": t["family"], "include": pats,

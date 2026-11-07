@@ -532,3 +532,13 @@ def test_older_title_groups_are_combined(tmp_path):
         assert prof["search"]["queries"] == ["Data Analyst", "Program Manager"]
     finally:
         criteria.configure(None)
+
+
+def test_title_words_match_singular_and_plural():
+    from jobsearch.titles import TitleMatcher
+    prof = {"titles": [{"track": "", "family": "Your job titles", "plain_titles": ["victims advocate", "Policy Analyst", "Case Manager"]}]}
+    m = TitleMatcher(prof)
+    assert m.match("Victim Advocate (Volunteer)") and m.match("Victims Advocate") and m.match("Victim Advocates")
+    assert m.match("Senior Policies Analyst") and m.match("Case Managers")
+    assert not m.match("Victimology Advocate") and not m.match("Policy Analytics Lead")
+    assert not m.match("Advocate")                      # every word is still needed
