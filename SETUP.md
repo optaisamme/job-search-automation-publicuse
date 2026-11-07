@@ -19,7 +19,8 @@ on. Everything is edited on the GitHub website.
 2. Click the green **Use this template** button, then **Create a new repository**.
    (If you don't see that button, ask the person who shared it to give you access.)
 3. Name it, for example, `my-job-search`.
-4. Choose **Private** so your profile stays private.
+4. Choose **Private**. Your settings and job search results are saved in your copy; in a public copy,
+   anyone can read them.
 5. Click **Create repository**.
 
 You never need to edit a file: all your settings are made with the setup questionnaire (Step 2).

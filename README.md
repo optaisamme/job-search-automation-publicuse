@@ -34,6 +34,20 @@ grey **Run workflow** button and the green **Run workflow** button.
 
 ---
 
+## Your privacy
+
+1. Your questionnaire answers and your job search results are saved in your copy. In a **public** copy,
+   anyone can read them, so make your copy **private** (SETUP.md, Step 1).
+2. Do not enter passwords, keys, contact details, a résumé or anything confidential in the questionnaire.
+3. Changing an answer does not erase the old one: GitHub keeps the history of the questionnaire issue and of
+   your settings files. Deleting the issue removes it; removing old settings from the files' history takes
+   extra steps (GitHub's guide: "Removing sensitive data from a repository").
+4. What leaves your copy: your job titles (and skills-based matching keywords, if on) are sent to job sites as
+   search words. With the free web search key, your job titles, your state (or "remote") and those keywords are
+   also sent to Tavily. Nothing else from your answers is sent anywhere.
+
+---
+
 ## Where your results are
 
 Open the **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)** folder.

@@ -292,3 +292,12 @@ def test_starting_settings_match_a_new_copy():
     for name in ("job_search_settings.toml", "my_experience.toml"):
         assert tomllib.loads((ROOT / "jobsearch/defaults" / name).read_text()) == \
                tomllib.loads((ROOT / "JOB_SEARCH_SETTINGS" / name).read_text()), name
+
+
+def test_privacy_warning_comes_before_the_first_question():
+    import yaml
+    f = yaml.safe_load(open(ROOT / ".github/ISSUE_TEMPLATE/job_search_setup.yml"))
+    first_question = next(i for i, b in enumerate(f["body"]) if b["type"] != "markdown")
+    before = "\n".join(b["attributes"]["value"] for b in f["body"][:first_question])
+    assert "### Your privacy" in before and "If your copy is\n        public" not in before
+    assert "anyone can read them" in before and "Do not enter passwords" in before and "Tavily" in before

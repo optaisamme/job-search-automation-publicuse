@@ -20,6 +20,21 @@ body:
 
   - type: markdown
     attributes:
+      value: |
+        ### Your privacy
+        Your answers and your job search results are saved in your copy of this project. **If your copy is
+        public, anyone can read them.** Use a **private** copy for your own search (SETUP.md, Step 1).
+
+        1. Do not enter passwords, keys, your email, phone number, address, résumé, or anything confidential.
+        2. Changing an answer later does not erase the old one. GitHub keeps the history of this issue and of your
+           settings files. To remove something completely, delete the issue (at the bottom of its right-hand
+           column), and ask for help removing it from the history of your settings files.
+        3. What leaves your copy: your job titles (and skills-based matching keywords, if on) are sent to job
+           sites as search words. If you add the free web search key, your job titles, your state (or "remote")
+           and those keywords are also sent to Tavily. Nothing else from your answers is sent anywhere.
+
+  - type: markdown
+    attributes:
       value: "## Step 1 of 9: The jobs you want"
   - type: textarea
     attributes:
