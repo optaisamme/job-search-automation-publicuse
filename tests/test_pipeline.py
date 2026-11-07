@@ -641,7 +641,7 @@ def test_report_lists_sites_and_web_search_criteria(root, monkeypatch):
     md = open(info["report"]).read()
     for text in ("## Where this search looked", "| Web search (Tavily) |", "| Company careers pages |", "| Remote OK |",
                  "### Web search (Tavily) criteria", '"Salesforce Administrator" remote', "company careers pages",
-                 "the wider web", "last 30 days", "Company careers pages read (1):** Acme Nonprofit",
+                 "the wider web", "last 30 days", "### Company careers pages read (1)", "\nAcme Nonprofit.\n",
                  "| Pages dated within | Links returned | Matches | Others |", "up to 20 (the most Tavily allows)",
                  "**Why only part of some sites is read:**", "this search took about 1 minute",
                  "GitHub stops a search after 60 minutes"):
@@ -904,8 +904,9 @@ def test_results_page_near_miss_reason_is_short():
 def test_company_list_explains_how_companies_are_added_and_dropped():
     from jobsearch.sources_summary import section
     md = "\n".join(section([{"name": "ats_watchlist", "state": "ok", "fetched": 5, "matched": 1, "companies": ["Acme"]}]))
-    assert "**Company careers pages read (1):** Acme." in md
-    assert "a company is added when a job matching your job titles or skills is found" in md
+    assert "### Company careers pages read (1)\n\nHow a company gets on this list: it is added when" in md
+    assert "a job matching your job titles or skills is found" in md and "\nAcme.\n" in md
+    assert md.index("How a company gets on this list") < md.index("\nAcme.")
     assert "dropped after more than 5 searches in a row with no matching job" in md
 
 
@@ -969,3 +970,45 @@ def test_left_out_sites_are_grouped_and_labeled_truthfully():
     md = "\n".join(section([{"name": "websearch", "state": "ok", "fetched": 0, "searches": []}]))
     assert "1. **Sites this tool never opens" in md and "2. **Job sites this tool already reads directly:** himalayas.app" in md
     assert "4. **Social media:** facebook.com" in md
+
+
+def test_employers_to_skip_are_never_shown(root):
+    from jobsearch.employers import EmployerBlock
+    b = EmployerBlock(["Acme"])
+    assert b.blocked("Acme Nonprofit") and b.blocked("ACME") and b.blocked(None, "acme")
+    assert not b.blocked("Acmeworks") and not b.blocked("Beta Org", "betaorg")
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])        # employer: Acme Nonprofit
+    run(root, c)
+    assert [j["closed_at"] for j in jobs(root)] == [None]
+    _skip_employer(root, "Acme Nonprofit")
+    info = run(root, c)
+    js = jobs(root)
+    assert js and all(j["closed_at"] for j in js)                    # the saved job is no longer shown
+    md = open(info["report"]).read()
+    assert "Employers you skip: Acme Nonprofit" in md
+    assert "| Salesforce Administrator" not in md
+
+
+def _skip_employer(root, name):
+    s = root / "config/settings.toml"
+    text = s.read_text()
+    if "exclude_employers" in text:
+        import re
+        text = re.sub(r"exclude_employers = \[\]", f'exclude_employers = ["{name}"]', text)
+    else:
+        text = text.replace("[filters]", f'[filters]\nexclude_employers = ["{name}"]', 1) if "[filters]" in text \
+            else text + f'\n[filters]\nexclude_employers = ["{name}"]\n'
+    s.write_text(text)
+
+
+def test_questionnaire_saves_employers_to_skip():
+    import importlib.util, pathlib, tomllib
+    root = pathlib.Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location("q", root / "scripts/apply_questionnaire.py")
+    q = importlib.util.module_from_spec(spec); spec.loader.exec_module(q)
+    settings = (root / "EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml").read_text()
+    body = "### Job titles to look for\n\nData Analyst\n\n### Employers to skip\n\n```text\nAcme Staffing\nExample Corp\n```\n"
+    s, _, changes, _ = q.apply(q.parse_issue_body(body), settings, "")
+    assert tomllib.loads(s)["filters"]["exclude_employers"] == ["Acme Staffing", "Example Corp"]
+    assert "Employers to skip: Acme Staffing, Example Corp" in changes

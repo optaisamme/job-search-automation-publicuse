@@ -86,6 +86,11 @@ body:
       render: text
   - type: textarea
     attributes:
+      label: Employers to skip
+      description: "One per line. Jobs from these employers are never shown. Whole words, capitals do not matter. Example: Acme Staffing"
+      render: text
+  - type: textarea
+    attributes:
       label: Words the job description must mention
       description: One per line. A job must mention at least one of them, or it is left out.
       render: text

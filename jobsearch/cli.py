@@ -138,6 +138,8 @@ def main(argv=None) -> int:
             print(f"Description must mention: {', '.join(tr['must_mention']) or 'OFF'}")
         if "exclude_plain" in tr:
             print(f"Title words to skip (title only): {', '.join(tr['exclude_plain']) or 'OFF (none)'}")
+        if "employer_rules" in prof:
+            print(f"Employers to skip: {', '.join(prof['employer_rules']['exclude']) or 'OFF (none)'}")
         for t in prof["titles"]:
             print(f"Job title {t['family']}: {', '.join(t.get('plain_titles') or [])}")
         watched, bad = pipeline.watched_boards(prof)

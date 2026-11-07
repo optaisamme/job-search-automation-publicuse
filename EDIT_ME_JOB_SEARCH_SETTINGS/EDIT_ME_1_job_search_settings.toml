@@ -131,6 +131,13 @@ description_must_mention = []
 # EXAMPLE:  exclude_titles_containing = ["Developer", "Engineer", "Intern", "Internship", "Major Gifts"]
 exclude_titles_containing = []
 
+# ---- EMPLOYERS TO SKIP ----
+# Jobs from these employers are never shown, and their careers pages are not read.
+#   - Capitalization does not matter.
+#   - Whole words: "Acme" skips "Acme Corp" and "Acme Health", but not "Acmeworks".
+# EXAMPLE:  exclude_employers = ["Acme Staffing", "Example Corp"]
+exclude_employers = []
+
 # Certifications (any field, for example "Food Handler", "CPR", "PMP").
 # When check_certifications = "yes", a job is rejected if it requires, BEFORE
 # hire, a certification you have NOT listed below. Type the names the way job

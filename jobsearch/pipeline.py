@@ -75,6 +75,7 @@ def load_config(root: Path) -> tuple[dict, dict]:
         prof["title_rules"] = {"must_mention": list(flt.get("description_must_mention", [])),
                                "exclude_plain": list(flt.get("exclude_titles_containing", []))}
         prof["skills_matching"] = dict(settings.get("skills_matching") or {})
+        prof["employer_rules"] = {"exclude": list(flt.get("exclude_employers", []))}
         prof["search_size"] = dict(settings.get("search_size") or {})
         prof["watch_links"] = [u for u in ((settings.get("companies_to_watch") or {}).get("job_page_links") or [])
                                if isinstance(u, str) and u.strip()]
@@ -188,6 +189,14 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
         report_dir: Path | None = None) -> dict:
     prof, exp = load_config(root)
     boards = load_boards(root)
+    from .employers import EmployerBlock
+    block = EmployerBlock((prof.get("employer_rules") or {}).get("exclude"))
+    boards_trimmed = False
+    for lst in boards.values():   # companies found earlier whose employer is now skipped
+        keep = [b for b in lst if not block.blocked(b.get("employer"), b.get("board"))]
+        boards_trimmed |= len(keep) != len(lst)
+        lst[:] = keep
+    employers_skipped = 0
     hc = prof["http"]
     client = client or HttpClient(hc["user_agent"], hc["min_interval_seconds"], hc["max_retries"], hc["timeout_seconds"], hc["respect_robots_for_html"])
     matcher = TitleMatcher(prof, exp.get("skills", []))
@@ -202,11 +211,18 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
     store = Store(work_db)
     run_id = store.start_run("dry_run" if dry_run else ("fixtures" if fixtures else "live"))
     was_baseline_done = store.baseline_done()
+    if block.names:
+        for row in store.jobs("closed_at IS NULL"):
+            if block.blocked(row["employer"], row["ats_board"]):
+                store.mark_closed(row["id"], "the employer is on your list of employers to skip")
 
     ctx = {"search_size": dict(prof.get("search_size") or {}),
            "skill_words": matcher.skills.search_words(), "skill_keywords": matcher.skills.required if matcher.skills.active else [],
            "skill_rule": matcher.skills.rule,
            "queries": prof["search"]["queries"], "boards": with_watched(boards, watched_boards(prof)[0]), "title_matcher": matcher}
+    if block.names:
+        ctx["boards"] = {ats: [b for b in lst if not block.blocked(b.get("employer"), b.get("board"))]
+                         for ats, lst in ctx["boards"].items()}
     statuses: list[SourceStatus] = []
     raw: list[RawPosting] = []
     for name in (sources or list(ADAPTERS)):
@@ -217,6 +233,10 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
         statuses.append(st)
         raw.extend(got)
 
+    if block.names:   # employers to skip: their listings are dropped here
+        kept = [p for p in raw if not block.blocked(p.employer, p.ats_board)]
+        employers_skipped += len(raw) - len(kept)
+        raw = kept
     # title match (pre-screen on discovery content)
     matched: list[tuple[RawPosting, dict]] = []
     for p in raw:
@@ -245,6 +265,9 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
             p = verifymod.resolve_employer_posting(client, p)
         except Exception as e:  # noqa: BLE001
             errors.append(f"resolve {p.source_url}: {e}")
+        if block.blocked(p.employer, p.ats_board):   # the employer's name was found only now
+            employers_skipped += 1
+            continue
         if p.extra.get("new_board"):
             new_boards.append(p.extra["new_board"])
         if is_agency(p.ats_board):
@@ -389,6 +412,7 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
             if "kept" in log:
                 log["matches"] = sum(1 for u in urls if web_outcome.get(u) == QUALIFIED)
                 log["others"] = log["kept"] - log["matches"]
+    counts["employers_skipped"] = employers_skipped
     src_dicts = [asdict(s) for s in statuses]
     # record which company careers pages this search read (shown in each report)
     scanned = {(e.get("employer") or e["board"]) for lst in ctx["boards"].values() for e in lst}
@@ -405,11 +429,13 @@ def run(root: Path, db_path: Path, dry_run: bool = False, sources: list[str] | N
             found |= {(b["ats"], b["board"].lower()) for b in new_boards}
             dropped_boards = age_boards(boards, found)
             aged = True
-        save_boards(root, boards, new_boards, aged=aged)
+        save_boards(root, boards, [b for b in new_boards if not block.blocked(b.get("employer"), b.get("board"))],
+                    aged=aged or boards_trimmed)
     times = store.db.execute("SELECT started_at, finished_at FROM runs WHERE id=?", (run_id,)).fetchone()
     run_info = {"run_id": run_id, "started_at": times["started_at"], "finished_at": times["finished_at"], "mode": "dry_run" if dry_run else ("fixtures" if fixtures else "live"),
                 "is_baseline": is_baseline, "sources": src_dicts, "errors": errors, "counts": counts, "fixtures": fixtures,
-                "new_boards": new_boards, "dropped_boards": dropped_boards}
+                "new_boards": new_boards, "dropped_boards": dropped_boards,
+                "employers_to_skip": block.names, "employers_skipped": employers_skipped}
     rdir = report_dir or (root / ("out/practice-run" if dry_run else "out"))
     rp = reportmod.build(store, run_info, rdir, "Initial Job Search Report (baseline)" if is_baseline else "Job Search Report")
     run_info["report"] = str(rp)

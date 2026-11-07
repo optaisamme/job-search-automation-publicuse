@@ -74,15 +74,14 @@ def section(sources: list[dict], started_at: str | None = None, finished_at: str
         if name not in known and name not in REMOVED:
             L.append(f"| {_cell(name)} |  | {_worked(s)} | {s.get('fetched', 0)} | {s.get('matched', 0)} | {_skills(s)} |")
     if companies is not None:
-        L += ["", f"**Company careers pages read ({len(companies)}):** "
-              + (", ".join(_cell(c) for c in sorted(companies, key=str.lower)) if companies else "none yet") + ".",
-              "",
-              "How this list is made: a company is added when a job matching your job titles or skills is found on its "
+        L += ["", f"### Company careers pages read ({len(companies)})", "",
+              "How a company gets on this list: it is added when a job matching your job titles or skills is found on its "
               "own careers page (Greenhouse, Lever, Ashby or SmartRecruiters), through a job site or the web search. "
               "Its whole careers page is then read every search. It is dropped after more than 5 searches in a row "
-              "with no matching job. Staffing agencies on this tool's agency list are never added. Companies you add in settings section 7 are never dropped."]
+              "with no matching job. Staffing agencies on this tool's agency list, and employers you skip, are never added. Companies you add in settings section 7 are never dropped.",
+              "", (", ".join(_cell(c) for c in sorted(companies, key=str.lower)) if companies else "None yet") + "."]
     elif "ats_watchlist" in by:
-        L += ["", "**Company careers pages read:** not recorded for this search (searches from 2026-11-05 on list them)."]
+        L += ["", "### Company careers pages read", "", "Not recorded for this search (searches from 2026-11-05 on list them)."]
     L += ["", "### Web search (Tavily) criteria", ""]
     ws = by.get("websearch")
     if not ws:

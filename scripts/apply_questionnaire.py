@@ -43,6 +43,7 @@ LABELS = {
     "A salary range must end above": "range_end_above",
     "Words the job description must mention": "must_mention",
     "Title words to skip": "skip_titles",
+    "Employers to skip": "skip_employers",
     "Check certification requirements?": "cert_check",
     "Certifications you have, or could get before being hired": "certs_allowed",
     "Companies to watch": "companies",
@@ -215,6 +216,7 @@ def apply(answers: dict, settings_text: str, experience_text: str) -> tuple[str,
 
     for k, key, label in (("must_mention", "description_must_mention", "Description must mention"),
                           ("skip_titles", "exclude_titles_containing", "Title words to skip"),
+                          ("skip_employers", "exclude_employers", "Employers to skip"),
                           ("certs_allowed", "certifications_allowed_before_hire", "Certifications allowed before hire")):
         v = as_list(answers.get(k, ""))
         if v is not None:

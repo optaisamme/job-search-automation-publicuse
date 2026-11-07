@@ -245,7 +245,11 @@ def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report"
     md += [f"Totals for this search: match all your rules {len(q)} | need checking {len(nv)} | hourly or contract {len(held)} | "
            f"did not match {len(rej)} ({len(near)} near misses listed; {len(rej) - len(near)} failed 2 or more rules) | "
            f"no longer open {len(closed)}",
-           "", "## Jobs that match all your rules", ""]
+           ""]
+    if run_info.get("employers_to_skip"):
+        md += [f"Employers you skip: {', '.join(run_info['employers_to_skip'])} "
+               f"({run_info.get('employers_skipped', 0)} listings skipped in this search).", ""]
+    md += ["## Jobs that match all your rules", ""]
     from .skills_match import SKILLS_FAMILY
     md += _match_table([r for r in q if r["family"] != SKILLS_FAMILY])
     q_skills = [r for r in q if r["family"] == SKILLS_FAMILY]
