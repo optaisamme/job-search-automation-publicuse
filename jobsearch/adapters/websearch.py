@@ -32,7 +32,7 @@ EXCLUDE_GROUPS = [
     ("Job sites this tool already reads directly",
      ["himalayas.app", "remoteok.com", "remotive.com", "themuse.com", "jobicy.com", "weworkremotely.com",
       "news.ycombinator.com"]),
-    ("Other job sites and repost sites (the web search looks for jobs on employers' own websites)",
+    ("Other job sites (skipped because the web search is only for jobs on employers' own websites)",
      ["monster.com", "careerbuilder.com", "simplyhired.com", "simplyhired.co", "handshake.com", "wellfound.com",
       "dice.com", "hiring.cafe", "workingnomads.com", "jobspresso.co", "adzuna.com", "jooble.org", "jobgether.com",
       "talent.com", "lensa.com", "careerjet.com", "jobleads.com", "salary.com", "theladders.com", "roberthalf.com",
