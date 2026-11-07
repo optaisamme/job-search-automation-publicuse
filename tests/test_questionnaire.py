@@ -186,7 +186,9 @@ def test_start_search_links_to_the_running_search(tmp_path, monkeypatch):
     assert q.start_search(wait_seconds=0) == 0
     assert calls[0] == ("POST", "actions/workflows/run_job_search.yml/dispatches", {"ref": "main"})
     msg = (tmp_path / "questionnaire_search.md").read_text()
-    assert "[open the running search](https://github.com/someone/my-job-search/actions/runs/7)" in msg
+    assert msg.startswith("## Your job search is running")
+    assert "**[Click here to watch it](https://github.com/someone/my-job-search/actions/runs/7)**" in msg
+    assert "**Actions** tab" in msg
 
 
 def test_start_search_failure_says_why_and_how_to_start_it(tmp_path, monkeypatch):
@@ -215,3 +217,23 @@ def test_workflows_point_at_files_that_exist():
     for doc in ("README.md", "HOW_TO_RUN_A_SEARCH_NOW.md", "JOB_SEARCH_RESULTS/README.md", "jobsearch/results_folder.py"):
         for name in re.findall(r"actions/workflows/([\w.-]+\.yml)", (ROOT / doc).read_text()):
             assert (wf / name).exists(), (doc, name)
+
+
+def test_reply_starts_with_the_search_link(tmp_path, monkeypatch):
+    monkeypatch.setattr(q, "OUT", tmp_path)
+    (tmp_path / "questionnaire_reply.md").write_text("**Your settings are saved.**\n")
+    (tmp_path / "questionnaire_ok.txt").write_text("yes")
+    (tmp_path / "questionnaire_search.md").write_text("## Your job search is running\n\n**[Click here to watch it](u)**.\n")
+    sent = []
+    monkeypatch.setenv("GITHUB_REPOSITORY", "someone/my-job-search")
+    monkeypatch.setenv("GITHUB_TOKEN", "t")
+    monkeypatch.setenv("ISSUE_NUMBER", "1")
+    import urllib.request, io, json as _json
+
+    class R(io.BytesIO):
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+    monkeypatch.setattr(urllib.request, "urlopen", lambda req, timeout=30: (sent.append(req), R(b"{}"))[1])
+    assert q.post_reply() == 0
+    body = _json.loads(sent[0].data)["body"]
+    assert body.startswith("## Your job search is running") and body.index("Click here to watch it") < body.index("Your settings are saved")

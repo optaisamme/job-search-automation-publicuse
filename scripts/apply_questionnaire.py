@@ -435,8 +435,10 @@ def start_search(wait_seconds: float = 3, tries: int = 10) -> int:
             url = new[0].get("html_url", "")
             break
     (OUT / "questionnaire_search.md").write_text(
-        "**A search has started:** " + (f"[open the running search]({url})" if url else f"[open the Run job search page]({page})")
-        + ". Results appear in the **JOB_SEARCH_RESULTS** folder in about 10 to 20 minutes.\n")
+        "## Your job search is running\n\n"
+        + (f"**[Click here to watch it]({url})**" if url else f"**[Click here to see your searches]({page})**")
+        + ". It takes about 10 to 20 minutes. When it finishes, your results are in the **JOB_SEARCH_RESULTS** folder "
+        "(**Code** tab).\n\nAny time: " + "click the **Actions** tab at the top of your copy, then **Run job search** on the left. A yellow dot means a search is running; a green check means it finished." + "\n")
     print(f"Search started: {url or page}")
     return 0
 
@@ -446,8 +448,8 @@ def post_reply() -> int:
     import urllib.request
     repo, token, number = os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_TOKEN"], os.environ["ISSUE_NUMBER"]
     body = (OUT / "questionnaire_reply.md").read_text()
-    if (OUT / "questionnaire_search.md").exists():   # the search the questionnaire started, with its link
-        body = body.rstrip("\n") + "\n\n" + (OUT / "questionnaire_search.md").read_text()
+    if (OUT / "questionnaire_search.md").exists():   # the search the questionnaire started: its link comes first
+        body = (OUT / "questionnaire_search.md").read_text().rstrip("\n") + "\n\n---\n\n" + body
 
     def call(method, path, payload):
         req = urllib.request.Request(f"https://api.github.com/repos/{repo}/{path}", data=json.dumps(payload).encode(),

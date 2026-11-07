@@ -35,11 +35,14 @@ The [EDIT_ME_JOB_SEARCH_SETTINGS folder page](EDIT_ME_JOB_SEARCH_SETTINGS) lists
    **Choose a different template** near the top, then **Job search setup**.
 2. Answer the questions. Only "Job titles to look for" is required. Leave a question empty, or
    a dropdown on "None", to keep the current setting; type `none` in a text box to clear one.
-3. Click **Create** (on some screens it says **Submit new issue**). Within a minute or two, a reply on the issue lists what was saved,
-   or explains what to fix (edit the issue to fix it; it is checked again).
-4. If there is no **Issues** tab: click **Settings**, then **General**, scroll to **Features**,
+3. Click **Create** (on some screens it says **Submit new issue**). GitHub shows your answers on a new
+   page; stay there. Within a minute or two a reply appears at the bottom (refresh if it does not). It
+   lists what was saved, or explains what to fix (edit the issue to fix it; it is checked again).
+4. If you chose to start a search, the reply begins with **Click here to watch it**. Any time, to
+   see searches: click the **Actions** tab at the top of your copy, then **Run job search** on the left. A yellow dot means a search is running; a green check means it finished.
+5. If there is no **Issues** tab: click **Settings**, then **General**, scroll to **Features**,
    and tick **Issues**.
-5. Only you, and people you added as collaborators, can change your settings this way.
+6. Only you, and people you added as collaborators, can change your settings this way.
 
 **Or edit the settings file yourself** (EDIT ME file 1), as described below.
 

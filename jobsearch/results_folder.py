@@ -156,7 +156,7 @@ def write(root: Path) -> dict:
     folder.mkdir(exist_ok=True)
     dbp = root / "data/jobs.sqlite"
     if not dbp.exists():
-        text = (f"# {FOLDER.replace('_', ' ')}\n\nNo search has run yet. Your results appear here after your first search.\n\n"
+        text = (f"# {FOLDER.replace('_', ' ')}\n\nNo search has finished yet. If you just saved your settings, your first search may already be running: click the **Actions** tab at the top of your copy, then **Run job search** on the left. A yellow dot means a search is running; a green check means it finished. Your results appear here when it finishes (about 10 to 20 minutes).\n\n"
                 f"To start one: **[START A SEARCH NOW]({RUN_LINK})**, then click the grey **Run workflow** button "
                 "and the green **Run workflow** button.\n\n" + "\n".join(_manual_boards(root)) + "\n")
         (folder / "README.md").write_text(text)

@@ -24,8 +24,8 @@ grey **Run workflow** button and the green **Run workflow** button.
 | Step | What you do | Where | Time |
 |---|---|---|---|
 | **1. Make your own copy** | Copy this project into your own GitHub account ([picture of where to click](SETUP.md#step-1-make-your-own-copy)) | [SETUP.md](SETUP.md), Step 1 | 2 minutes |
-| **2. Answer the setup questionnaire** | In **your copy**: [open the questionnaire list](../../issues/new/choose) (**Issues** tab, then **New issue**), click **Job search setup**, answer the questions, then click **Create**. Your settings are saved for you | [SETUP.md](SETUP.md), Step 2 | 10 minutes |
-| **3. Run a search** | **Only after steps 1 and 2.** In **your copy**: **Actions** tab, then **Run job search**, then **Run workflow** (twice). Automatic weekly searches start **off** (see below) | [HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md) | 1 minute to start, 10 to 20 minutes to finish |
+| **2. Answer the setup questionnaire** | In **your copy**: [open the questionnaire list](../../issues/new/choose) (**Issues** tab, then **New issue**), click **Job search setup**, answer the questions, then click **Create**. Your settings are saved and your first search starts. Stay on the page that opens: a reply links to the running search | [SETUP.md](SETUP.md), Step 2 | 10 minutes |
+| **3. Watch or start a search** | To watch a search: in **your copy**, click the **Actions** tab, then **Run job search** (yellow dot = running, green check = finished). To start another: **Run workflow** (twice). Automatic weekly searches start **off** (see below) | [HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md) | 1 minute to start, 10 to 20 minutes to finish |
 | **4. Read your results** | Open the results folder | **[JOB_SEARCH_RESULTS](JOB_SEARCH_RESULTS)** folder | Any time |
 
 Do the steps **in order**. A search cannot run until you have your own copy (step 1) and at

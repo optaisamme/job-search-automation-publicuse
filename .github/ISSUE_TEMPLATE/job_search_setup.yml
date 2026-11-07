@@ -8,8 +8,10 @@ body:
         ### How this works
         1. Answer the questions below. **Only the first one is required.**
         2. Click the green **Create** button at the bottom (it may say **Submit new issue**).
-        3. Wait 1 to 2 minutes. A reply appears on this page saying what was saved, or what to fix.
-           If you chose to start a search, the reply has a link to it.
+        3. GitHub then shows your answers on a new page. **Stay on that page.** In 1 to 2 minutes a reply
+           appears at the bottom (refresh the page if it does not), saying what was saved, or what to fix.
+        4. If a search started, the reply begins with a link to watch it. Any time, to see searches:
+           click the **Actions** tab at the top of your copy, then **Run job search** on the left. A yellow dot means a search is running; a green check means it finished.
 
         **Good to know:** leave a question empty, or a dropdown on "None", to keep your current setting.
         Type `none` in a text box to clear it.
@@ -202,7 +204,7 @@ body:
   - type: dropdown
     attributes:
       label: Start a search right after saving?
-      description: Yes starts a search as soon as your settings are saved. The reply on this page links to it.
+      description: "Yes starts a search as soon as your settings are saved. To watch it, use the link in the reply on the next page, or the Actions tab, then Run job search."
       options:
         - "Yes"
         - "No"
