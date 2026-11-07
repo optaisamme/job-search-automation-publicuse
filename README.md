@@ -68,8 +68,9 @@ Times are in UTC. Mountain Time is UTC minus 7 hours in winter and minus 6 in su
 ## Changing your settings
 
 All settings are made with the **[setup questionnaire](../../issues/new/choose)** (Issues tab, New issue,
-Job search setup). Answer it again any time to change something: a blank answer, or a dropdown left on
-"None", keeps your current setting; type `none` in a text box to clear one. You never need to edit a file.
+Job search setup). Answer it again any time to change something. Each time, your answers replace all your
+settings, and anything left blank is turned off. Your current settings are at the top of the results page.
+You never need to edit a file.
 
 It covers: job titles, remote only or not, your state, salary, title words to skip, words that rule
 out a job, employers to skip, certifications, your skills, companies to watch, skills-based matching,

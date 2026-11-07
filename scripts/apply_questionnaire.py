@@ -5,7 +5,8 @@ answers from the issue text, updates JOB_SEARCH_SETTINGS (settings and experienc
 the settings, and writes a plain-language reply for the issue.
 
 Answers are untrusted text: they are only ever written into the settings as quoted values.
-A blank answer keeps the current setting; "none" clears it.
+Each questionnaire replaces all settings: answers are applied to the starting settings
+(jobsearch/defaults/), so anything left blank is off or empty.
 
   python scripts/apply_questionnaire.py            read ISSUE_BODY, update settings, write out/questionnaire_reply.md
   python scripts/apply_questionnaire.py --reply    post the reply on the issue (and close it when everything worked)
@@ -23,6 +24,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SETTINGS = ROOT / "JOB_SEARCH_SETTINGS/job_search_settings.toml"
 EXPERIENCE = ROOT / "JOB_SEARCH_SETTINGS/my_experience.toml"
+DEFAULT_SETTINGS = ROOT / "jobsearch/defaults/job_search_settings.toml"     # the settings a new copy starts with
+DEFAULT_EXPERIENCE = ROOT / "jobsearch/defaults/my_experience.toml"
 OUT = ROOT / "out"
 TEMPLATE_REPO = "optaisamme/job-search-automation-publicuse"   # the shared template: never changed
 ALLOWED = {"OWNER", "MEMBER", "COLLABORATOR"}   # who may change this copy's settings
@@ -360,6 +363,12 @@ def replace_skills(experience_text: str, skills_text: str) -> tuple[str, list[st
     return out, names
 
 
+def build_settings(answers: dict) -> tuple[str, str, list[str], dict]:
+    """Every questionnaire replaces all settings: answers are applied to the starting settings, never to the
+    previous answers, so a question left blank is off or empty."""
+    return apply(answers, DEFAULT_SETTINGS.read_text(), DEFAULT_EXPERIENCE.read_text())
+
+
 # ---------------------------------------------------------------- run
 def main() -> int:
     OUT.mkdir(exist_ok=True)
@@ -379,7 +388,7 @@ def main() -> int:
         else:
             old_s, old_e = SETTINGS.read_text(), EXPERIENCE.read_text()
             try:
-                new_s, new_e, changes, extras = apply(answers, old_s, old_e)
+                new_s, new_e, changes, extras = build_settings(answers)
                 tomllib.loads(new_s), tomllib.loads(new_e)
                 SETTINGS.write_text(new_s)
                 EXPERIENCE.write_text(new_e)
@@ -395,8 +404,8 @@ def main() -> int:
                     reply = ["**Your settings are saved.**" if changed_files else "**Nothing changed:** every answer was blank or the same as before.",
                              "", "What changed:", ""] + [f"{i}. {c}" for i, c in enumerate(changes, 1)] + \
                             ["", "Your settings now:", "", "```text", check.stdout.strip()[-3000:], "```"]
-                    reply += ["", "To change something later, open a new **Job search setup** issue. Blank answers keep "
-                              "your current settings; type `none` to clear one."]
+                    reply += ["", "To change something later, open a new **Job search setup** issue and answer every "
+                              "question you want on. Each questionnaire replaces all your settings; anything left blank is off."]
                     run_now = extras["run_now"]
             except AnswerProblem as e:
                 reply = ["**Your settings were not saved.**", "", str(e), "",

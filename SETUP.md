@@ -31,7 +31,8 @@ You never need to edit a file: all your settings are made with the setup questio
    Click **Job search setup**. If a blank "Create new issue" page opens instead, click
    **Choose a different template** near the top, then **Job search setup**.
 2. Answer the questions. Only "Job titles to look for" is required. Leave a question empty, or
-   a dropdown on "None", to keep the current setting; type `none` in a text box to clear one.
+   a dropdown on "None", to leave that setting off. Each time you answer, your answers replace all your
+   settings; your current settings are shown at the top of the results page.
 3. Click **Create** (on some screens it says **Submit new issue**). GitHub shows your answers on a new
    page; stay there. Within a minute or two a reply appears at the bottom (refresh if it does not). It
    lists what was saved, or explains what to fix (edit the issue to fix it; it is checked again).

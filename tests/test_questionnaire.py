@@ -272,3 +272,23 @@ def test_linkedin_style_skills_and_quoted_keywords_work():
     assert skills[1]["keywords"] == ["data collection"] and skills[2]["keywords"] == ["community engagement"]
     from jobsearch.skills_match import _hit
     assert _hit("nonprofit organizations", "experience with a nonprofit organization") and _hit("crm", "our crm is salesforce")
+
+
+def test_each_questionnaire_replaces_all_settings():
+    """Seen in a real copy: a second questionnaire left 'Words the job description must mention' blank,
+    but the first answer ('nsps') stayed and kept removing every job."""
+    first, _, _, _ = q.build_settings(q.parse_issue_body(form(titles_1="Salesforce Administrator", must_mention="nsps",
+                                                              skip_titles="cloud", min_single="75000")))
+    assert tomllib.loads(first)["filters"]["description_must_mention"] == ["nsps"]
+    second, _, _, _ = q.build_settings(q.parse_issue_body(form(titles_1="Salesforce Administrator", min_single="50000")))
+    st = tomllib.loads(second)
+    assert st["filters"]["description_must_mention"] == [] and st["filters"]["exclude_titles_containing"] == []
+    assert st["salary"]["minimum_single_salary"] == 50000 and st["job_titles"]["titles"] == ["Salesforce Administrator"]
+
+
+def test_starting_settings_match_a_new_copy():
+    if tomllib.loads((ROOT / "JOB_SEARCH_SETTINGS/job_search_settings.toml").read_text())["job_titles"]["titles"]:
+        pytest.skip("this copy already has settings")
+    for name in ("job_search_settings.toml", "my_experience.toml"):
+        assert tomllib.loads((ROOT / "jobsearch/defaults" / name).read_text()) == \
+               tomllib.loads((ROOT / "JOB_SEARCH_SETTINGS" / name).read_text()), name

@@ -13,8 +13,9 @@ body:
         4. If a search started, the reply begins with a link to watch it. Any time, to see searches:
            click the **Actions** tab at the top of your copy, then **Run job search** on the left. A yellow dot means a search is running; a green check means it finished.
 
-        **Good to know:** leave a question empty, or a dropdown on "None", to keep your current setting.
-        Type `none` in a text box to clear it.
+        **Good to know:** each time you answer this questionnaire, your answers replace **all** your settings.
+        Anything you leave blank (or a dropdown left on "None") is turned off or left empty. Your current
+        settings are shown at the top of the **JOB_SEARCH_RESULTS** folder page, so you can copy them back in.
         For lists, put one item on each line. Only you (and collaborators you add) can change your settings.
 
   - type: markdown
