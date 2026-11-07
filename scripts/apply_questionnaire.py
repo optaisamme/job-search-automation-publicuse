@@ -6,7 +6,8 @@ the settings, and writes a plain-language reply for the issue.
 
 Answers are untrusted text: they are only ever written into the settings as quoted values.
 Each questionnaire replaces all settings: answers are applied to the starting settings
-(jobsearch/defaults/), so anything left blank is off or empty.
+(jobsearch/defaults/), so a text question left blank is off or empty. A dropdown left on "None"
+keeps its current choice. The results page's change link fills in the current text answers.
 
   python scripts/apply_questionnaire.py            read ISSUE_BODY, update settings, write out/questionnaire_reply.md
   python scripts/apply_questionnaire.py --reply    post the reply on the issue (and close it when everything worked)
@@ -363,10 +364,46 @@ def replace_skills(experience_text: str, skills_text: str) -> tuple[str, list[st
     return out, names
 
 
-def build_settings(answers: dict) -> tuple[str, str, list[str], dict]:
+def current_choices(settings_text: str) -> dict:
+    """The current dropdown choices, as answers. A link cannot fill in dropdowns, so a dropdown left on
+    "None" keeps its current choice."""
+    try:
+        st = tomllib.loads(settings_text or "")
+    except tomllib.TOMLDecodeError:
+        return {}
+    yes = lambda v: str(v).strip().lower() in ("yes", "y", "true", "on", "1")
+    w, f, sk, wk = st.get("where_you_live", {}), st.get("filters", {}), st.get("skills_matching", {}), st.get("automatic_weekly_search", {})
+    rules = f.get("requirement_rule") or [{}]
+    sz = st.get("search_size") or {}
+    out = {"remote_only": "yes" if yes(w.get("remote_only", "yes")) else "no",
+           "cert_check": "yes" if yes(f.get("check_certifications", "no")) else "no",
+           "rule_when": "mentioned" if str(rules[0].get("reject_when", "required")).lower() == "mentioned" else "required",
+           "skills_on": "on" if yes(sk.get("on", "no")) else "off",
+           "skills_rule": "at least one" if str(sk.get("required_keywords_rule", "all")).lower() == "any" else "all",
+           "weekly": "on" if yes(wk.get("on", "no")) else "off",
+           "weekly_day": str(wk.get("day") or "Friday")}
+    preset = next((name for name, v in SEARCH_SIZES.items() if all(sz.get(k) == n for k, n in v.items())), None)
+    if preset:
+        out["search_size"] = preset
+    return out
+
+
+def build_settings(answers: dict, current_settings: str = "") -> tuple[str, str, list[str], dict]:
     """Every questionnaire replaces all settings: answers are applied to the starting settings, never to the
-    previous answers, so a question left blank is off or empty."""
-    return apply(answers, DEFAULT_SETTINGS.read_text(), DEFAULT_EXPERIENCE.read_text())
+    previous answers, so a text question left blank is off or empty. A dropdown left on "None" keeps its
+    current choice (the "change these settings" link fills in text answers, but cannot fill in dropdowns)."""
+    answers = dict(answers)
+    for k, v in current_choices(current_settings).items():
+        if not answers.get(k):
+            answers[k] = v
+    s, e, changes, extras = apply(answers, DEFAULT_SETTINGS.read_text(), DEFAULT_EXPERIENCE.read_text())
+    if not answers.get("search_size"):   # custom numbers (not one of the three choices): keep them
+        try:
+            for k, v in (tomllib.loads(current_settings).get("search_size") or {}).items():
+                s = set_value(s, "[search_size]", k, v)
+        except tomllib.TOMLDecodeError:
+            pass
+    return s, e, changes, extras
 
 
 # ---------------------------------------------------------------- run
@@ -388,7 +425,7 @@ def main() -> int:
         else:
             old_s, old_e = SETTINGS.read_text(), EXPERIENCE.read_text()
             try:
-                new_s, new_e, changes, extras = build_settings(answers)
+                new_s, new_e, changes, extras = build_settings(answers, old_s)
                 tomllib.loads(new_s), tomllib.loads(new_e)
                 SETTINGS.write_text(new_s)
                 EXPERIENCE.write_text(new_e)
@@ -404,8 +441,8 @@ def main() -> int:
                     reply = ["**Your settings are saved.**" if changed_files else "**Nothing changed:** every answer was blank or the same as before.",
                              "", "What changed:", ""] + [f"{i}. {c}" for i, c in enumerate(changes, 1)] + \
                             ["", "Your settings now:", "", "```text", check.stdout.strip()[-3000:], "```"]
-                    reply += ["", "To change something later, open a new **Job search setup** issue and answer every "
-                              "question you want on. Each questionnaire replaces all your settings; anything left blank is off."]
+                    reply += ["", "To change something later, use **click here to change these settings** at the top of "
+                              "the JOB_SEARCH_RESULTS folder page: it opens this questionnaire with your current answers filled in."]
                     run_now = extras["run_now"]
             except AnswerProblem as e:
                 reply = ["**Your settings were not saved.**", "", str(e), "",

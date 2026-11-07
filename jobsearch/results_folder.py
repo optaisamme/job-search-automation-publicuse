@@ -175,7 +175,7 @@ def write(root: Path) -> dict:
         R = [f"# REPORT {last['id']}: search run {last['finished_at'][:16].replace('T', ' ')} UTC", "",
              f"Checked {c.get('discovered', 0)} job listings; {c.get('title_matched', 0)} matched your job titles"
              + (f" and {c['skills_matched']} matched your skills" if c.get("skills_matched") else "") + ".", ""]
-        from .settings_summary import section as settings_section, rows as settings_rows
+        from .settings_summary import section as settings_section, rows as settings_rows, change_link
         used = c.get("settings_used")
         if not used:   # searches before 2026-11-07 did not save their settings: show the current ones
             try:
@@ -183,7 +183,7 @@ def write(root: Path) -> dict:
                 used = settings_rows(root, *load_config(root))
             except Exception:  # noqa: BLE001
                 used = None
-        R += settings_section(used)
+        R += settings_section(used, link=change_link(root))
         from .report import must_mention_note
         R += must_mention_note(c)
         R += ["## New in this search", ""]
@@ -230,7 +230,7 @@ def write(root: Path) -> dict:
     if last:
         I += [f"**Latest search:** {last['finished_at'][:16].replace('T', ' ')} UTC. "
               f"Full details: [{reports[0].name}]({reports[0].name})" if reports else "", ""]
-        from .settings_summary import section as settings_section, rows as settings_rows
+        from .settings_summary import section as settings_section, rows as settings_rows, change_link
         used = _j(last["counts"], {}).get("settings_used")
         if not used:   # searches before 2026-11-07 did not save their settings: show the current ones
             try:
@@ -238,7 +238,7 @@ def write(root: Path) -> dict:
                 used = settings_rows(root, *load_config(root))
             except Exception:  # noqa: BLE001
                 used = None
-        I += settings_section(used, title="Your settings for the latest search")
+        I += settings_section(used, link=change_link(root), title="Your settings for the latest search")
     I += current
     I += [""] + _manual_boards(root)
     I += _companies(root)

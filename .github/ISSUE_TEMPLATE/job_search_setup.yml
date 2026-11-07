@@ -13,9 +13,12 @@ body:
         4. If a search started, the reply begins with a link to watch it. Any time, to see searches:
            click the **Actions** tab at the top of your copy, then **Run job search** on the left. A yellow dot means a search is running; a green check means it finished.
 
-        **Good to know:** each time you answer this questionnaire, your answers replace **all** your settings.
-        Anything you leave blank (or a dropdown left on "None") is turned off or left empty. Your current
-        settings are shown at the top of the **JOB_SEARCH_RESULTS** folder page, so you can copy them back in.
+        **Changing your settings:** open this questionnaire from **click here to change these settings** at the top
+        of the **JOB_SEARCH_RESULTS** folder page. Your current text answers are then already filled in; change
+        only what you want.
+        1. A text box left empty turns that setting off.
+        2. A dropdown left on "None" keeps its current choice. Pick a choice only to change it.
+
         For lists, put one item on each line. Only you (and collaborators you add) can change your settings.
 
   - type: markdown
@@ -37,6 +40,7 @@ body:
     attributes:
       value: "## Step 1 of 9: The jobs you want"
   - type: textarea
+    id: titles_1
     attributes:
       label: Job titles to look for
       description: "Put all your job titles in this box, one per line, as many as you like. Senior, Sr. and Lead versions are found too, the words can be in any order, and each word can be singular or plural."
@@ -52,20 +56,24 @@ body:
     attributes:
       value: "## Step 2 of 9: Where you can work"
   - type: dropdown
+    id: remote_only
     attributes:
       label: Remote jobs only?
       options:
         - Yes, remote jobs only
         - No, also hybrid and on-site jobs in my state
   - type: input
+    id: state
     attributes:
       label: Your state
       description: "Full state name. Jobs that cannot hire in your state are left out. Example: New Mexico"
   - type: input
+    id: state_abbreviation
     attributes:
       label: Your state's two-letter abbreviation
       description: "Example: NM"
   - type: textarea
+    id: cities
     attributes:
       label: Cities where you could work on site
       description: Optional. One city per line. Only used if you chose "No" for remote jobs only.
@@ -75,14 +83,17 @@ body:
     attributes:
       value: "## Step 3 of 9: Pay (per year, numbers only, 0 = no minimum)"
   - type: input
+    id: min_single
     attributes:
       label: Lowest single salary you would accept
       description: "For jobs that list one salary. Example: 100000"
   - type: input
+    id: min_range_start
     attributes:
       label: Lowest acceptable start of a salary range
       description: "For jobs that list a range like $85,000 to $110,000: the low end must be at least this. Example: 90000"
   - type: input
+    id: range_end_above
     attributes:
       label: A salary range must end above
       description: "The high end of a range must be more than this. Example: 100000"
@@ -91,27 +102,32 @@ body:
     attributes:
       value: "## Step 4 of 9: Jobs to leave out (optional)"
   - type: textarea
+    id: skip_titles
     attributes:
       label: Title words to skip
       description: "One per line. Only the job TITLE is checked, never the rest of the posting. Whole words, capitals do not matter. Example: Intern"
       render: text
   - type: textarea
+    id: rule_words
     attributes:
       label: Words that rule out a job
       description: "One per line. Jobs with these words in the description are left out. Example: security clearance"
       render: text
   - type: dropdown
+    id: rule_when
     attributes:
       label: Rule out a job when these words are…
       options:
         - Required by the job
         - Mentioned anywhere in the posting
   - type: textarea
+    id: must_mention
     attributes:
       label: Words the job description must mention
       description: One per line. A job must mention at least one of them, or it is left out.
       render: text
   - type: dropdown
+    id: cert_check
     attributes:
       label: Check certification requirements?
       description: If Yes, jobs that require a certification you do not list in the next question are left out.
@@ -119,6 +135,7 @@ body:
         - "No"
         - "Yes"
   - type: textarea
+    id: certs_allowed
     attributes:
       label: Certifications you have, or could get before being hired
       description: One per line.
@@ -128,6 +145,7 @@ body:
     attributes:
       value: "## Step 5 of 9: Employers to skip (optional)"
   - type: textarea
+    id: skip_employers
     attributes:
       label: Employers to skip
       description: "One employer per line. Jobs from these employers are never shown, and their careers pages are not read. Whole words, capitals do not matter: Acme skips Acme Corp, not Acmeworks."
@@ -142,6 +160,7 @@ body:
         **Need ideas?** On LinkedIn, open your profile, go to **Skills** and click **Add skill**.
         LinkedIn lists skills "Suggested based on your profile". Add only the skills you have used.
   - type: textarea
+    id: my_skills
     attributes:
       label: Your skills
       description: "One skill per line. This list replaces any skills you saved before."
@@ -151,10 +170,12 @@ body:
         Customer Relationship Management (CRM)
       render: text
   - type: input
+    id: years
     attributes:
       label: Years of experience in your field
       description: "A number. Jobs asking for more years are flagged, never removed. Example: 3"
   - type: textarea
+    id: certs_held
     attributes:
       label: Certifications you hold
       description: One per line.
@@ -187,6 +208,7 @@ body:
         **Please don't paste your key into this form.** Anything you type here is saved in the issue, and anyone
         who can see your copy can read it. Saved as a secret, it stays hidden and only your searches can use it.
   - type: textarea
+    id: companies
     attributes:
       label: Companies to watch
       description: "Links to company job pages on Greenhouse, Lever, Ashby or SmartRecruiters, one per line. Every job there is checked. Example: https://job-boards.greenhouse.io/examplecompany"
@@ -197,21 +219,25 @@ body:
         ### Skills-based matching
         Also finds jobs with other titles, when the listing includes your keywords and enough of your skills (Step 6).
   - type: dropdown
+    id: skills_on
     attributes:
       label: Turn on skills-based matching?
       options:
         - "Off"
         - "On"
   - type: input
+    id: skills_min
     attributes:
       label: How many of your skills must the listing mention?
       description: "A number. 3 is a good start."
   - type: textarea
+    id: skills_keywords
     attributes:
       label: "Skills-based matching: keywords the listing must include"
       description: "One per line. Used only for skills-based matching: a job with a title that is not one of yours counts only if its listing includes these words (and enough of your skills). Example: Salesforce"
       render: text
   - type: dropdown
+    id: skills_rule
     attributes:
       label: All keywords, or at least one?
       options:
@@ -226,6 +252,7 @@ body:
         the search reads from Himalayas, The Muse and Jobicy. Reading more makes each search take longer, and
         GitHub stops a search after 60 minutes.
   - type: dropdown
+    id: search_size
     attributes:
       label: How many jobs to look through
       description: "In a test search on 2026-11-06, Recommended read 3,763 job listings in about 11 minutes (without the web search). More job titles make a search longer."
@@ -233,12 +260,12 @@ body:
         - "Recommended: 1,000 newest jobs per site, 200 for each job title, Jobicy up to 5,000"
         - "Fewer (faster): 200 newest jobs per site, 100 for each job title, Jobicy up to 500"
         - "More (slower): 2,000 newest jobs per site, 400 for each job title, Jobicy up to 10,000"
-      default: 0
 
   - type: markdown
     attributes:
       value: "## Step 9 of 9: When to search"
   - type: dropdown
+    id: weekly
     attributes:
       label: Automatic weekly searches
       description: On = a search also runs by itself once a week.
@@ -246,6 +273,7 @@ body:
         - "Off"
         - "On"
   - type: dropdown
+    id: weekly_day
     attributes:
       label: Day for automatic weekly searches
       description: The search starts around 13:47 UTC (about 6:47 AM Mountain in winter, 7:47 AM in summer).
@@ -258,6 +286,7 @@ body:
         - Saturday
         - Sunday
   - type: dropdown
+    id: run_now
     attributes:
       label: Start a search right after saving?
       description: "Yes starts a search as soon as your settings are saved. To watch it, use the link in the reply on the next page, or the Actions tab, then Run job search."

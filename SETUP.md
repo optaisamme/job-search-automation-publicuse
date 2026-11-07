@@ -31,9 +31,8 @@ You never need to edit a file: all your settings are made with the setup questio
    forms opens (or use this link while in your copy: [open the questionnaire list](../../issues/new/choose)).
    Click **Job search setup**. If a blank "Create new issue" page opens instead, click
    **Choose a different template** near the top, then **Job search setup**.
-2. Answer the questions. Only "Job titles to look for" is required. Leave a question empty, or
-   a dropdown on "None", to leave that setting off. Each time you answer, your answers replace all your
-   settings; your current settings are shown at the top of the results page.
+2. Answer the questions. Only "Job titles to look for" is required. Leave a question empty to
+   leave that setting off.
 3. Click **Create** (on some screens it says **Submit new issue**). GitHub shows your answers on a new
    page; stay there. Within a minute or two a reply appears at the bottom (refresh if it does not). It
    lists what was saved, or explains what to fix (edit the issue to fix it; it is checked again).
@@ -124,8 +123,13 @@ Open the **JOB_SEARCH_RESULTS** folder in your repository (on the **Code** tab).
 
 ## When you change your settings later
 
-1. Answer the setup questionnaire again. Changes take effect on the next search (weekly if turned
-   on, one the questionnaire starts, or one you start with [HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md)).
+1. Open the **JOB_SEARCH_RESULTS** folder and click **click here to change these settings** (under
+   "Your settings"). The questionnaire opens with your current text answers filled in. Change only what
+   you want, then click **Create**:
+   a. A text box left empty turns that setting off.
+   b. A dropdown left on "None" keeps its current choice.
+   Changes take effect on the next search (weekly if turned on, one the questionnaire starts, or one you
+   start with [HOW_TO_RUN_A_SEARCH_NOW.md](HOW_TO_RUN_A_SEARCH_NOW.md)).
 2. Jobs still listed online are re-checked: a job that now passes is shown as
    **Newly verified (seen before)**. A job that now fails one rule is listed under Near Misses
    in the next report; jobs that fail 2 or more rules are only counted in the totals. Jobs

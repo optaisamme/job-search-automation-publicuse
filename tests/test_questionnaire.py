@@ -121,7 +121,9 @@ def test_search_size_choice_is_saved_and_recommended_is_the_default():
     import yaml
     f = yaml.safe_load(open(ROOT / ".github/ISSUE_TEMPLATE/job_search_setup.yml"))
     dd = next(b for b in f["body"] if b["attributes"].get("label") == "How many jobs to look through")
-    assert dd["attributes"]["default"] == 0 and dd["attributes"]["options"][0].startswith("Recommended")
+    # no preselected choice: "None" keeps the current choice, and a new copy starts with Recommended
+    assert "default" not in dd["attributes"] and dd["attributes"]["options"][0].startswith("Recommended")
+    assert tomllib.loads(q.build_settings(q.parse_issue_body(form(titles_1="X")))[0])["search_size"] == q.SEARCH_SIZES["recommended"]
     assert "recommend keeping" in yaml.safe_dump(f).lower()
     # the recommended choice equals the numbers the settings file starts with and the search uses by default
     from jobsearch.adapters.aggregators import SEARCH_SIZE_DEFAULTS
@@ -301,3 +303,42 @@ def test_privacy_warning_comes_before_the_first_question():
     before = "\n".join(b["attributes"]["value"] for b in f["body"][:first_question])
     assert "### Your privacy" in before and "If your copy is\n        public" not in before
     assert "anyone can read them" in before and "Do not enter passwords" in before and "Tavily" in before
+
+
+def test_change_link_fills_in_current_answers_and_round_trips(tmp_path):
+    """'click here to change these settings' opens the questionnaire with the current answers; submitting it
+    unchanged (dropdowns left on None, which a link cannot fill in) keeps every setting."""
+    import yaml
+    from urllib.parse import urlsplit, parse_qs
+    import sys
+    sys.path.insert(0, str(ROOT))
+    from jobsearch import settings_summary
+    full = form(titles_1="Program Manager\nCase Manager", remote_only="No, also hybrid and on-site jobs in my state",
+                state="New Mexico", state_abbreviation="NM", cities="Albuquerque", min_single="70000", min_range_start="65000",
+                skip_titles="Intern", rule_words="security clearance", rule_when="Mentioned anywhere in the posting",
+                must_mention="nonprofit", cert_check="Yes", certs_allowed="CPR", skip_employers="Acme Staffing",
+                my_skills="Customer Relationship Management (CRM)\nData: data entry, spreadsheets", years="4", certs_held="CPR",
+                companies="https://job-boards.greenhouse.io/examplecompany", skills_on="On", skills_min="2",
+                skills_keywords="Salesforce", skills_rule="At least one keyword must appear", search_size="More (slower)",
+                weekly="On", weekly_day="Tuesday")
+    s, e, _, _ = q.build_settings(q.parse_issue_body(full))
+    (tmp_path / "JOB_SEARCH_SETTINGS").mkdir()
+    (tmp_path / "JOB_SEARCH_SETTINGS/job_search_settings.toml").write_text(s)
+    (tmp_path / "JOB_SEARCH_SETTINGS/my_experience.toml").write_text(e)
+    link = settings_summary.change_link(tmp_path)
+    assert link.startswith("../../../issues/new?template=job_search_setup.yml&title=Job+search+setup&")
+    filled = {k: v[0] for k, v in parse_qs(urlsplit(link).query).items() if k not in ("template", "title")}
+    ids = {b["id"]: b for b in yaml.safe_load(open(ROOT / ".github/ISSUE_TEMPLATE/job_search_setup.yml"))["body"] if "id" in b}
+    assert set(filled) <= {i for i, b in ids.items() if b["type"] in ("input", "textarea")}   # only text questions
+    # what GitHub writes when that form is submitted unchanged
+    by_key = {v: k for k, v in q.LABELS.items()}
+    parts = []
+    for key in q.LABELS.values():
+        v = filled.get(key, "")
+        if ids[key]["type"] == "dropdown":
+            v = "None"
+        elif ids[key]["type"] == "textarea":
+            v = "```text\n" + v + "\n```"
+        parts += [f"### {by_key[key]}", "", v or "_No response_", ""]
+    s2, e2, _, extras = q.build_settings(q.parse_issue_body("\n".join(parts)), s)
+    assert tomllib.loads(s2) == tomllib.loads(s) and tomllib.loads(e2)["skills"] == tomllib.loads(e)["skills"]

@@ -1032,7 +1032,7 @@ def test_report_starts_with_your_settings_and_change_link(root):
     assert ["Employers to skip", "none"] in used                       # saved with the search
     results_folder.write(root)
     rep = sorted((root / "JOB_SEARCH_RESULTS").glob("REPORT_*.md"))[-1].read_text()
-    assert "[click here to change these settings](../../../issues/new/choose)" in rep
+    assert "[click here to change these settings](../../../issues/new?template=job_search_setup.yml" in rep
     assert rep.index("## Your settings for this search") < rep.index("## New in this search")
     for label in ("| Remote jobs only? |", "| Lowest single salary you would accept |", "| How many jobs to look through |",
                   "| Automatic weekly searches |", "| Skills-based matching |"):
@@ -1053,7 +1053,7 @@ def test_results_main_page_starts_with_your_settings(root):
     run(root, c)
     index = results_folder.write(root)["text"]
     assert "## Your settings for the latest search" in index
-    assert "[click here to change these settings](../../../issues/new/choose)" in index
+    assert "[click here to change these settings](../../../issues/new?template=job_search_setup.yml" in index
     assert index.index("## Your settings for the latest search") < index.index("## Jobs that match all your rules")
 
 
