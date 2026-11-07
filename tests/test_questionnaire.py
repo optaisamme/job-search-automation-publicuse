@@ -261,3 +261,14 @@ def test_form_explains_the_web_search_key_but_never_asks_for_it():
     for b in f["body"]:
         if b["type"] in ("input", "textarea"):
             assert "key" not in b["attributes"]["label"].lower() or "keyword" in b["attributes"]["label"].lower()
+
+
+def test_linkedin_style_skills_and_quoted_keywords_work():
+    assert q.as_list('Salesforce, "data analysis", “program management”') == ["Salesforce", "data analysis", "program management"]
+    e, names = q.replace_skills(EXPERIENCE, "Customer Relationship Management (CRM)\nData Collection\n\"Community Engagement\"")
+    skills = tomllib.loads(e)["skills"]
+    assert names == ["Customer Relationship Management (CRM)", "Data Collection", "Community Engagement"]
+    assert skills[0]["keywords"] == ["customer relationship management", "crm"]
+    assert skills[1]["keywords"] == ["data collection"] and skills[2]["keywords"] == ["community engagement"]
+    from jobsearch.skills_match import _hit
+    assert _hit("nonprofit organizations", "experience with a nonprofit organization") and _hit("crm", "our crm is salesforce")

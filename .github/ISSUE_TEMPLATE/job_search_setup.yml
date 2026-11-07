@@ -123,8 +123,9 @@ body:
   - type: markdown
     attributes:
       value: |
-        **Ideas for your skills:** on LinkedIn, the Skills section of your profile shows skills
-        "Suggested based on your profile". Use them as ideas, and add here only the skills you have actually used.
+        **Ideas for your skills:** on LinkedIn, go to the Skills section of your profile and click **Add skill**:
+        it shows skills "Suggested based on your profile". Use them as ideas, and add here only the skills you
+        have actually used. You can type them as they appear, for example `Customer Relationship Management (CRM)`.
   - type: textarea
     attributes:
       label: Your skills

@@ -123,13 +123,18 @@ def _clean(s: str) -> str:
     return s
 
 
+def _unquote(x: str) -> str:
+    """'  "data analysis" ' -> 'data analysis' (quotation marks would otherwise be searched for too)."""
+    return x.strip(" -*•\t").strip("\"'“”‘’").strip()
+
+
 def as_list(text: str) -> list[str] | None:
     """One item per line (commas also separate). None = keep current; [] = clear ("none")."""
     if not text:
         return None
     if text.strip().lower() == "none":
         return []
-    items = [_clean(x.strip(" -*•\t")) for line in text.split("\n") for x in line.split(",")]
+    items = [_clean(_unquote(x)) for line in text.split("\n") for x in line.split(",")]
     items = list(dict.fromkeys(x for x in items if x))
     if len(items) > MAX_ITEMS:
         raise AnswerProblem(f"Too many items in one answer (at most {MAX_ITEMS}).")
@@ -340,8 +345,12 @@ def replace_skills(experience_text: str, skills_text: str) -> tuple[str, list[st
     blocks, names = [], []
     for line in lines:
         name, _, words = line.strip(" -*•\t").partition(":")
-        name = name.strip()
-        kws = [w.strip().lower() for w in (words or name).split(",") if w.strip()]
+        name = _unquote(name)
+        if words.strip():
+            kws = [_unquote(w).lower() for w in words.split(",") if _unquote(w)]
+        else:   # no words given: the skill's name, and any short form in brackets ("Customer Relationship Management (CRM)")
+            kws = [re.sub(r"\s*\([^)]*\)", "", name).strip().lower()] + [p.strip().lower() for p in re.findall(r"\(([^)]*)\)", name)]
+            kws = [k for k in dict.fromkeys(kws) if k]
         names.append(name)
         blocks.append(f'[[skills]]\nname = {toml_value(name)}\nkind = "demonstrated"\nkeywords = {toml_value(kws)}\n'
                       f'evidence = "Added through the setup questionnaire"')

@@ -24,7 +24,8 @@ def _hit(keyword: str, low_text: str) -> bool:
         return False
     if len(k) <= 4 and k.isalpha():
         return bool(re.search(r"\b" + re.escape(k) + r"\b", low_text))
-    return k in low_text
+    # "nonprofit organizations" also finds "nonprofit organization"
+    return k in low_text or (k.endswith("s") and not k.endswith("ss") and k[:-1] in low_text)
 
 
 class SkillsMatcher:
