@@ -1146,3 +1146,20 @@ def test_browser_refuses_unsafe_links():
     script = pathlib.Path(__file__).resolve().parents[1] / "jobsearch/render.mjs"
     out = subprocess.run(["node", str(script), "--self-test"], capture_output=True, text=True, timeout=60).stdout
     assert all(ok for _, ok in _json.loads(out.strip().splitlines()[-1]))
+
+
+def test_report_shows_the_posting_text_behind_each_decision(root):
+    c = FakeClient()
+    setup_board(c, [gh_job(1, "Salesforce Administrator")])
+    info = run(root, c)
+    md = open(info["report"]).read()
+    block = md[md.index("<details><summary>Salesforce Administrator"):]
+    block = block[:block.index("</details>")]
+    assert "(meets your rule)." in block and 'Posting says: "' in block and "(job-boards.greenhouse.io)" in block
+    assert "Application link:" in block and "Checked " in block and "Last found in a search:" in block
+
+
+def test_evidence_text_cannot_add_html_or_links():
+    from jobsearch.report import _quote
+    q = _quote('<img src=x onerror=alert(1)> [click](http://evil) **bold** `code`')
+    assert "<" not in q and "[" not in q and "**" not in q and "`" not in q

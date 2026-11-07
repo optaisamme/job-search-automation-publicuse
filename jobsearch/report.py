@@ -57,7 +57,7 @@ def drop_state_list(text: str) -> str:
     return re.sub(r"(Allowed-state list omits [^();]+?) \([^)]*\)", r"\1", text or "")
 
 
-def short_salary(x: str) -> str:
+def short_salary(x: str, verdict: str = " (too low)") -> str:
     """'Salary: range $60,000-$70,000: starts at $60,000, below $90,000; …' -> 'Salary: $60,000-$70,000 (too low)'."""
     import re
     m = re.match(r"(Salary: )(.*?)( \((?:per third-party listing[^)]*|job site's copy)\))?$", x)
@@ -68,7 +68,7 @@ def short_salary(x: str) -> str:
                      (r"(lowest|highest) pay (\$[\d,]+)", "{0} pay {1}")):
         hit = re.match(pat, body)
         if hit:
-            return f"{head}{fmt.format(*hit.groups())} (too low){tail}"
+            return f"{head}{fmt.format(*hit.groups())}{verdict}{tail}"
     return x
 
 
@@ -200,6 +200,59 @@ def must_mention_note(c: dict) -> list[str]:
             "change \"Words the job description must mention\" in the setup questionnaire (check the spelling, or type `none`).", ""]
 
 
+OUTCOME_WORDS = {"pass": "meets your rule", "fail": "does not meet your rule", "unclear": "could not be checked"}
+SOURCE_WORDS = {"third_party": "job site's copy, "}
+
+
+def _quote(text: str, n: int = 220) -> str:
+    """Posting text is untrusted: shown only as plain quoted text (no HTML, links or formatting)."""
+    import html
+    import re
+    t = re.sub(r"\s+", " ", text or "").strip()
+    t = t if len(t) <= n else t[: n - 1].rstrip() + "…"
+    return html.escape(t).replace("`", "'").replace("[", "(").replace("]", ")").replace("*", "").replace("_", " ")
+
+
+def evidence_block(r) -> list[str]:
+    """One fold-out block per job: each rule's decision with the posting text it was based on, and the link check."""
+    from .classify import RULE_LABELS
+    from urllib.parse import urlsplit
+    lines = []
+    for x in _j(r, "rules", []) or []:
+        name = x.get("rule", "")
+        label = f'Your rule "{name[6:]}"' if name.startswith("rule: ") else RULE_LABELS.get(name, name.capitalize())
+        reason = f"{label}: {x.get('reason', '')}"
+        reason = short_salary(reason, "" if x.get("outcome") == "pass" else " (too low)") if name == "salary" else reason
+        said = _quote(_plain_reason(reason), 200).rstrip(".")
+        line = f"{said} ({OUTCOME_WORDS.get(x.get('outcome'), x.get('outcome'))})."
+        ev = next((e for e in x.get("evidence") or [] if e.get("excerpt")), None)
+        if ev:
+            host = urlsplit(ev.get("url") or "").netloc.removeprefix("www.") or "posting"
+            line += f' Posting says: "{_quote(ev["excerpt"])}" ({SOURCE_WORDS.get(ev.get("source"), "")}{host})'
+        lines.append(line)
+    ver = _j(r, "verification", {}) or {}
+    if ver:
+        line = f"Application link: {_quote(ver.get('detail') or ver.get('status') or '', 200).rstrip('.')}."
+        if ver.get("checked_at"):
+            line += f" Checked {str(ver['checked_at'])[:16].replace('T', ' ')} UTC."
+        lines.append(line)
+    if r["last_seen"]:
+        lines.append(f"Last found in a search: {str(r['last_seen'])[:16].replace('T', ' ')} UTC.")
+    title = _quote(f"{_label(r)} ({r['employer'] or 'employer not given'})", 120)
+    return ["<details><summary>" + title + "</summary>", ""] + [f"{i}. {l}" for i, l in enumerate(lines, 1)] + ["", "</details>"]
+
+
+def evidence_section(rows, limit: int = 100) -> list[str]:
+    """Collapsed evidence for each job in a list, newest first (click a job to open it)."""
+    if not rows:
+        return []
+    rows = sorted(rows, key=lambda r: r["first_seen"] or "", reverse=True)[:limit]
+    L = ["**Evidence:** click a job to see why it is in this list, with the posting's own words.", ""]
+    for r in rows:
+        L += evidence_block(r)
+    return L + [""]
+
+
 def unchecked_note(row) -> str:
     """' (other rules could not be checked: Salary)' when other rules could not be checked."""
     unchecked = _unchecked_rules(row)
@@ -263,18 +316,23 @@ def build(store, run_info: dict, out_dir: Path, title: str = "Job Search Report"
     md += ["## Jobs that match all your rules", ""]
     from .skills_match import SKILLS_FAMILY
     md += _match_table([r for r in q if r["family"] != SKILLS_FAMILY])
+    md += evidence_section([r for r in q if r["family"] != SKILLS_FAMILY])
     q_skills = [r for r in q if r["family"] == SKILLS_FAMILY]
     if q_skills:
         md += ["### Matches by skills (other titles)", "",
                "Their title is not one of yours, but the listing has your required keywords and enough of your skills.", ""]
         md += _match_table(q_skills, skills=True)
+        md += evidence_section(q_skills)
     md += ["## Jobs that need checking", ""]
     md += _check_table(nv)
+    md += evidence_section(nv)
     md += ["## Hourly or contract jobs", "",
            "Pay is listed per hour or per contract, so the yearly salary rule was not applied. Check the pay yourself.", ""]
     md += _check_table(held)
+    md += evidence_section(held)
     md += ["## Near Misses: Jobs that did not match one of your rules", "", "Newest first, 100 at most.", ""]
     md += _reject_table(near)
+    md += evidence_section(near)
     from .sources_summary import section as where_section
     md += [""] + where_section(run_info.get("sources", []), run_info.get("started_at"), run_info.get("finished_at"))
     for k, v in SOURCE_NOTES.items():
