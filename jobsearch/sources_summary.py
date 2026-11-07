@@ -109,9 +109,8 @@ def section(sources: list[dict], started_at: str | None = None, finished_at: str
                   "are job postings. The rest are pages listing many jobs, sites this tool already reads, or "
                   "links an earlier search in the table already found.",
                   "3. **Matches:** job postings from those links that match all your rules.",
-                  "4. **Other postings (not a full match):** job postings from those links that did not match all your "
-                  "rules: a different job title, a rule not met, "
-                  "or a link that still needs checking."]
+                  "4. **Other postings (not a full match):** job postings that had a different job title, did not "
+                  "meet a rule, or still need their link checked."]
             if old:
                 L.append("5. Searches before 2026-11-07 did not record Matches or Other postings.")
         else:
