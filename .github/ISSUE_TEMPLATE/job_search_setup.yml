@@ -108,7 +108,7 @@ body:
   - type: textarea
     attributes:
       label: Your skills
-      description: 'One skill per line, written as "Skill: words a job posting might use". Only things you have done. This replaces your current skill list.'
+      description: "One skill per line, only skills you have used. To also catch other wording, add a colon and the words a job posting might use, separated by commas, as in the example. Your answer replaces your current skill list."
       placeholder: |
         Reports and dashboards: report, dashboard
         Data cleanup: data quality, dedup, import
