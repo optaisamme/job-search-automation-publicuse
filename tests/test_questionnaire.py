@@ -149,3 +149,22 @@ def test_search_size_numbers_are_kept_within_limits():
 def test_older_question_labels_are_still_read():
     a = q.parse_issue_body("### Skills-based matching\n\nOn\n\n### More job titles: a second kind of job\n\nData Analyst\n")
     assert a == {"skills_on": "On"}          # old title boxes are ignored; one box for all titles now
+
+
+def test_unanswered_dropdowns_keep_settings():
+    """GitHub writes "None" for a dropdown left unanswered (seen in a real copy on 2026-11-07)."""
+    import yaml
+    f = yaml.safe_load(open(ROOT / ".github/ISSUE_TEMPLATE/job_search_setup.yml"))
+    dropdown_keys = {q.LABELS[b["attributes"]["label"]] for b in f["body"] if b["type"] == "dropdown"}
+    assert dropdown_keys == q.DROPDOWNS
+    body = form(titles_1="Abortion Advocate\nDomestic Violence Advocate", remote_only="None", cert_check="None",
+                skills_on="None", skills_rule="None", weekly="None", weekly_day="None", run_now="Yes")
+    s, _, changes, extras = q.apply(q.parse_issue_body(body), SETTINGS, EXPERIENCE)
+    st, before = tomllib.loads(s), tomllib.loads(SETTINGS)
+    assert st["job_titles"]["group"][0]["titles"] == ["Abortion Advocate", "Domestic Violence Advocate"]
+    assert st["where_you_live"] == before["where_you_live"] and st["automatic_weekly_search"] == before["automatic_weekly_search"]
+    assert st["filters"]["check_certifications"] == before["filters"]["check_certifications"]
+    assert extras["run_now"]
+    # typing "none" in a text box still clears a list
+    s2, _, _, _ = q.apply(q.parse_issue_body(form(skip_titles="none")), s, EXPERIENCE)
+    assert tomllib.loads(s2)["filters"]["exclude_titles_containing"] == []

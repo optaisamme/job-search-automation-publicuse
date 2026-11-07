@@ -78,6 +78,10 @@ OLD_LABELS = {
 }
 
 
+# Dropdown questions. GitHub writes "None" for a dropdown left unanswered; that means "keep my setting".
+DROPDOWNS = {"remote_only", "cert_check", "skills_on", "skills_rule", "search_size", "weekly", "weekly_day", "run_now"}
+
+
 class AnswerProblem(ValueError):
     """An answer that cannot be used; the message is shown to the user."""
 
@@ -94,6 +98,8 @@ def parse_issue_body(body: str) -> dict:
             m = re.fullmatch(r"(`{3,})[\w-]*\n(.*?)\n?\1", text, re.S)   # answers from plain text boxes come as a code block
             if m:
                 text = m.group(2).strip()
+            if key in DROPDOWNS and text == "None":
+                text = ""   # dropdown left unanswered
             answers[key] = "" if text in ("", "_No response_") else text
 
     for line in (body or "").replace("\r\n", "\n").split("\n"):
@@ -363,9 +369,6 @@ def main() -> int:
                     reply = ["**Your settings are saved.**" if changed_files else "**Nothing changed:** every answer was blank or the same as before.",
                              "", "What changed:", ""] + [f"{i}. {c}" for i, c in enumerate(changes, 1)] + \
                             ["", "Your settings now:", "", "```text", check.stdout.strip()[-3000:], "```"]
-                    if extras["run_now"]:
-                        reply += ["", "A search is starting now. Results appear in the **JOB_SEARCH_RESULTS** folder "
-                                  "in about 10 to 20 minutes."]
                     reply += ["", "To change something later, open a new **Job search setup** issue. Blank answers keep "
                               "your current settings; type `none` to clear one."]
                     run_now = extras["run_now"]
@@ -383,11 +386,68 @@ def main() -> int:
     return 0
 
 
+WORKFLOW_FILE = "run_job_search.yml"
+
+
+def _api(method: str, path: str, payload=None):
+    import urllib.request
+    req = urllib.request.Request(f"https://api.github.com/repos/{os.environ['GITHUB_REPOSITORY']}/{path}",
+                                 data=json.dumps(payload).encode() if payload is not None else None, method=method,
+                                 headers={"Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
+                                          "Accept": "application/vnd.github+json", "User-Agent": "job-search-automation"})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        body = r.read()
+        return json.loads(body) if body else {}
+
+
+def start_search(wait_seconds: float = 3, tries: int = 10) -> int:
+    """Start a search and write what happened, with a link to the search, for the reply on the issue."""
+    import time
+    import urllib.error
+    from datetime import datetime, timezone, timedelta
+    repo = os.environ["GITHUB_REPOSITORY"]
+    page = f"{os.environ.get('GITHUB_SERVER_URL', 'https://github.com')}/{repo}/actions/workflows/{WORKFLOW_FILE}"
+    since = (datetime.now(timezone.utc) - timedelta(seconds=10)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    OUT.mkdir(exist_ok=True)
+    try:
+        _api("POST", f"actions/workflows/{WORKFLOW_FILE}/dispatches", {"ref": os.environ.get("DEFAULT_BRANCH") or "main"})
+    except Exception as e:  # noqa: BLE001 — the reason is shown to the user
+        reason = str(e)
+        if isinstance(e, urllib.error.HTTPError):
+            try:
+                reason = f"{e.code}: {json.loads(e.read() or b'{}').get('message', '')}"
+            except ValueError:
+                pass
+        (OUT / "questionnaire_search.md").write_text(
+            f"**The search could not be started automatically** (GitHub answered {reason}). Start it yourself: "
+            f"[open the Run job search page]({page}), then click **Run workflow** and the green **Run workflow** button.\n")
+        print(f"Could not start a search: {reason}")
+        return 1
+    url = ""
+    for _ in range(tries):   # find the search that just started, to link to it
+        time.sleep(wait_seconds)
+        try:
+            runs = _api("GET", f"actions/workflows/{WORKFLOW_FILE}/runs?event=workflow_dispatch&per_page=5").get("workflow_runs", [])
+        except Exception:  # noqa: BLE001
+            runs = []
+        new = [r for r in runs if (r.get("created_at") or "") >= since]
+        if new:
+            url = new[0].get("html_url", "")
+            break
+    (OUT / "questionnaire_search.md").write_text(
+        "**A search has started:** " + (f"[open the running search]({url})" if url else f"[open the Run job search page]({page})")
+        + ". Results appear in the **JOB_SEARCH_RESULTS** folder in about 10 to 20 minutes.\n")
+    print(f"Search started: {url or page}")
+    return 0
+
+
 def post_reply() -> int:
     """Post the reply on the issue; close the issue when the settings were saved."""
     import urllib.request
     repo, token, number = os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_TOKEN"], os.environ["ISSUE_NUMBER"]
     body = (OUT / "questionnaire_reply.md").read_text()
+    if (OUT / "questionnaire_search.md").exists():   # the search the questionnaire started, with its link
+        body = body.rstrip("\n") + "\n\n" + (OUT / "questionnaire_search.md").read_text()
 
     def call(method, path, payload):
         req = urllib.request.Request(f"https://api.github.com/repos/{repo}/{path}", data=json.dumps(payload).encode(),
@@ -405,4 +465,4 @@ def post_reply() -> int:
 
 if __name__ == "__main__":
     sys.path.insert(0, str(ROOT))
-    raise SystemExit(post_reply() if "--reply" in sys.argv else main())
+    raise SystemExit(post_reply() if "--reply" in sys.argv else start_search() if "--start-search" in sys.argv else main())

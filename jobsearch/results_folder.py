@@ -15,7 +15,7 @@ from pathlib import Path
 
 FOLDER = "JOB_SEARCH_RESULTS"
 # Relative to JOB_SEARCH_RESULTS/README.md on github.com: opens this copy's "Run job search" page.
-RUN_LINK = "../../../actions/workflows/EDIT_ME_3_weekly_schedule.yml"
+RUN_LINK = "../../../actions/workflows/run_job_search.yml"
 
 
 def _j(v, default):

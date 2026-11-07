@@ -1,15 +1,7 @@
-# =====================================================================
-#  AUTOMATIC WEEKLY SEARCHES: you do not need to edit this file anymore.
-# =====================================================================
-#  Turn weekly searches on or off, and choose the day, in either place:
-#    - the "Job search setup" questionnaire (Issues tab, New issue), or
-#    - section 9 of EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml
-#  They start OFF. This file checks once a day (around 13:47 UTC) whether
-#  today is your chosen day, and only then starts a search.
-#
-#  Older copies: setting AUTOMATIC_WEEKLY_SEARCH below to "on" still works
-#  (it searches on the day in settings section 9, Friday if not set).
-# =====================================================================
+# Runs the job search. You do not need to edit this file.
+# A search starts when you click "Run workflow" on the Actions tab, when the setup questionnaire
+# starts one for you, or on your weekly day if automatic weekly searches are on (questionnaire, or
+# settings section 9). This file checks once a day (around 13:47 UTC) whether today is that day.
 
 name: Run job search
 
@@ -19,10 +11,6 @@ on:
     - cron: "47 13 * * *"
   workflow_dispatch: {}   # adds a "Run workflow" button on the Actions tab
 
-env:
-  # Older copies only: "on" also turns on weekly searches. New copies use settings section 9 instead.
-  AUTOMATIC_WEEKLY_SEARCH: "off"
-
 permissions: {}   # no access by default; the search job below gets only what it needs
 
 concurrency:
@@ -30,9 +18,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Decides whether to search. A search you start yourself always runs.
-  # A weekly (scheduled) start only runs when AUTOMATIC_WEEKLY_SEARCH is "on".
+  # Decides whether to search. A search you start yourself always runs; the daily check only
+  # searches on your weekly day, when automatic weekly searches are on.
   check-automatic-search-switch:
+    name: Check whether to search now
     runs-on: ubuntu-24.04
     permissions:
       contents: read   # reads settings section 9
@@ -64,9 +53,8 @@ jobs:
           print("yes" if on else "no", str(s.get("day", "Friday")).strip().capitalize() or "Friday")
           PY
           )
-          old_switch=$(echo "$AUTOMATIC_WEEKLY_SEARCH" | tr '[:upper:]' '[:lower:]')
           today=$(date -u +%A)
-          if { [ "$on" = "yes" ] || [ "$old_switch" = "on" ]; } && [ "$today" = "$day" ]; then
+          if [ "$on" = "yes" ] && [ "$today" = "$day" ]; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "No search today (automatic weekly searches: $on; day: $day; today: $today)."
@@ -75,6 +63,7 @@ jobs:
           fi
 
   search:
+    name: Search for jobs
     needs: check-automatic-search-switch
     if: needs.check-automatic-search-switch.outputs.run == 'true'
     runs-on: ubuntu-24.04   # pinned: ubuntu-latest is moving to Ubuntu 26.04

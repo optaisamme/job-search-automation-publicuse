@@ -12,7 +12,6 @@ Do not edit any other file.
 |---|---|---|---|
 | 1 | [`EDIT_ME_1_job_search_settings.toml`](EDIT_ME_1_job_search_settings.toml) | **Yes** (job titles) | Which jobs are found and which are rejected: job titles, remote only or not (on to start), your state, salary, certifications, your own rules, employers to skip, companies to watch, skills-based matching (starts off) |
 | 2 | [`EDIT_ME_2_my_experience.toml`](EDIT_ME_2_my_experience.toml) | No | Your skills, used to explain how well each job fits you. Never rejects a job. Also used by skills-based matching (file 1, section 8) |
-| 3 | [`../.github/workflows/EDIT_ME_3_weekly_schedule.yml`](../.github/workflows/EDIT_ME_3_weekly_schedule.yml) | No: you no longer need to edit it | Runs the searches. Automatic weekly searches (start **OFF**) and their day are set in file 1, section 9, or in the questionnaire |
 
 ## How to edit a file
 

@@ -13,7 +13,7 @@ this tool to meet the needs of the students I work with, and I am sharing it for
 it can help.
 
 **Already set up?** Open your copy, then click
-**[START A SEARCH NOW](../../actions/workflows/EDIT_ME_3_weekly_schedule.yml)**, then click the
+**[START A SEARCH NOW](../../actions/workflows/run_job_search.yml)**, then click the
 grey **Run workflow** button and the green **Run workflow** button.
 [Picture of where to click](HOW_TO_RUN_A_SEARCH_NOW.md#the-picture-where-to-click)
 
@@ -73,7 +73,6 @@ Only files whose names start with **EDIT_ME**. Do not change any other file.
 |---|---|---|
 | [`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml`](EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_1_job_search_settings.toml) | **Yes:** type at least one job title | Which jobs are found and which are left out: job titles, remote only or not, your state, salary, certifications, your own rules, employers to skip, companies to watch, skills-based matching, how many jobs to look through |
 | [`EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml`](EDIT_ME_JOB_SEARCH_SETTINGS/EDIT_ME_2_my_experience.toml) | No | Your skills, used to show how well each job fits you. It never removes a job. With skills-based matching on (file 1, section 8), it also finds jobs with other titles |
-| [`.github/workflows/EDIT_ME_3_weekly_schedule.yml`](.github/workflows/EDIT_ME_3_weekly_schedule.yml) | No: you no longer need to edit it | Runs the searches. Automatic weekly searches are turned on in the questionnaire or settings section 9 |
 
 Both settings files start **empty**: nothing is searched or filtered until you fill them in.
 

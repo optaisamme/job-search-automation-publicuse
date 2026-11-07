@@ -21,7 +21,7 @@ If you skip step 2, the search stops right away with the message **"NO JOB TITLE
 
 Open **your copy** on github.com, then click this link:
 
-**[START A SEARCH NOW: open the "Run job search" page](../../actions/workflows/EDIT_ME_3_weekly_schedule.yml)**
+**[START A SEARCH NOW: open the "Run job search" page](../../actions/workflows/run_job_search.yml)**
 
 It opens the page in the picture below. Then do steps 3 and 4 in the picture.
 (The link only works in your own copy, while you are signed in.)
