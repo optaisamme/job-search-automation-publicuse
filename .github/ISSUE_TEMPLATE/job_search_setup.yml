@@ -209,3 +209,14 @@ body:
         - "Yes"
         - "No"
       default: 0
+  - type: markdown
+    attributes:
+      value: |
+        ### Before you click Create
+        A search takes about **10 to 20 minutes**. To watch it while it runs:
+        1. Stay on the page that opens after you click **Create**. In 1 to 2 minutes a reply appears at the
+           bottom (refresh the page if it does not), with a link to your running search.
+        2. Or click the **Actions** tab at the top of your copy, then **Run job search** on the left.
+           A yellow dot means the search is running; a green check means it finished.
+
+        When it finishes, your results are in the **JOB_SEARCH_RESULTS** folder on the **Code** tab.
